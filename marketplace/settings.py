@@ -31,12 +31,17 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # Apps Django
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Apps de terceiros
+    'rest_framework',
+    'django_filters',
+    # Apps do projecto
     "apps.users.apps.UsersConfig",
     "apps.anuncios.apps.AnunciosConfig",
     "apps.pagamentos.apps.PagamentosConfig",
@@ -114,6 +119,9 @@ TIME_ZONE = 'Africa/Maputo'
 USE_I18N = True
 
 USE_TZ = True
+
+
+AUTH_USER_MODEL = 'users.User'
 
 
 # Static files (CSS, JavaScript, Images)

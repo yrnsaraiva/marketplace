@@ -1,23 +1,86 @@
-# Python
+# =========================
+# 🔐 ENV / SEGREDOS
+# =========================
+.env
+.env.*
+*.env
+
+# =========================
+# 🐍 PYTHON / DJANGO
+# =========================
 __pycache__/
 *.py[cod]
-*.log
+*.sqlite3
+db.sqlite3
 
-# Virtualenv
-.venv/
+# Virtual environments
 venv/
+.venv/
+env/
 
 # Django
+*.log
+media/
 staticfiles/
-.env
 
-# IDE
-.idea/
+# =========================
+# 🟢 NODE / TAILWIND
+# =========================
+node_modules/
+yarn.lock
+pnpm-lock.yaml
+
+# Build files
+dist/
+build/
+
+# =========================
+# 🧠 IDEs / EDITORES
+# =========================
 .vscode/
+.idea/
+*.swp
+*.swo
 
-# OS
+# =========================
+# 💻 SISTEMA OPERATIVO
+# =========================
 .DS_Store
 Thumbs.db
 
-# database
-db.sqlite3
+# =========================
+# 🐳 DOCKER (se usar)
+# =========================
+docker-compose.override.yml
+
+# =========================
+# 📦 CACHE / TEMP
+# =========================
+*.cache
+.cache/
+tmp/
+temp/
+
+# =========================
+# 📊 LOGS
+# =========================
+logs/
+*.log
+
+# =========================
+# 🔥 CELERY / REDIS
+# =========================
+celerybeat-schedule
+*.pid
+
+# =========================
+# 🗂️ MIGRAÇÕES (opcional)
+# =========================
+# NÃO ignorar migrations em produção
+# mas podes ignorar cache delas:
+**/__pycache__/
+
+# =========================
+# 📸 UPLOADS
+# =========================
+media/uploads/
