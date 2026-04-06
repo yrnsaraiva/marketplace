@@ -1,0 +1,25 @@
+[
+  {"model": "categorias.categoria", "pk": 1, "fields": {"pai": null, "nome": "Veículos", "slug": "veiculos", "icone_url": "", "ordem": 1, "activa": true, "nivel": 0}},
+  {"model": "categorias.categoria", "pk": 2, "fields": {"pai": null, "nome": "Imóveis", "slug": "imoveis", "icone_url": "", "ordem": 2, "activa": true, "nivel": 0}},
+  {"model": "categorias.categoria", "pk": 3, "fields": {"pai": null, "nome": "Electrónica", "slug": "electronica", "icone_url": "", "ordem": 3, "activa": true, "nivel": 0}},
+  {"model": "categorias.categoria", "pk": 4, "fields": {"pai": null, "nome": "Moda e Vestuário", "slug": "moda-vestuario", "icone_url": "", "ordem": 4, "activa": true, "nivel": 0}},
+  {"model": "categorias.categoria", "pk": 5, "fields": {"pai": null, "nome": "Casa e Jardim", "slug": "casa-jardim", "icone_url": "", "ordem": 5, "activa": true, "nivel": 0}},
+  {"model": "categorias.categoria", "pk": 6, "fields": {"pai": null, "nome": "Serviços", "slug": "servicos", "icone_url": "", "ordem": 6, "activa": true, "nivel": 0}},
+  {"model": "categorias.categoria", "pk": 7, "fields": {"pai": null, "nome": "Empregos", "slug": "empregos", "icone_url": "", "ordem": 7, "activa": true, "nivel": 0}},
+  {"model": "categorias.categoria", "pk": 8, "fields": {"pai": null, "nome": "Animais", "slug": "animais", "icone_url": "", "ordem": 8, "activa": true, "nivel": 0}},
+
+  {"model": "categorias.categoria", "pk": 9,  "fields": {"pai": 1, "nome": "Carros", "slug": "carros", "icone_url": "", "ordem": 1, "activa": true, "nivel": 1}},
+  {"model": "categorias.categoria", "pk": 10, "fields": {"pai": 1, "nome": "Motas", "slug": "motas", "icone_url": "", "ordem": 2, "activa": true, "nivel": 1}},
+  {"model": "categorias.categoria", "pk": 11, "fields": {"pai": 1, "nome": "Camiões e Vans", "slug": "camioes-vans", "icone_url": "", "ordem": 3, "activa": true, "nivel": 1}},
+  {"model": "categorias.categoria", "pk": 12, "fields": {"pai": 1, "nome": "Peças e Acessórios", "slug": "pecas-acessorios", "icone_url": "", "ordem": 4, "activa": true, "nivel": 1}},
+
+  {"model": "categorias.categoria", "pk": 13, "fields": {"pai": 2, "nome": "Apartamentos", "slug": "apartamentos", "icone_url": "", "ordem": 1, "activa": true, "nivel": 1}},
+  {"model": "categorias.categoria", "pk": 14, "fields": {"pai": 2, "nome": "Moradias", "slug": "moradias", "icone_url": "", "ordem": 2, "activa": true, "nivel": 1}},
+  {"model": "categorias.categoria", "pk": 15, "fields": {"pai": 2, "nome": "Terrenos", "slug": "terrenos", "icone_url": "", "ordem": 3, "activa": true, "nivel": 1}},
+  {"model": "categorias.categoria", "pk": 16, "fields": {"pai": 2, "nome": "Armazéns e Escritórios", "slug": "armazens-escritorios", "icone_url": "", "ordem": 4, "activa": true, "nivel": 1}},
+
+  {"model": "categorias.categoria", "pk": 17, "fields": {"pai": 3, "nome": "Telemóveis", "slug": "telemoveis", "icone_url": "", "ordem": 1, "activa": true, "nivel": 1}},
+  {"model": "categorias.categoria", "pk": 18, "fields": {"pai": 3, "nome": "Computadores e Laptops", "slug": "computadores-laptops", "icone_url": "", "ordem": 2, "activa": true, "nivel": 1}},
+  {"model": "categorias.categoria", "pk": 19, "fields": {"pai": 3, "nome": "TV e Som", "slug": "tv-som", "icone_url": "", "ordem": 3, "activa": true, "nivel": 1}},
+  {"model": "categorias.categoria", "pk": 20, "fields": {"pai": 3, "nome": "Electrodomésticos", "slug": "electrodomesticos", "icone_url": "", "ordem": 4, "activa": true, "nivel": 1}}
+]

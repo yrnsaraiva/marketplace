@@ -1,15 +1,10 @@
 import requests
 
-url = "http://127.0.0.1:8000/api/v1/auth/registo/"
+url = "http://127.0.0.1:8000/api/v1/auth/login/"
 
 payload = {
-    "username": "teste",
     "email": "teste@email.com",
-    "password": "Senha@1234",
-    "password2": "Senha@1234",
-    "telefone": "841234567",
-    "provincia": "Maputo",
-    "cidade": "Maputo"
+    "password": "Senha@1234"
 }
 
 headers = {
