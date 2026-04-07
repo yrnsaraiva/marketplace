@@ -1,0 +1,25 @@
+{% load static %}
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-[#f9f9f9]/80 backdrop-blur-md rounded-t-3xl border-t border-[#f3f3f3] shadow-[0_-4px_20px_rgba(0,107,83,0.04)]">
+    <a href="{% url 'home' %}" class="flex flex-col items-center justify-center {% block mobile_home %}text-[#1a1c1c] opacity-60{% endblock %} p-2">
+        <span class="material-symbols-outlined">home</span>
+        <span class="text-[11px] font-medium uppercase tracking-wider mt-1">Início</span>
+    </a>
+    <a href="{% url 'anuncio-pesquisa' %}" class="flex flex-col items-center justify-center {% block mobile_search %}text-[#1a1c1c] opacity-60{% endblock %} p-2">
+        <span class="material-symbols-outlined">search</span>
+        <span class="text-[11px] font-medium uppercase tracking-wider mt-1">Pesquisar</span>
+    </a>
+    <a href="{% url 'anuncio-publicar' %}" class="flex flex-col items-center justify-center {% block mobile_publish %}text-[#1a1c1c] opacity-60{% endblock %} p-2">
+        <span class="material-symbols-outlined">add_circle</span>
+        <span class="text-[11px] font-medium uppercase tracking-wider mt-1">Anunciar</span>
+    </a>
+    <a href="{% url 'perfil' %}" class="flex flex-col items-center justify-center {% block mobile_profile %}text-[#1a1c1c] opacity-60{% endblock %} p-2">
+        <span class="material-symbols-outlined">person</span>
+        <span class="text-[11px] font-medium uppercase tracking-wider mt-1">Perfil</span>
+    </a>
+</nav>
+
+{% if user.is_authenticated %}
+<a href="{% url 'anuncio-publicar' %}" class="md:hidden fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full shadow-xl flex items-center justify-center z-40">
+    <span class="material-symbols-outlined text-3xl">add</span>
+</a>
+{% endif %}

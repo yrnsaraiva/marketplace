@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Publicar Anúncio{% endblock %}
+
+{% block content %}
+<main class="pt-24 pb-20 px-4 md:px-8 max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-on-surface">Publicar Anúncio</h1>
+        <p class="text-on-surface-variant mt-2">Preencha os dados abaixo e alcance milhares de compradores</p>
+    </div>
+
+    <form id="form-publicar" class="space-y-8" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Categoria -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low">
+            <h2 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">category</span>
+                Categoria do anúncio
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {% for categoria in categorias %}
+                <label class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-surface-container-low cursor-pointer hover:border-primary transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                    <input type="radio" name="categoria" class="hidden" value="{{ categoria.id }}"/>
+                    <span class="material-symbols-outlined text-2xl text-primary">{{ categoria.icone_url|default:"category" }}</span>
+                    <span class="text-sm font-medium text-center">{{ categoria.nome }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Fotos -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low">
+            <h2 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">photo_camera</span>
+                Fotos do anúncio
+            </h2>
+            <div class="border-2 border-dashed border-outline-variant rounded-xl p-8 text-center hover:border-primary transition-all cursor-pointer"
+                 onclick="document.getElementById('photos').click()">
+                <span class="material-symbols-outlined text-4xl text-outline">cloud_upload</span>
+                <p class="mt-2 text-sm text-on-surface-variant">Clique ou arraste fotos aqui</p>
+                <p class="text-xs text-on-surface-variant/60 mt-1">Máximo 10 fotos, até 5MB cada</p>
+            </div>
+            <input type="file" multiple accept="image/*" class="hidden" id="photos" onchange="previewImagens(this)"/>
+            <div class="flex gap-3 mt-4 overflow-x-auto hide-scrollbar pb-2" id="preview-container"></div>
+        </div>
+
+        <!-- Informações -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low space-y-5">
+            <h2 class="text-lg font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">description</span>
+                Informações do produto
+            </h2>
+            <div>
+                <label class="block text-sm font-medium text-on-surface mb-2">Título do anúncio *</label>
+                <input type="text" name="titulo" maxlength="100" required
+                       class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                       placeholder="Ex: iPhone 14 Pro Max 256GB - Como novo"/>
+                <p class="text-xs text-on-surface-variant mt-1">Mínimo 10 caracteres</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-on-surface mb-2">Descrição *</label>
+                <textarea rows="5" name="descricao" maxlength="2000" required
+                          class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                          placeholder="Descreva o seu produto com detalhes..."></textarea>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-on-surface mb-2">Preço (MT) *</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">MT</span>
+                        <input type="number" name="preco" min="1" required
+                               class="w-full pl-10 pr-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                               placeholder="0"/>
+                    </div>
+                    <label class="flex items-center gap-2 mt-2 cursor-pointer">
+                        <input type="checkbox" name="preco_negociavel" class="w-4 h-4 rounded text-primary focus:ring-primary"/>
+                        <span class="text-sm text-on-surface-variant">Preço negociável</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-on-surface mb-2">Condição *</label>
+                    <select name="condicao" required
+                            class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all">
+                        <option value="novo">Novo</option>
+                        <option value="usado">Usado</option>
+                        <option value="recondicionado">Recondicionado</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Localização -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low">
+            <h2 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">location_on</span>
+                Localização
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-on-surface mb-2">Província *</label>
+                    <select name="provincia" required
+                            class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all">
+                        <option value="">Seleccione...</option>
+                        <option>Maputo</option>
+                        <option>Gaza</option>
+                        <option>Inhambane</option>
+                        <option>Sofala</option>
+                        <option>Manica</option>
+                        <option>Tete</option>
+                        <option>Zambézia</option>
+                        <option>Nampula</option>
+                        <option>Niassa</option>
+                        <option>Cabo Delgado</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-on-surface mb-2">Cidade *</label>
+                    <input type="text" name="cidade" required
+                           class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                           placeholder="Ex: Maputo, Matola..."/>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-on-surface mb-2">Bairro</label>
+                    <input type="text" name="bairro"
+                           class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                           placeholder="Ex: Polana, Sommerschield..."/>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plano de destaque -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low">
+            <h2 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">star</span>
+                Destaque o seu anúncio
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <label class="p-4 rounded-xl border-2 border-surface-container-low hover:border-primary transition-all cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                    <input type="radio" name="plano" value="" class="hidden" checked/>
+                    <div class="text-center">
+                        <span class="material-symbols-outlined text-2xl text-outline">check_circle</span>
+                        <p class="font-bold mt-2">Grátis</p>
+                        <p class="text-sm text-on-surface-variant">Visibilidade padrão</p>
+                        <p class="text-xs text-on-surface-variant/60 mt-1">30 dias</p>
+                    </div>
+                </label>
+                {% for plano in planos %}
+                <label class="p-4 rounded-xl border-2 border-surface-container-low hover:border-primary transition-all cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                    <input type="radio" name="plano" value="{{ plano.id }}" class="hidden"/>
+                    <div class="text-center">
+                        <span class="material-symbols-outlined text-2xl text-primary">whatshot</span>
+                        <p class="font-bold mt-2">{{ plano.nome }}</p>
+                        <p class="text-sm text-primary font-semibold">+{{ plano.preco|floatformat:0 }} MT</p>
+                        <p class="text-xs text-on-surface-variant/60">{{ plano.duracao_dias }} dias</p>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="flex flex-col md:flex-row gap-4 pt-4">
+            <a href="{% url 'home' %}" class="flex-1 py-4 rounded-xl border-2 border-outline-variant text-on-surface-variant font-semibold hover:border-primary hover:text-primary transition-all text-center">
+                Cancelar
+            </a>
+            <button type="submit" id="btn-publicar"
+                    class="flex-1 py-4 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary/90 transition-all shadow-md flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">publish</span>
+                Publicar Anúncio
+            </button>
+        </div>
+    </form>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function previewImagens(input) {
+        const container = document.getElementById('preview-container');
+        container.innerHTML = '';
+        Array.from(input.files).slice(0, 10).forEach((file, i) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const div = document.createElement('div');
+                div.className = 'w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden relative';
+                div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover"/>
+                    ${i === 0 ? '<span class="absolute bottom-0 left-0 right-0 bg-primary text-white text-[9px] text-center py-0.5">Principal</span>' : ''}`;
+                container.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    document.getElementById('form-publicar').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const btn = document.getElementById('btn-publicar');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> A publicar...';
+
+        const formData = new FormData(form);
+
+        try {
+            // 1. Criar anúncio
+            const resp = await fetch('/api/v1/anuncios/criar/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    titulo: formData.get('titulo'),
+                    descricao: formData.get('descricao'),
+                    preco: formData.get('preco'),
+                    preco_negociavel: formData.get('preco_negociavel') === 'on',
+                    condicao: formData.get('condicao'),
+                    categoria: parseInt(formData.get('categoria')),
+                    provincia: formData.get('provincia'),
+                    cidade: formData.get('cidade'),
+                    bairro: formData.get('bairro') || '',
+                })
+            });
+
+            if (!resp.ok) {
+                const err = await resp.json();
+                alert('Erro: ' + JSON.stringify(err));
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined">publish</span> Publicar Anúncio';
+                return;
+            }
+
+            const anuncio = await resp.json();
+
+            // 2. Upload de imagens
+            const fotos = document.getElementById('photos').files;
+            if (fotos.length > 0) {
+                const imgForm = new FormData();
+                imgForm.append('anuncio_id', anuncio.id);
+                Array.from(fotos).forEach(f => imgForm.append('imagens', f));
+                await fetch('/api/v1/anuncios/upload-imagens/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': CSRF_TOKEN },
+                    body: imgForm
+                });
+            }
+
+            // Redirecionar para o anúncio
+            window.location.href = `/anuncios/${anuncio.id}/`;
+
+        } catch (err) {
+            alert('Erro inesperado. Tente novamente.');
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined">publish</span> Publicar Anúncio';
+        }
+    });
+</script>
+{% endblock %}

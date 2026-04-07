@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Meu Perfil{% endblock %}
+
+{% block content %}
+<main class="max-w-4xl mx-auto px-4 py-8 md:py-12 pt-24">
+
+    <!-- Header do perfil -->
+    <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-surface-container-low text-center">
+        <div class="relative inline-block">
+            <div class="w-28 h-28 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center mx-auto overflow-hidden">
+                {% if user.foto_perfil %}
+                    <img src="{{ user.foto_perfil.url }}" class="w-full h-full object-cover" alt="{{ user.username }}"/>
+                {% else %}
+                    <span class="material-symbols-outlined text-5xl text-white">person</span>
+                {% endif %}
+            </div>
+            <label class="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md border border-surface-container-low cursor-pointer">
+                <span class="material-symbols-outlined text-primary text-sm">edit</span>
+                <input type="file" class="hidden" accept="image/*" id="foto-upload" onchange="uploadFoto(this)"/>
+            </label>
+        </div>
+        <h1 class="text-2xl font-bold text-on-surface mt-4">{{ user.get_full_name|default:user.username }}</h1>
+        <p class="text-on-surface-variant">{{ user.email }}</p>
+        <div class="flex justify-center gap-6 mt-4">
+            <div class="text-center">
+                <p class="text-2xl font-bold text-primary">{{ user.total_anuncios }}</p>
+                <p class="text-xs text-on-surface-variant">Anúncios</p>
+            </div>
+            <div class="text-center">
+                <p class="text-2xl font-bold text-primary">{{ user.avaliacao_media|floatformat:1 }}</p>
+                <p class="text-xs text-on-surface-variant">Avaliação</p>
+            </div>
+            <div class="text-center">
+                <p class="text-2xl font-bold text-primary">{{ user.date_joined|date:"Y" }}</p>
+                <p class="text-xs text-on-surface-variant">Membro desde</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulário de edição -->
+    <form id="form-perfil" class="mt-6 bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-surface-container-low space-y-6">
+        {% csrf_token %}
+        <h2 class="text-xl font-bold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">person</span>
+            Informações pessoais
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-sm font-medium text-on-surface mb-2">Nome de utilizador</label>
+                <input type="text" name="username" value="{{ user.username }}"
+                       class="w-full px-4 py-3 rounded-xl border border-surface-container-low focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"/>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-on-surface mb-2">Email</label>
+                <input type="email" value="{{ user.email }}" disabled
+                       class="w-full px-4 py-3 rounded-xl border border-surface-container-low bg-surface-container-low text-on-surface-variant cursor-not-allowed"/>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-on-surface mb-2">Telefone</label>
+                <input type="tel" name="telefone" value="{{ user.telefone }}"
+                       class="w-full px-4 py-3 rounded-xl border border-surface-container-low focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                       placeholder="84 123 4567"/>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-on-surface mb-2">Província</label>
+                <select name="provincia" class="w-full px-4 py-3 rounded-xl border border-surface-container-low focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20">
+                    <option value="">Seleccione...</option>
+                    {% for prov in provincias %}
+                    <option value="{{ prov }}" {% if user.provincia == prov %}selected{% endif %}>{{ prov }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-on-surface mb-2">Cidade</label>
+                <input type="text" name="cidade" value="{{ user.cidade }}"
+                       class="w-full px-4 py-3 rounded-xl border border-surface-container-low focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                       placeholder="Ex: Maputo, Matola..."/>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-4 pt-4">
+            <button type="button" onclick="history.back()"
+                    class="flex-1 py-3 rounded-xl border border-surface-container-low text-on-surface-variant hover:border-error hover:text-error transition-all">
+                Cancelar
+            </button>
+            <button type="submit"
+                    class="flex-1 py-3 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary/90 transition-all">
+                Guardar alterações
+            </button>
+        </div>
+    </form>
+
+    <!-- Alterar password -->
+    <form id="form-password" class="mt-6 bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-surface-container-low space-y-5">
+        {% csrf_token %}
+        <h2 class="text-xl font-bold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">security</span>
+            Alterar senha
+        </h2>
+        <div>
+            <label class="block text-sm font-medium text-on-surface mb-2">Senha actual</label>
+            <input type="password" name="password_actual"
+                   class="w-full px-4 py-3 rounded-xl border border-surface-container-low focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                   placeholder="••••••••"/>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-on-surface mb-2">Nova senha</label>
+            <input type="password" name="password_nova"
+                   class="w-full px-4 py-3 rounded-xl border border-surface-container-low focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                   placeholder="••••••••"/>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-on-surface mb-2">Confirmar nova senha</label>
+            <input type="password" name="password_nova2"
+                   class="w-full px-4 py-3 rounded-xl border border-surface-container-low focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                   placeholder="••••••••"/>
+        </div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary/90 transition-all">
+            Alterar senha
+        </button>
+    </form>
+
+    <!-- Verificação -->
+    <div class="mt-6 bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low">
+        <div class="flex items-start gap-4">
+            <div class="p-3 bg-primary/10 rounded-xl">
+                <span class="material-symbols-outlined text-primary">verified</span>
+            </div>
+            <div class="flex-1">
+                <h3 class="font-bold text-on-surface">Verificação de identidade</h3>
+                <p class="text-sm text-on-surface-variant mt-1">Aumente a confiança dos compradores verificando a sua identidade.</p>
+                <button class="mt-3 text-sm text-primary font-medium hover:underline">Verificar agora →</button>
+            </div>
+            <span class="text-xs {% if user.email_verificado %}bg-primary/10 text-primary{% else %}bg-surface-container-low text-on-surface-variant{% endif %} px-3 py-1 rounded-full">
+                {% if user.email_verificado %}Verificado{% else %}Pendente{% endif %}
+            </span>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('form-perfil').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const data = Object.fromEntries(new FormData(form));
+        const resp = await fetch('/api/v1/auth/perfil/', {
+            method: 'PATCH',
+            headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (resp.ok) {
+            alert('Perfil actualizado com sucesso!');
+        } else {
+            const err = await resp.json();
+            alert('Erro: ' + JSON.stringify(err));
+        }
+    });
+
+    document.getElementById('form-password').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const data = Object.fromEntries(new FormData(form));
+        const resp = await fetch('/api/v1/auth/alterar-password/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (resp.ok) {
+            alert('Senha alterada com sucesso!');
+            form.reset();
+        } else {
+            const err = await resp.json();
+            alert('Erro: ' + JSON.stringify(err));
+        }
+    });
+
+    async function uploadFoto(input) {
+        if (!input.files[0]) return;
+        const formData = new FormData();
+        formData.append('foto_perfil', input.files[0]);
+        const resp = await fetch('/api/v1/auth/perfil/', {
+            method: 'PATCH',
+            headers: { 'X-CSRFToken': CSRF_TOKEN },
+            body: formData
+        });
+        if (resp.ok) location.reload();
+    }
+</script>
+{% endblock %}

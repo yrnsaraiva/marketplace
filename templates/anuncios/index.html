@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Início{% endblock %}
+
+{% block content %}
+<main class="pt-24 pb-32">
+    <!-- Hero Section -->
+    <section class="px-6 py-12 bg-surface-tint">
+        <div class="max-w-3xl mx-auto text-center">
+            <h1 class="font-headline text-2xl md:text-3xl font-extrabold tracking-tight mb-6 text-inverse-on-surface">O que você procura?</h1>
+            <form method="GET" action="{% url 'anuncio-pesquisa' %}"
+                  class="bg-surface-container-lowest p-1.5 rounded-lg md:rounded-full shadow-md flex flex-col md:flex-row items-center gap-1.5 focus-within:ring-2 ring-primary/20 transition-all">
+                <div class="flex items-center px-4 gap-2 w-full border-b md:border-b-0 md:border-r border-outline-variant/30 py-2 md:py-0">
+                    <span class="material-symbols-outlined text-primary text-xl">search</span>
+                    <input class="w-full bg-transparent border-none focus:ring-0 text-on-surface placeholder-on-surface-variant/50 text-sm font-medium"
+                           placeholder="Ex: iPhone 13, Toyota Hilux..." type="text" name="search"/>
+                </div>
+                <div class="flex items-center px-4 gap-2 w-full md:w-82 py-2 md:py-0">
+                    <span class="material-symbols-outlined text-primary text-xl">location_on</span>
+                    <select class="w-full bg-transparent border-none focus:ring-0 text-on-surface text-sm font-medium appearance-none cursor-pointer" name="provincia">
+                        <option value="">Localização</option>
+                        <option>Maputo</option>
+                        <option>Gaza</option>
+                        <option>Inhambane</option>
+                        <option>Sofala</option>
+                        <option>Manica</option>
+                        <option>Tete</option>
+                        <option>Zambézia</option>
+                        <option>Nampula</option>
+                        <option>Niassa</option>
+                        <option>Cabo Delgado</option>
+                    </select>
+                </div>
+                <button class="w-full md:w-auto bg-primary text-on-primary px-6 py-2.5 rounded-full font-bold text-sm transition-all hover:bg-primary-container shadow-md">
+                    Pesquisar
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Categorias -->
+    <section class="px-6 my-20 max-w-7xl mx-auto">
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+            {% for categoria in categorias %}
+            <a href="{% url 'anuncio-pesquisa' %}?categoria={{ categoria.slug }}"
+               class="group bg-surface-container-low p-8 rounded-lg flex flex-col items-center justify-center text-center gap-4 hover:bg-primary/5 transition-colors cursor-pointer">
+                <div class="w-16 h-16 bg-surface-container-lowest rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-3xl text-primary">{{ categoria.icone_url|default:"category" }}</span>
+                </div>
+                <span class="font-bold text-sm">{{ categoria.nome }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Anúncios Destacados -->
+    {% if anuncios_destacados %}
+    <section class="px-6 mb-20 overflow-hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary mb-2 block">Premium</span>
+                    <h2 class="text-3xl font-black tracking-tight">Anúncios Destacados</h2>
+                </div>
+                <a href="{% url 'anuncio-pesquisa' %}" class="text-primary font-bold text-sm hover:underline">Ver todos</a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {% for anuncio in anuncios_destacados %}
+                <a href="{% url 'anuncio-detalhe-view' anuncio.id %}"
+                   class="snap-start bg-surface-container-lowest rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div class="h-56 bg-surface-container-highest relative">
+                        {% if anuncio.imagem_principal %}
+                            <img alt="{{ anuncio.titulo }}" class="w-full h-full object-cover" src="{{ anuncio.imagem_principal }}"/>
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center">
+                                <span class="material-symbols-outlined text-5xl text-outline">image</span>
+                            </div>
+                        {% endif %}
+                        <div class="absolute top-4 left-4 bg-highlights text-on-background px-3 py-1 rounded-full text-[10px] font-bold uppercase flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">star</span>
+                            Destaque
+                        </div>
+                        <button class="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white favorito-btn"
+                                data-id="{{ anuncio.id }}">
+                            <span class="material-symbols-outlined">favorite</span>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <span class="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-1 block">{{ anuncio.categoria_nome }}</span>
+                        <h4 class="font-bold text-sm mb-2 line-clamp-1">{{ anuncio.titulo }}</h4>
+                        <p class="text-primary font-black">{{ anuncio.preco|floatformat:0 }} MT</p>
+                        <p class="text-[11px] text-on-surface-variant mt-2 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">location_on</span>
+                            {{ anuncio.cidade }}, {{ anuncio.provincia }}
+                        </p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Banner de Segurança -->
+    <section class="px-6 mb-20 max-w-7xl mx-auto">
+        <div class="bg-primary/5 rounded-xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border border-primary/10">
+            <div class="max-w-xl">
+                <h2 class="text-3xl font-black tracking-tight mb-4">Compre com confiança</h2>
+                <p class="text-on-surface-variant leading-relaxed text-lg mb-6">A segurança é a nossa prioridade. Siga as nossas dicas para transações seguras em Moçambique.</p>
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex items-center gap-2 text-sm font-bold text-primary">
+                        <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+                        Encontro em locais públicos
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-bold text-primary">
+                        <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">security</span>
+                        Verifique antes de pagar
+                    </div>
+                </div>
+            </div>
+            <button class="bg-surface-container-lowest text-primary border-2 border-primary px-8 py-4 rounded-full font-bold hover:bg-primary hover:text-on-primary transition-all shadow-sm">
+                Ler guia de segurança
+            </button>
+        </div>
+    </section>
+
+    <!-- Anúncios Recentes -->
+    <section class="px-6 max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-black tracking-tight">Anúncios Recentes</h2>
+            <a class="text-primary font-bold text-sm hover:underline" href="{% url 'anuncio-pesquisa' %}">Ver todos</a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for anuncio in anuncios_recentes %}
+            <a href="{% url 'anuncio-detalhe-view' anuncio.id %}"
+               class="bg-surface-container-lowest rounded-lg overflow-hidden group cursor-pointer hover:shadow-md transition-shadow">
+                <div class="aspect-square bg-surface-container-low overflow-hidden">
+                    {% if anuncio.imagem_principal %}
+                        <img alt="{{ anuncio.titulo }}"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                             src="{{ anuncio.imagem_principal }}"/>
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center">
+                            <span class="material-symbols-outlined text-5xl text-outline">image</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="p-4">
+                    <span class="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-1 block">{{ anuncio.categoria_nome }}</span>
+                    <h4 class="font-bold text-sm mb-2 line-clamp-1">{{ anuncio.titulo }}</h4>
+                    <p class="text-primary font-black">{{ anuncio.preco|floatformat:0 }} MT</p>
+                    <p class="text-[11px] text-on-surface-variant mt-2 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px]">location_on</span>
+                        {{ anuncio.cidade }}
+                    </p>
+                </div>
+            </a>
+            {% empty %}
+            <div class="col-span-4 text-center py-20 text-on-surface-variant">
+                <span class="material-symbols-outlined text-5xl">inbox</span>
+                <p class="mt-4 font-medium">Ainda não há anúncios publicados.</p>
+                <a href="{% url 'anuncio-publicar' %}" class="mt-4 inline-block bg-primary text-on-primary px-6 py-2 rounded-full font-semibold">
+                    Publicar o primeiro anúncio
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.querySelectorAll('.favorito-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const id = btn.dataset.id;
+            const resp = await fetch(`/api/v1/anuncios/${id}/favorito/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' }
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                const icon = btn.querySelector('.material-symbols-outlined');
+                icon.style.fontVariationSettings = data.favorito ? "'FILL' 1" : "'FILL' 0";
+            }
+        });
+    });
+</script>
+{% endblock %}
