@@ -8,6 +8,10 @@ urlpatterns = [
     path('api/v1/auth/', include('apps.users.urls')),
     path('api/v1/categorias/', include('apps.categorias.urls')),
     path('api/v1/anuncios/', include('apps.anuncios.urls')),
+
+    # Templates (frontend)
+    path('', include('apps.anuncios.frontend_urls')),
+    path('conta/', include('apps.users.frontend_urls')),
 ]
 
 if settings.DEBUG:
