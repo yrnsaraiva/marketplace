@@ -2,20 +2,31 @@
 
 {% block area_content %}
 
-<!-- Meus Anúncios (últimos 5) -->
 <section>
     <div class="flex items-center justify-between mb-5">
         <h2 class="text-xl font-bold text-on-surface flex items-center gap-2">
             <span class="material-symbols-outlined text-primary">inventory_2</span>
-            Meus Anúncios
+            Todos os Anúncios
         </h2>
-        <a href="{% url 'meus-anuncios' %}" class="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
-            Ver todos <span class="material-symbols-outlined text-sm">chevron_right</span>
+        <a href="{% url 'anuncio-publicar' %}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:bg-primary/90 transition-all">
+            <span class="material-symbols-outlined text-sm">add</span>
+            Novo anúncio
         </a>
     </div>
 
+    <!-- Filtro rápido por estado -->
+    <div class="flex gap-2 flex-wrap mb-5">
+        {% for label, value in estado_filtros %}
+        <a href="?estado={{ value }}"
+           class="px-3 py-1.5 rounded-full text-xs font-medium transition-all border
+                  {% if estado_actual == value %}bg-primary text-on-primary border-primary{% else %}bg-white text-on-surface-variant border-surface-container-low hover:border-primary hover:text-primary{% endif %}">
+            {{ label }}
+        </a>
+        {% endfor %}
+    </div>
+
     <div class="space-y-4">
-        {% for anuncio in meus_anuncios %}
+        {% for anuncio in page_obj %}
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-surface-container-low hover:shadow-md transition-all">
             <div class="flex gap-4">
                 <div class="w-24 h-24 flex-shrink-0 bg-surface-container-low rounded-xl overflow-hidden">
@@ -36,6 +47,7 @@
                                     {% if anuncio.estado == 'activo' %}text-green-600
                                     {% elif anuncio.estado == 'expirado' %}text-red-500
                                     {% elif anuncio.estado == 'pendente_pagamento' %}text-amber-500
+                                    {% elif anuncio.estado == 'pausado' %}text-blue-500
                                     {% else %}text-on-surface-variant{% endif %}">
                                     ● {{ anuncio.get_estado_display }}
                                 </span>
@@ -70,53 +82,32 @@
         {% empty %}
         <div class="text-center py-16 text-on-surface-variant bg-white rounded-2xl border border-surface-container-low">
             <span class="material-symbols-outlined text-5xl text-outline">inventory_2</span>
-            <p class="mt-4 font-medium">Ainda não publicou nenhum anúncio.</p>
-            <p class="text-sm mt-1">Crie o seu primeiro anúncio agora.</p>
+            <p class="mt-4 font-medium">Nenhum anúncio encontrado.</p>
         </div>
         {% endfor %}
     </div>
 
-    <a href="{% url 'anuncio-publicar' %}" class="w-full mt-4 py-3 rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant font-medium hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined">add</span>
-        Criar novo anúncio
-    </a>
-</section>
-
-<!-- Favoritos (últimos 4) -->
-{% if favoritos %}
-<section>
-    <div class="flex items-center justify-between mb-5">
-        <h2 class="text-xl font-bold text-on-surface flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">favorite</span>
-            Favoritos
-        </h2>
-        <a href="{% url 'favoritos' %}" class="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
-            Ver todos <span class="material-symbols-outlined text-sm">chevron_right</span>
+    <!-- Paginação -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center items-center gap-2 mt-8">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}"
+           class="px-4 py-2 rounded-xl border border-surface-container-low text-sm hover:border-primary hover:text-primary transition-all">
+            ← Anterior
         </a>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {% for fav in favoritos %}
-        <a href="{% url 'anuncio-detalhe-view' fav.anuncio.id %}"
-           class="bg-white rounded-2xl p-4 shadow-sm border border-surface-container-low hover:shadow-md transition-all flex gap-3">
-            <div class="w-16 h-16 flex-shrink-0 bg-surface-container-low rounded-lg overflow-hidden">
-                {% if fav.anuncio.imagem_principal %}
-                    <img class="w-full h-full object-cover" src="{{ fav.anuncio.imagem_principal }}" alt="{{ fav.anuncio.titulo }}"/>
-                {% else %}
-                    <div class="w-full h-full flex items-center justify-center">
-                        <span class="material-symbols-outlined text-outline text-sm">image</span>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="flex-1 min-w-0">
-                <h3 class="font-semibold text-on-surface text-sm line-clamp-2">{{ fav.anuncio.titulo }}</h3>
-                <p class="text-primary font-bold text-sm mt-1">{{ fav.anuncio.preco|floatformat:0 }} MT</p>
-                <p class="text-xs text-on-surface-variant mt-1">{{ fav.anuncio.cidade }}</p>
-            </div>
+        {% endif %}
+        <span class="text-sm text-on-surface-variant">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}"
+           class="px-4 py-2 rounded-xl border border-surface-container-low text-sm hover:border-primary hover:text-primary transition-all">
+            Seguinte →
         </a>
-        {% endfor %}
+        {% endif %}
     </div>
+    {% endif %}
 </section>
-{% endif %}
 
 {% endblock %}
 

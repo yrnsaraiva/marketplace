@@ -2,12 +2,13 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 from apps.users.models import User
-from apps.categorias.models import Categoria, AtributoCategoria
+from apps.categorias.models import *
+from apps.pagamentos.models import *
 
 
-def expiracao_padrao():
-    return timezone.now() + timedelta(days=30)
-
+# ---------------------------------------------------------------------------
+# ANÚNCIO
+# ---------------------------------------------------------------------------
 
 class Anuncio(models.Model):
     CONDICAO_CHOICES = [
@@ -17,6 +18,7 @@ class Anuncio(models.Model):
     ]
     ESTADO_CHOICES = [
         ('rascunho', 'Rascunho'),
+        ('pendente_pagamento', 'Pendente de Pagamento'),
         ('activo', 'Activo'),
         ('pausado', 'Pausado'),
         ('vendido', 'Vendido'),
@@ -25,24 +27,30 @@ class Anuncio(models.Model):
         ('rejeitado', 'Rejeitado'),
     ]
 
-    utilizador = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='anuncios'
+    utilizador = models.ForeignKey(User, on_delete=models.CASCADE, related_name='anuncios')
+    categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT, related_name='anuncios')
+
+    # Subscrição que originou este anúncio (auditoria + controlo de imagens)
+    subscricao = models.ForeignKey(
+        SubscricaoUtilizador,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='anuncios_publicados',
+        help_text='Subscrição/plano que foi consumido para publicar este anúncio'
     )
-    categoria = models.ForeignKey(
-        Categoria, on_delete=models.PROTECT, related_name='anuncios'
-    )
+
     titulo = models.CharField(max_length=100)
     descricao = models.TextField(max_length=2000)
     preco = models.DecimalField(max_digits=12, decimal_places=2)
     preco_negociavel = models.BooleanField(default=False)
     condicao = models.CharField(
-        max_length=20, choices=CONDICAO_CHOICES, default='usado'
+        max_length=20, choices=CONDICAO_CHOICES, default='novo'
     )
     provincia = models.CharField(max_length=50)
     cidade = models.CharField(max_length=50)
     bairro = models.CharField(max_length=100, blank=True)
     estado = models.CharField(
-        max_length=20, choices=ESTADO_CHOICES, default='activo'
+        max_length=30, choices=ESTADO_CHOICES, default='pendente_pagamento'
     )
     motivo_rejeicao = models.TextField(blank=True)
     visualizacoes = models.PositiveIntegerField(default=0)
@@ -50,8 +58,8 @@ class Anuncio(models.Model):
     auto_renovar = models.BooleanField(default=False)
     criado_em = models.DateTimeField(auto_now_add=True)
     actualizado_em = models.DateTimeField(auto_now=True)
-    expira_em = models.DateTimeField(default=expiracao_padrao)
-    publicado_em = models.DateTimeField(auto_now_add=True)
+    expira_em = models.DateTimeField(null=True, blank=True)
+    publicado_em = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = 'Anúncio'
@@ -65,6 +73,27 @@ class Anuncio(models.Model):
         self.visualizacoes += 1
         self.save(update_fields=['visualizacoes'])
 
+    def activar(self, duracao_dias=30):
+        """
+        Activa o anúncio após pagamento confirmado.
+        Chamado pelo serviço de publicação depois de consumir o crédito.
+        """
+        self.estado = 'activo'
+        self.publicado_em = timezone.now()
+        self.expira_em = self.publicado_em + timedelta(days=duracao_dias)
+        self.save(update_fields=['estado', 'publicado_em', 'expira_em', 'actualizado_em'])
+
+    @property
+    def max_imagens_permitidas(self):
+        """Devolve o limite de imagens com base no plano da subscrição."""
+        if self.subscricao and self.subscricao.plano:
+            return self.subscricao.plano.max_imagens
+        return 6  # fallback seguro
+
+
+# ---------------------------------------------------------------------------
+# IMAGEM DO ANÚNCIO
+# ---------------------------------------------------------------------------
 
 class ImagemAnuncio(models.Model):
     anuncio = models.ForeignKey(
@@ -91,6 +120,10 @@ class ImagemAnuncio(models.Model):
         return f'Imagem {self.ordem} — {self.anuncio.titulo}'
 
 
+# ---------------------------------------------------------------------------
+# ATRIBUTOS DO ANÚNCIO
+# ---------------------------------------------------------------------------
+
 class AtributoAnuncio(models.Model):
     anuncio = models.ForeignKey(
         Anuncio, on_delete=models.CASCADE, related_name='atributos'
@@ -107,6 +140,10 @@ class AtributoAnuncio(models.Model):
     def __str__(self):
         return f'{self.atributo.nome}: {self.valor}'
 
+
+# ---------------------------------------------------------------------------
+# FAVORITOS
+# ---------------------------------------------------------------------------
 
 class Favorito(models.Model):
     utilizador = models.ForeignKey(

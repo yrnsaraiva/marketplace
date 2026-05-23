@@ -174,3 +174,7 @@ def perfil_view(request):
     return render(request, 'users/perfil.html', {
         'provincias': PROVINCIAS,
     })
+
+
+def registo_view(request):
+    return render(request, 'users/signup.html')

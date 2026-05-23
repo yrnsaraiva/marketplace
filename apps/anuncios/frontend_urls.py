@@ -7,5 +7,10 @@ urlpatterns = [
     path('anuncios/<int:pk>/', views.anuncio_detalhe_view, name='anuncio-detalhe-view'),
     path('anuncios/publicar/', views.anuncio_publicar_view, name='anuncio-publicar'),
     path('anuncios/<int:pk>/editar/', views.anuncio_editar_view, name='anuncio-editar-view'),
-    path('anuncios/meus/', views.meus_anuncios_view, name='meus-anuncios'),
+
+    # Dashboard e área do utilizador
+    path('dashboard/', views.dashboard_view, name='dashboard'),           # ← novo
+    path('dashboard/anuncios/', views.meus_anuncios_view, name='meus-anuncios'),
+    path('dashboard/favoritos/', views.favoritos_view, name='favoritos'), # ← novo
+    path('dashboard/perfil/', views.perfil_view, name='perfil'),          # ← novo
 ]

@@ -1,0 +1,77 @@
+{% extends "users/area_utilizador.html" %}
+
+{% block area_content %}
+
+<section>
+    <div class="flex items-center justify-between mb-5">
+        <h2 class="text-xl font-bold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">favorite</span>
+            Os meus favoritos
+        </h2>
+        <span class="text-sm text-on-surface-variant">{{ favoritos|length }} anúncio{{ favoritos|length|pluralize:"s" }}</span>
+    </div>
+
+    {% if favoritos %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for fav in favoritos %}
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-surface-container-low hover:shadow-md transition-all group">
+            <a href="{% url 'anuncio-detalhe-view' fav.anuncio.id %}" class="flex gap-4">
+                <div class="w-20 h-20 flex-shrink-0 bg-surface-container-low rounded-xl overflow-hidden">
+                    {% if fav.anuncio.imagem_principal %}
+                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                             src="{{ fav.anuncio.imagem_principal }}" alt="{{ fav.anuncio.titulo }}"/>
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center">
+                            <span class="material-symbols-outlined text-outline">image</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <span class="text-xs font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">{{ fav.anuncio.categoria_nome }}</span>
+                    <h3 class="font-semibold text-on-surface text-sm line-clamp-2 mt-1 group-hover:text-primary transition-colors">{{ fav.anuncio.titulo }}</h3>
+                    <p class="text-primary font-bold mt-1">{{ fav.anuncio.preco|floatformat:0 }} MT</p>
+                    <p class="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs">location_on</span>
+                        {{ fav.anuncio.cidade }}
+                    </p>
+                </div>
+            </a>
+            <!-- Botão remover favorito -->
+            <div class="mt-3 pt-3 border-t border-surface-container-low flex justify-end">
+                <button onclick="removerFavorito({{ fav.anuncio.id }}, this)"
+                        class="flex items-center gap-1 text-xs text-on-surface-variant hover:text-error transition-colors">
+                    <span class="material-symbols-outlined text-sm">heart_minus</span>
+                    Remover
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20 text-on-surface-variant bg-white rounded-2xl border border-surface-container-low">
+        <span class="material-symbols-outlined text-5xl text-outline">favorite</span>
+        <p class="mt-4 font-medium">Ainda não tem favoritos guardados.</p>
+        <p class="text-sm mt-1">Explore anúncios e guarde os que mais gostar.</p>
+        <a href="{% url 'anuncio-pesquisa' %}" class="mt-4 inline-block px-5 py-2 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:bg-primary/90 transition-all">
+            Explorar anúncios
+        </a>
+    </div>
+    {% endif %}
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function removerFavorito(id, btn) {
+    const resp = await fetch(`/api/v1/anuncios/${id}/favorito/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF_TOKEN }
+    });
+    if (resp.ok) {
+        // Remove o card do favorito da UI sem recarregar
+        btn.closest('.bg-white.rounded-2xl').remove();
+    }
+}
+</script>
+{% endblock %}

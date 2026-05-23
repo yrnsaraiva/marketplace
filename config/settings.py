@@ -1,6 +1,7 @@
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,6 +33,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
+
     # Apps de terceiros
     'rest_framework',
     'django_filters',
@@ -96,6 +99,22 @@ TEMPLATES = [
     },
 ]
 
+
+CELERY_BEAT_SCHEDULE = {
+    'expirar-subscricoes': {
+        'task': 'apps.pagamentos.tasks.expirar_subscricoes',
+        'schedule': crontab(hour=0, minute=0),
+    },
+    'expirar-anuncios': {
+        'task': 'apps.pagamentos.tasks.expirar_anuncios',
+        'schedule': crontab(hour=1, minute=0),
+    },
+    'expirar-destaques': {
+        'task': 'apps.pagamentos.tasks.expirar_destaques',
+        'schedule': crontab(hour=2, minute=0),
+    },
+}
+
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
@@ -132,13 +151,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'pt-pt'
+LANGUAGE_CODE = 'pt'
 
 TIME_ZONE = 'Africa/Maputo'
 
 USE_I18N = True
 
 USE_TZ = True
+
+USE_THOUSAND_SEPARATOR = True
 
 
 AUTH_USER_MODEL = 'users.User'
