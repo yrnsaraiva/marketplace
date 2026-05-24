@@ -5,9 +5,12 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # API
     path('api/v1/auth/', include('apps.users.urls')),
     path('api/v1/categorias/', include('apps.categorias.urls')),
     path('api/v1/anuncios/', include('apps.anuncios.urls')),
+    path('api/v1/pagamentos/', include('apps.pagamentos.urls')),
 
     # Templates (frontend)
     path('', include('apps.anuncios.frontend_urls')),
@@ -16,3 +19,6 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+

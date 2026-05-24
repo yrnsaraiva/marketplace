@@ -1,20 +1,27 @@
-from rest_framework import generics, status, filters
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.parsers import MultiPartParser, FormParser
-from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404, render, redirect
-from django.core.paginator import Paginator
+import json
+import logging
+
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q, Sum
+from django.shortcuts import get_object_or_404, render
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, status
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import Anuncio, ImagemAnuncio, Favorito
-from .serializers import (
-    AnuncioListSerializer, AnuncioDetalheSerializer,
-    AnuncioCriarSerializer, UploadImagensSerializer, FavoritoSerializer
-)
 from .filters import AnuncioFilter
+from .models import Anuncio, Favorito, ImagemAnuncio
+from .serializers import (
+    AnuncioCriarSerializer,
+    AnuncioDetalheSerializer,
+    AnuncioListSerializer,
+    FavoritoSerializer,
+)
 
+logger = logging.getLogger(__name__)
 
 PROVINCIAS = [
     'Maputo', 'Gaza', 'Inhambane', 'Sofala',
@@ -24,11 +31,16 @@ PROVINCIAS = [
 
 
 # ─────────────────────────────────────────────────────────────
-# HELPER: serializar anúncio para dicionário (usado em múltiplas views)
+# HELPERS PRIVADOS
 # ─────────────────────────────────────────────────────────────
 
+# ---------------------------------------------------------------------------
+# Helpers privados
+# ---------------------------------------------------------------------------
 def _anuncio_para_dict(anuncio, request):
-    item = {
+    """Serializa um anúncio para dicionário simples (usado nos templates)."""
+    img = anuncio.imagens.filter(principal=True).first() or anuncio.imagens.first()
+    return {
         'id': anuncio.id,
         'titulo': anuncio.titulo,
         'preco': anuncio.preco,
@@ -40,18 +52,80 @@ def _anuncio_para_dict(anuncio, request):
         'provincia': anuncio.provincia,
         'cidade': anuncio.cidade,
         'condicao': anuncio.condicao,
-        'imagem_principal': None,
+        'imagem_principal': request.build_absolute_uri(img.imagem.url) if img else None,
     }
-    img = anuncio.imagens.filter(principal=True).first() or anuncio.imagens.first()
-    if img:
-        item['imagem_principal'] = request.build_absolute_uri(img.imagem.url)
-    return item
 
 
-# ─────────────────────────────────────────────────────────────
-# API VIEWS
-# ─────────────────────────────────────────────────────────────
+def _get_subscricao_activa(user):
+    """Devolve a subscrição activa mais antiga (FIFO) ou None."""
+    from django.utils import timezone
+    from apps.pagamentos.models import SubscricaoUtilizador
+    return (
+        SubscricaoUtilizador.objects
+        .filter(utilizador=user, estado='activa', expira_em__gt=timezone.now())
+        .select_related('plano')
+        .order_by('expira_em')
+        .first()
+    )
 
+
+def _sidebar_context(user):
+    """Dados comuns a todas as páginas da área do utilizador."""
+    total_anuncios = (
+        Anuncio.objects.filter(utilizador=user)
+        .exclude(estado='eliminado')
+        .count()
+    )
+    total_visualizacoes = (
+        Anuncio.objects.filter(utilizador=user)
+        .exclude(estado='eliminado')
+        .aggregate(total=Sum('visualizacoes'))['total'] or 0
+    )
+    total_favoritos = Favorito.objects.filter(utilizador=user).count()
+    return {
+        'total_anuncios': total_anuncios,
+        'total_visualizacoes': total_visualizacoes,
+        'total_favoritos': total_favoritos,
+        'subscricao_activa': _get_subscricao_activa(user),
+    }
+
+
+def _favoritos_lista(user, request, limite=None):
+    """Devolve lista de favoritos serializada para o template."""
+    qs = (
+        Favorito.objects
+        .filter(utilizador=user)
+        .select_related('anuncio__categoria')
+        .prefetch_related('anuncio__imagens')
+        .order_by('-criado_em')
+    )
+    if limite:
+        qs = qs[:limite]
+
+    resultado = []
+    for fav in qs:
+        img = (
+            fav.anuncio.imagens.filter(principal=True).first()
+            or fav.anuncio.imagens.first()
+        )
+        resultado.append({
+            'anuncio': {
+                'id': fav.anuncio.id,
+                'titulo': fav.anuncio.titulo,
+                'preco': fav.anuncio.preco,
+                'cidade': fav.anuncio.cidade,
+                'categoria_nome': fav.anuncio.categoria.nome,
+                'imagem_principal': (
+                    request.build_absolute_uri(img.imagem.url) if img else None
+                ),
+            }
+        })
+    return resultado
+
+
+# ---------------------------------------------------------------------------
+# API - Anúncios
+# ---------------------------------------------------------------------------
 class AnuncioListView(generics.ListAPIView):
     serializer_class = AnuncioListSerializer
     permission_classes = [AllowAny]
@@ -62,9 +136,12 @@ class AnuncioListView(generics.ListAPIView):
     ordering = ['-publicado_em']
 
     def get_queryset(self):
-        return Anuncio.objects.filter(
-            estado='activo'
-        ).select_related('categoria', 'utilizador').prefetch_related('imagens')
+        return (
+            Anuncio.objects
+            .filter(estado='activo')
+            .select_related('categoria', 'utilizador')
+            .prefetch_related('imagens')
+        )
 
 
 class AnuncioDetalheView(generics.RetrieveAPIView):
@@ -72,9 +149,12 @@ class AnuncioDetalheView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Anuncio.objects.filter(
-            estado='activo'
-        ).select_related('categoria', 'utilizador').prefetch_related('imagens', 'atributos')
+        return (
+            Anuncio.objects
+            .filter(estado='activo')
+            .select_related('categoria', 'utilizador')
+            .prefetch_related('imagens', 'atributos__atributo')
+        )
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -84,15 +164,12 @@ class AnuncioDetalheView(generics.RetrieveAPIView):
 
 
 class AnuncioCriarView(generics.CreateAPIView):
+    """
+    Cria um anúncio, valida subscrição activa, grava atributos
+    e opcionalmente aplica destaque avulso - tudo num só endpoint.
+    """
     serializer_class = AnuncioCriarSerializer
     permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        user = self.request.user
-        anuncio = serializer.save()
-        user.total_anuncios += 1
-        user.save(update_fields=['total_anuncios'])
-        return anuncio
 
 
 class AnuncioEditarView(generics.RetrieveUpdateDestroyAPIView):
@@ -105,17 +182,24 @@ class AnuncioEditarView(generics.RetrieveUpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.estado = 'eliminado'
-        instance.save(update_fields=['estado'])
+        instance.save(update_fields=['estado', 'actualizado_em'])
+
+        # Actualizar contador
         user = request.user
         user.total_anuncios = max(0, user.total_anuncios - 1)
         user.save(update_fields=['total_anuncios'])
+
         return Response(
             {'mensagem': 'Anúncio eliminado com sucesso.'},
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
 
 class UploadImagensView(APIView):
+    """
+    Upload de imagens para um anúncio existente.
+    Respeita o limite de imagens definido pelo plano de subscrição.
+    """
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
@@ -123,23 +207,31 @@ class UploadImagensView(APIView):
         anuncio_id = request.data.get('anuncio_id')
         imagens = request.FILES.getlist('imagens')
 
+        if not anuncio_id:
+            return Response(
+                {'erro': 'anuncio_id é obrigatório.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         anuncio = get_object_or_404(Anuncio, pk=anuncio_id, utilizador=request.user)
 
-        # Respeita o limite de imagens do plano em vez de hardcoded 10
         limite = anuncio.max_imagens_permitidas
-        if anuncio.imagens.count() + len(imagens) > limite:
+        existentes = anuncio.imagens.count()
+
+        if existentes + len(imagens) > limite:
             return Response(
-                {'erro': f'Máximo de {limite} imagens permitidas pelo seu plano.'},
-                status=status.HTTP_400_BAD_REQUEST
+                {'erro': f'O seu plano permite no máximo {limite} imagens. '
+                         f'Já tem {existentes} carregadas.'},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         urls = []
         for i, imagem in enumerate(imagens):
-            is_principal = (anuncio.imagens.count() == 0 and i == 0)
+            is_principal = (existentes == 0 and i == 0)
             img = ImagemAnuncio.objects.create(
                 anuncio=anuncio,
                 imagem=imagem,
-                ordem=anuncio.imagens.count() + i,
+                ordem=existentes + i,
                 principal=is_principal
             )
             urls.append(request.build_absolute_uri(img.imagem.url))
@@ -181,15 +273,15 @@ class MeusFavoritosView(generics.ListAPIView):
         ).select_related('anuncio').prefetch_related('anuncio__imagens')
 
 
-# ─────────────────────────────────────────────────────────────
-# FRONTEND VIEWS
-# ─────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Views de template (frontend)
+# ---------------------------------------------------------------------------
 
 def home_view(request):
     from apps.pagamentos.models import DestaqueAnuncio
     from apps.categorias.models import Categoria
 
-    categorias = Categoria.objects.filter(activa=True, pai__isnull=True)
+    categorias = Categoria.objects.filter(activa=True, pai__isnull=True).order_by('ordem')
 
     destacados_ids = DestaqueAnuncio.objects.filter(
         activo=True
@@ -223,30 +315,41 @@ def pesquisa_view(request):
         estado='activo'
     ).select_related('categoria').prefetch_related('imagens')
 
-    search = request.GET.get('search', '')
-    categoria_slug = request.GET.get('categoria', '')
-    provincia = request.GET.get('provincia', '')
-    preco_min = request.GET.get('preco_min', '')
-    preco_max = request.GET.get('preco_max', '')
-    condicao = request.GET.get('condicao', '')
+    search = request.GET.get('search', '').strip()
+    categoria_slug = request.GET.get('categoria', '').strip()
+    provincia = request.GET.get('provincia', '').strip()
+    preco_min = request.GET.get('preco_min', '').strip()
+    preco_max = request.GET.get('preco_max', '').strip()
+    condicao = request.GET.get('condicao', '').strip()
     ordering = request.GET.get('ordering', '-publicado_em')
 
     if search:
-        queryset = queryset.filter(titulo__icontains=search) | queryset.filter(descricao__icontains=search)
+        queryset = queryset.filter(
+            Q(titulo__icontains=search) | Q(descricao__icontains=search)
+        )
     if categoria_slug:
-        queryset = queryset.filter(categoria__slug=categoria_slug)
+        queryset = queryset.filter(
+            Q(categoria__slug=categoria_slug) | Q(categoria__pai__slug=categoria_slug)
+        )
     if provincia:
         queryset = queryset.filter(provincia__iexact=provincia)
     if preco_min:
-        queryset = queryset.filter(preco__gte=preco_min)
+        try:
+            queryset = queryset.filter(preco__gte=float(preco_min))
+        except ValueError:
+            pass
     if preco_max:
-        queryset = queryset.filter(preco__lte=preco_max)
+        try:
+            queryset = queryset.filter(preco__lte=float(preco_max))
+        except ValueError:
+            pass
     if condicao:
         queryset = queryset.filter(condicao=condicao)
 
     ordering_validos = ['publicado_em', '-publicado_em', 'preco', '-preco', '-visualizacoes']
-    if ordering in ordering_validos:
-        queryset = queryset.order_by(ordering)
+    if ordering not in ordering_validos:
+        ordering = '-publicado_em'
+    queryset = queryset.order_by(ordering)
 
     paginator = Paginator(queryset, 12)
     page_obj = paginator.get_page(request.GET.get('page', 1))
@@ -254,9 +357,15 @@ def pesquisa_view(request):
 
     return render(request, 'anuncios/pesquisa.html', {
         'page_obj': page_obj,
-        'categorias': Categoria.objects.filter(activa=True, pai__isnull=True),
-        'categorias_selecionadas': request.GET.getlist('categoria'),
+        'categorias': Categoria.objects.filter(activa=True, pai__isnull=True).order_by('ordem'),
         'provincias': PROVINCIAS,
+        'search': search,
+        'categoria_slug': categoria_slug,
+        'provincia': provincia,
+        'preco_min': preco_min,
+        'preco_max': preco_max,
+        'condicao': condicao,
+        'ordering': ordering,
     })
 
 
@@ -283,90 +392,86 @@ def anuncio_detalhe_view(request, pk):
 
 @login_required
 def anuncio_publicar_view(request):
-    from apps.categorias.models import Categoria
+    from apps.categorias.models import Categoria, AtributoCategoria
     from apps.pagamentos.models import PlanoDestaque
 
+    categorias_pai = Categoria.objects.filter(activa=True, nivel=0).order_by('ordem')
+    categorias_filho = Categoria.objects.filter(activa=True, nivel=1).order_by('ordem')
+
+    # Construir dicionário {categoria_id: [atributos]} para JS
+    atributos_por_categoria = {}
+    for attr in AtributoCategoria.objects.filter(
+            categoria__in=categorias_filho
+    ).select_related('categoria'):
+        cat_id = attr.categoria_id
+        if cat_id not in atributos_por_categoria:
+            atributos_por_categoria[cat_id] = []
+        atributos_por_categoria[cat_id].append({
+            'id': attr.id,
+            'nome': attr.nome,
+            'chave': attr.chave,
+            'tipo': attr.tipo,
+            'opcoes': attr.opcoes,
+            'obrigatorio': attr.obrigatorio,
+        })
+
+    subscricao = _get_subscricao_activa(request.user)
+
     return render(request, 'anuncios/publicar.html', {
-        'categorias': Categoria.objects.filter(activa=True, pai__isnull=True),
-        'planos': PlanoDestaque.objects.filter(activo=True),
+        'categorias_pai': categorias_pai,
+        'categorias_filho': categorias_filho,
+        'atributos_json': json.dumps(atributos_por_categoria),
+        'subcategorias_json': json.dumps([
+            {'id': c.id, 'nome': c.nome, 'pai_id': c.pai_id}
+            for c in categorias_filho
+        ]),
+        'planos_destaque': PlanoDestaque.objects.filter(activo=True).order_by('ordem'),
+        'subscricao': subscricao,
     })
 
 
 @login_required
 def anuncio_editar_view(request, pk):
-    from apps.categorias.models import Categoria
+    from apps.categorias.models import Categoria, AtributoCategoria
+    import json
 
     anuncio = get_object_or_404(Anuncio, pk=pk, utilizador=request.user)
+    categorias_pai = Categoria.objects.filter(activa=True, nivel=0).order_by('ordem')
+    categorias_filho = Categoria.objects.filter(activa=True, nivel=1).order_by('ordem')
+
+    atributos_por_categoria = {}
+    for attr in AtributoCategoria.objects.filter(
+        categoria__in=categorias_filho
+    ).select_related('categoria'):
+        cat_id = attr.categoria_id
+        if cat_id not in atributos_por_categoria:
+            atributos_por_categoria[cat_id] = []
+        atributos_por_categoria[cat_id].append({
+            'id': attr.id,
+            'nome': attr.nome,
+            'chave': attr.chave,
+            'tipo': attr.tipo,
+            'opcoes': attr.opcoes,
+            'obrigatorio': attr.obrigatorio,
+        })
+
     return render(request, 'anuncios/publicar.html', {
         'anuncio': anuncio,
-        'categorias': Categoria.objects.filter(activa=True, pai__isnull=True),
-        'planos': [],
+        'categorias_pai': categorias_pai,
+        'categorias_filho': categorias_filho,
+        'atributos_json': json.dumps(atributos_por_categoria),
+        'subcategorias_json': json.dumps([
+            {'id': c.id, 'nome': c.nome, 'pai_id': c.pai_id}
+            for c in categorias_filho
+        ]),
+        'planos_destaque': [],
+        'subscricao': _get_subscricao_activa(request.user),
     })
 
-# ─────────────────────────────────────────────────────────────
-# HELPERS ÁREA DO UTILIZADOR
-# ─────────────────────────────────────────────────────────────
 
-def _get_subscricao_activa(user):
-    from django.utils import timezone
-    from apps.pagamentos.models import SubscricaoUtilizador
-    return SubscricaoUtilizador.objects.filter(
-        utilizador=user,
-        estado='activa',
-        expira_em__gt=timezone.now(),
-    ).select_related('plano').order_by('expira_em').first()
-
-
-def _sidebar_context(user):
-    """Dados comuns a todas as páginas da área do utilizador."""
-    from django.db.models import Sum
-
-    total_anuncios = Anuncio.objects.filter(
-        utilizador=user
-    ).exclude(estado='eliminado').count()
-
-    total_visualizacoes = Anuncio.objects.filter(
-        utilizador=user
-    ).exclude(estado='eliminado').aggregate(
-        total=Sum('visualizacoes')
-    )['total'] or 0
-
-    total_favoritos = Favorito.objects.filter(utilizador=user).count()
-
-    return {
-        'total_anuncios': total_anuncios,
-        'total_visualizacoes': total_visualizacoes,
-        'total_favoritos': total_favoritos,
-        'subscricao_activa': _get_subscricao_activa(user),
-    }
-
-
-def _favoritos_lista(user, request, limite=None):
-    """Devolve lista de favoritos serializada para o template."""
-    qs = Favorito.objects.filter(
-        utilizador=user
-    ).select_related('anuncio__categoria').prefetch_related('anuncio__imagens').order_by('-criado_em')
-
-    if limite:
-        qs = qs[:limite]
-
-    resultado = []
-    for fav in qs:
-        img = fav.anuncio.imagens.filter(principal=True).first() or fav.anuncio.imagens.first()
-        resultado.append({'anuncio': {
-            'id': fav.anuncio.id,
-            'titulo': fav.anuncio.titulo,
-            'preco': fav.anuncio.preco,
-            'cidade': fav.anuncio.cidade,
-            'categoria_nome': fav.anuncio.categoria.nome,
-            'imagem_principal': request.build_absolute_uri(img.imagem.url) if img else None,
-        }})
-    return resultado
-
-
-# ─────────────────────────────────────────────────────────────
-# VIEWS DA ÁREA DO UTILIZADOR
-# ─────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Área do utilizador
+# ---------------------------------------------------------------------------
 
 @login_required
 def dashboard_view(request):
@@ -387,7 +492,7 @@ def dashboard_view(request):
 
 @login_required
 def meus_anuncios_view(request):
-    estado_filtros = [
+    ESTADO_FILTROS = [
         ('Todos', ''),
         ('Activos', 'activo'),
         ('Pendente', 'pendente_pagamento'),
@@ -410,7 +515,7 @@ def meus_anuncios_view(request):
     ctx = _sidebar_context(request.user)
     ctx.update({
         'page_obj': page_obj,
-        'estado_filtros': estado_filtros,
+        'estado_filtros': ESTADO_FILTROS,
         'estado_actual': estado_actual,
         'active_tab': 'anuncios',
         'page_title': 'Meus Anúncios',

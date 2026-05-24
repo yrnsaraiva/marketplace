@@ -1,17 +1,28 @@
-from rest_framework import generics, status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
+"""
+apps/users/views.py
+
+Contém apenas as views de autenticação API.
+"""
+import logging
+
 from django.contrib.auth import authenticate
-from django.utils import timezone
-from .models import User
-from .serializers import RegistoSerializer, PerfilSerializer, AlterarPasswordSerializer
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from apps.anuncios.views import PROVINCIAS
+from django.utils import timezone
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from .models import User
+from .serializers import AlterarPasswordSerializer, PerfilSerializer, RegistoSerializer
+
+logger = logging.getLogger(__name__)
 
 
+# ---------------------------------------------------------------------------
+# API - Autenticação
+# ---------------------------------------------------------------------------
 class RegistoView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegistoSerializer
@@ -37,8 +48,8 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
-        password = request.data.get('password')
+        email = request.data.get('email', '').strip().lower()
+        password = request.data.get('password', '')
 
         if not email or not password:
             return Response(
@@ -47,7 +58,7 @@ class LoginView(APIView):
             )
 
         try:
-            user_obj = User.objects.get(email=email)
+            user_obj = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             return Response(
                 {'erro': 'Credenciais inválidas.'},
@@ -87,10 +98,11 @@ class LogoutView(APIView):
     def post(self, request):
         try:
             refresh_token = request.data.get('refresh')
-            token = RefreshToken(refresh_token)
-            token.blacklist()
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
         except Exception:
-            pass
+            pass # token inválido ou já na blacklist - não é erro crítico
         return Response({'mensagem': 'Sessão terminada.'})
 
 
@@ -118,63 +130,28 @@ class AlterarPasswordView(APIView):
 
         user.set_password(serializer.validated_data['password_nova'])
         user.save()
-        return Response({'mensagem': 'Password alterada com sucesso.'})
+
+        # Revogar token actual após mudança de password
+        try:
+            refresh_token = request.data.get('refresh')
+            if refresh_token:
+                RefreshToken(refresh_token).blacklist()
+        except Exception:
+            pass
+
+        return Response({'mensagem': 'Password alterada com sucesso. Faça login novamente.'})
 
 
-@login_required
-def dashboard_view(request):
-    from apps.anuncios.models import Anuncio, Favorito
+# ---------------------------------------------------------------------------
+# Frontend - vistas de template simples
+# (a lógica pesada está em apps/anuncios/views.py)
+# ---------------------------------------------------------------------------
 
-    meus_anuncios = []
-    for anuncio in Anuncio.objects.filter(
-        utilizador=request.user
-    ).exclude(estado='eliminado').prefetch_related('imagens').order_by('-publicado_em')[:5]:
-        item = {
-            'id': anuncio.id,
-            'titulo': anuncio.titulo,
-            'preco': anuncio.preco,
-            'estado': anuncio.estado,
-            'get_estado_display': anuncio.get_estado_display(),
-            'categoria_nome': anuncio.categoria.nome,
-            'visualizacoes': anuncio.visualizacoes,
-            'publicado_em': anuncio.publicado_em,
-            'imagem_principal': None,
-        }
-        img = anuncio.imagens.filter(principal=True).first() or anuncio.imagens.first()
-        if img:
-            item['imagem_principal'] = request.build_absolute_uri(img.imagem.url)
-        meus_anuncios.append(item)
-
-    favoritos = []
-    for fav in Favorito.objects.filter(
-        utilizador=request.user
-    ).select_related('anuncio').prefetch_related('anuncio__imagens')[:4]:
-        img = fav.anuncio.imagens.filter(principal=True).first() or fav.anuncio.imagens.first()
-        favoritos.append({
-            'anuncio': {
-                'id': fav.anuncio.id,
-                'titulo': fav.anuncio.titulo,
-                'preco': fav.anuncio.preco,
-                'cidade': fav.anuncio.cidade,
-                'imagem_principal': request.build_absolute_uri(img.imagem.url) if img else None,
-            }
-        })
-
-    total_visualizacoes = sum(a['visualizacoes'] for a in meus_anuncios)
-
-    return render(request, 'users/dashboard.html', {
-        'meus_anuncios': meus_anuncios,
-        'favoritos': favoritos,
-        'total_visualizacoes': total_visualizacoes,
-    })
+def login_template_view(request):
+    """Renderiza o template de login (autenticação feita via JS + API JWT)."""
+    return render(request, 'users/login.html')
 
 
-@login_required
-def perfil_view(request):
-    return render(request, 'users/perfil.html', {
-        'provincias': PROVINCIAS,
-    })
-
-
-def registo_view(request):
+def signup_template_view(request):
+    """Renderiza o template de registo."""
     return render(request, 'users/signup.html')

@@ -52,8 +52,16 @@ class SubscricaoUtilizadorAdmin(admin.ModelAdmin):
 
     def valida_display(self, obj):
         if obj.valida:
-            return format_html('<span style="color:green;">✔ Válida</span>')
-        return format_html('<span style="color:red;">✘ Inválida</span>')
+            return format_html(
+                '<span style="color:green;">{} Válida</span>',
+                '✔'
+            )
+
+        return format_html(
+            '<span style="color:red;">{} Inválida</span>',
+            '✘'
+        )
+
     valida_display.short_description = 'Estado'
 
 
@@ -139,6 +147,11 @@ class DestaqueAnuncioAdmin(admin.ModelAdmin):
 
     def expirado_display(self, obj):
         if obj.expirado:
-            return format_html('<span style="color:red;">Expirado</span>')
-        return format_html('<span style="color:green;">Activo</span>')
-    expirado_display.short_description = 'Estado'
+            return format_html(
+                '<span style="color:red;">{}</span>',
+                'Expirado'
+            )
+        return format_html(
+            '<span style="color:green;">{}</span>',
+            'Activo'
+        )

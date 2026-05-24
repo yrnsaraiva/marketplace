@@ -390,3 +390,4 @@ class DestaqueAnuncio(models.Model):
 
     def __str__(self):
         return f'{self.anuncio} — destaque até {self.fim_em}'
+
