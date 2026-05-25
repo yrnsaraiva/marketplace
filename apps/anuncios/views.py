@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 
 from .filters import AnuncioFilter
 from .models import Anuncio, Favorito, ImagemAnuncio
+from apps.pagamentos.models import PlanoDestaque, PlanoPublicacao
 from .serializers import (
     AnuncioCriarSerializer,
     AnuncioDetalheSerializer,
@@ -427,6 +428,7 @@ def anuncio_publicar_view(request):
         ]),
         'planos_destaque': PlanoDestaque.objects.filter(activo=True).order_by('ordem'),
         'subscricao': subscricao,
+        'PROVINCIAS': PROVINCIAS,
     })
 
 
@@ -547,3 +549,21 @@ def perfil_view(request):
         'page_subtitle': 'Gerencie as suas informações pessoais',
     })
     return render(request, 'users/perfil.html', ctx)
+
+
+# ---------------------------------------------------------------------------
+# planos
+# ---------------------------------------------------------------------------
+
+def planos_page_view(request):
+
+    planos_publicacao = PlanoPublicacao.objects.filter(activo=True).order_by('ordem', 'preco')
+
+    planos_destaque = PlanoDestaque.objects.filter(activo=True).order_by('ordem', 'preco')
+
+    ctx = {
+        'planos_publicacao': planos_publicacao,
+        'planos_destaque': planos_destaque,
+    }
+
+    return render(request, 'anuncios/planos.html', ctx)

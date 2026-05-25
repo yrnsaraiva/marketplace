@@ -2,41 +2,71 @@
 {% block title %}Entrar{% endblock %}
 
 {% block content %}
-<main class="pt-24 pb-20 px-4 flex items-center justify-center min-h-screen">
+<main class="pt-28 pb-20 px-4 flex items-center justify-center min-h-[80vh]">
     <div class="w-full max-w-md">
-        <div class="bg-white rounded-2xl p-8 shadow-sm border border-surface-container-low">
-            <h1 class="text-2xl font-extrabold text-on-surface mb-2">Bem-vindo de volta</h1>
-            <p class="text-on-surface-variant text-sm mb-8">Entre na sua conta MozClassificados</p>
+        <div class="text-center mb-8">
+            <a href="{% url 'home' %}" class="text-2xl font-black text-primary pt-28">MozClassificados</a>
+            <h1 class="text-2xl font-extrabold text-on-surface mt-4 mb-1">Bem-vindo de volta</h1>
+            <p class="text-on-surface-variant text-sm">Entre na sua conta</p>
+        </div>
 
-            <form method="POST">
+        <div class="bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-surface-container-low">
+
+            {# Erros do Django auth (LoginView padrão) #}
+            {% if form.errors %}
+            <div class="mb-5 flex items-center gap-3 p-3 bg-error-container rounded-xl text-sm text-error">
+                <span class="material-symbols-outlined text-base flex-shrink-0">error</span>
+                <span>Email ou password incorrectos. Tente novamente.</span>
+            </div>
+            {% endif %}
+        
+            <form method="POST" novalidate>
                 {% csrf_token %}
+                {% if request.GET.next %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}"/>
+                {% endif %}
+
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-on-surface mb-2">Utilizador</label>
-                        <input type="text" name="username" required autofocus
-                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                               placeholder="O seu utilizador"/>
+                        <label for="id_username" class="block text-sm font-medium text-on-surface mb-1.5">
+                            Username
+                        </label>
+                        <input id="id_username" type="text" name="username" required autofocus
+                               class="w-full px-4 py-3 rounded-xl border border-outline-variant
+                                      focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                               placeholder="username"/>
                     </div>
+
                     <div>
-                        <label class="block text-sm font-medium text-on-surface mb-2">Password</label>
-                        <input type="password" name="password" required
-                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label for="id_password" class="block text-sm font-medium text-on-surface">
+                                Password
+                            </label>
+                            <a href="#" class="text-xs text-primary hover:underline">Esqueceu a password?</a>
+                        </div>
+                        <input id="id_password" type="password" name="password" required
+                               autocomplete="current-password"
+                               class="w-full px-4 py-3 rounded-xl border border-outline-variant
+                                      focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                                placeholder="••••••••"/>
                     </div>
-                    {% if form.errors %}
-                    <p class="text-error text-sm">Utilizador ou password incorrectos.</p>
-                    {% endif %}
                 </div>
+
                 <button type="submit"
-                        class="w-full mt-6 py-3 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary/90 transition-all shadow-md">
+                        class="w-full mt-6 py-3.5 rounded-xl bg-primary text-on-primary font-semibold
+                               hover:bg-primary/90 transition-all shadow-md active:scale-[0.98]">
                     Entrar
                 </button>
             </form>
 
-            <p class="text-center text-sm text-on-surface-variant mt-6">
-                Não tem conta?
-                <a href="{% url 'registo' %}" class="text-primary font-semibold hover:underline">Registar</a>
-            </p>
+            <div class="mt-6 text-center">
+                <p class="text-sm text-on-surface-variant">
+                    Não tem conta?
+                    <a href="{% url 'signup' %}" class="text-primary font-semibold hover:underline ml-1">
+                        Criar conta grátis
+                    </a>
+                </p>
+            </div>
         </div>
     </div>
 </main>

@@ -4,121 +4,174 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>{% block title %}MozClassificados{% endblock %} - A sua montra de confiança em Moçambique</title>
+    <meta name="description" content="{% block meta_description %}MozClassificados — A sua montra de confiança em Moçambique{% endblock %}"/>
+    <title>{% block title %}MozClassificados{% endblock %} · MozClassificados</title>
+
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
+                        "primary":                  "#006b53",
+                        "primary-container":        "#00a884",
+                        "on-primary":               "#ffffff",
+                        "on-primary-container":     "#003427",
+                        "secondary":                "#5e5e5e",
+                        "on-secondary":             "#ffffff",
+                        "on-secondary-container":   "#646464",
+                        "tertiary":                 "#9e4035",
+                        "tertiary-container":       "#e27465",
+                        "on-tertiary":              "#ffffff",
+                        "surface":                  "#f9f9f9",
+                        "surface-bright":           "#f9f9f9",
                         "surface-container-lowest": "#ffffff",
-                        "on-primary": "#ffffff",
-                        "on-background": "#1a1c1c",
-                        "outline-variant": "#bccac2",
-                        "on-tertiary": "#ffffff",
-                        "surface-container-highest": "#e2e2e2",
-                        "secondary": "#5e5e5e",
-                        "surface": "#f9f9f9",
-                        "background": "#f9f9f9",
-                        "on-surface-variant": "#3d4a44",
-                        "primary": "#006b53",
-                        "surface-container-low": "#f3f3f3",
-                        "on-error": "#ffffff",
-                        "primary-container": "#00a884",
-                        "error": "#ba1a1a",
-                        "error-container": "#ffdad6",
-                        "on-secondary-container": "#646464",
-                        "on-surface": "#1a1c1c",
-                        "inverse-surface": "#2f3131",
-                        "surface-tint": "#006b53",
-                        "on-primary-container": "#003427",
-                        "on-secondary": "#ffffff",
-                        "tertiary-container": "#e27465",
-                        "surface-container-high": "#e8e8e8",
-                        "surface-container": "#eeeeee",
-                        "outline": "#6c7a74",
-                        "surface-bright": "#f9f9f9",
-                        "inverse-on-surface": "#f1f1f1",
-                        "highlights": "#FFBF00",
-                        "tertiary": "#9e4035",
+                        "surface-container-low":    "#f3f3f3",
+                        "surface-container":        "#eeeeee",
+                        "surface-container-high":   "#e8e8e8",
+                        "surface-container-highest":"#e2e2e2",
+                        "surface-tint":             "#006b53",
+                        "background":               "#f9f9f9",
+                        "on-background":            "#1a1c1c",
+                        "on-surface":               "#1a1c1c",
+                        "on-surface-variant":       "#3d4a44",
+                        "outline":                  "#6c7a74",
+                        "outline-variant":          "#bccac2",
+                        "inverse-surface":          "#2f3131",
+                        "inverse-on-surface":       "#f1f1f1",
+                        "error":                    "#ba1a1a",
+                        "error-container":          "#ffdad6",
+                        "on-error":                 "#ffffff",
+                        "highlights":               "#FFBF00",
                     },
                     fontFamily: {
-                        "headline": ["Inter"],
-                        "body": ["Inter"],
-                        "label": ["Inter"]
+                        headline: ["Inter"],
+                        body:     ["Inter"],
+                        label:    ["Inter"],
                     },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "1rem", "xl": "1.25rem", "full": "9999px"},
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg:      "1rem",
+                        xl:      "1.25rem",
+                        "2xl":   "1.5rem",
+                        full:    "9999px",
+                    },
                 },
             },
         }
     </script>
+
     <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
+        .icon-filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f3f3f3; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #00a884; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #006b53; }
+        /* Animação de spin para ícones de loading */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; display: inline-block; }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-surface font-body text-on-surface">
+<body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
 
     {% include "partials/navbar.html" %}
 
+    <!-- Toasts Django messages -->
     {% if messages %}
-    <div id="toast-container" class="fixed top-20 right-4 z-50 space-y-2">
+    <div id="toast-container" class="fixed top-20 right-4 z-50 space-y-2 max-w-sm">
         {% for message in messages %}
-        <div class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium
+        <div role="alert" class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium
             {% if message.tags == 'error' %}bg-error text-white
             {% elif message.tags == 'success' %}bg-primary text-white
+            {% elif message.tags == 'warning' %}bg-highlights text-on-background
             {% else %}bg-on-surface text-surface{% endif %}">
-            <span class="material-symbols-outlined text-base">
-                {% if message.tags == 'error' %}error{% elif message.tags == 'success' %}check_circle{% else %}info{% endif %}
+            <span class="material-symbols-outlined text-base flex-shrink-0">
+                {% if message.tags == 'error' %}error
+                {% elif message.tags == 'success' %}check_circle
+                {% elif message.tags == 'warning' %}warning
+                {% else %}info{% endif %}
             </span>
-            {{ message }}
+            <span>{{ message }}</span>
         </div>
         {% endfor %}
     </div>
     <script>
         setTimeout(() => {
             const tc = document.getElementById('toast-container');
-            if (tc) tc.style.display = 'none';
+            if (tc) { tc.style.opacity = '0'; tc.style.transition = 'opacity 0.5s'; setTimeout(() => tc.remove(), 500); }
         }, 4000);
     </script>
     {% endif %}
 
-    <main>
+    <div class="flex-1">
         {% block content %}{% endblock %}
-    </main>
+    </div>
 
     {% include "partials/footer.html" %}
     {% include "partials/mobile_nav.html" %}
 
     <script>
-        // Helpers globais
+        // ─── CSRF helper ─────────────────────────────────────────────────────
         function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
+            const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+            return match ? decodeURIComponent(match[1]) : null;
         }
         const CSRF_TOKEN = getCookie('csrftoken');
+
+        // ─── JWT: guardar/obter tokens (API calls que precisam de auth) ──────
+        const Auth = {
+            getAccess()  { return localStorage.getItem('access_token'); },
+            getRefresh() { return localStorage.getItem('refresh_token'); },
+            save(tokens) {
+                localStorage.setItem('access_token',  tokens.access);
+                localStorage.setItem('refresh_token', tokens.refresh);
+            },
+            clear() {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+            },
+            headers(extra = {}) {
+                const h = { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN, ...extra };
+                const t = this.getAccess();
+                if (t) h['Authorization'] = 'Bearer ' + t;
+                return h;
+            },
+        };
+
+        // ─── Toast programático ───────────────────────────────────────────────
+        function showToast(msg, type = 'info') {
+            const colors = {
+                success: 'bg-primary text-white',
+                error:   'bg-error text-white',
+                warning: 'bg-highlights text-on-background',
+                info:    'bg-on-surface text-surface',
+            };
+            const icons = { success: 'check_circle', error: 'error', warning: 'warning', info: 'info' };
+            let tc = document.getElementById('toast-container');
+            if (!tc) {
+                tc = document.createElement('div');
+                tc.id = 'toast-container';
+                tc.className = 'fixed top-20 right-4 z-50 space-y-2 max-w-sm';
+                document.body.appendChild(tc);
+            }
+            const div = document.createElement('div');
+            div.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${colors[type] || colors.info}`;
+            div.innerHTML = `<span class="material-symbols-outlined text-base flex-shrink-0">${icons[type] || 'info'}</span><span>${msg}</span>`;
+            tc.appendChild(div);
+            setTimeout(() => { div.style.opacity = '0'; div.style.transition = 'opacity 0.4s'; setTimeout(() => div.remove(), 400); }, 3500);
+        }
     </script>
+
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

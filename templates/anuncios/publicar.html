@@ -1,174 +1,321 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Publicar Anúncio{% endblock %}
+{% block title %}{% if anuncio %}Editar Anúncio{% else %}Publicar Anúncio{% endif %}{% endblock %}
 
 {% block content %}
-<main class="pt-24 pb-20 px-4 md:px-8 max-w-4xl mx-auto">
+<main class="pt-28 pb-24 px-4 md:px-8 max-w-4xl mx-auto">
+
     <div class="mb-8">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-on-surface">Publicar Anúncio</h1>
-        <p class="text-on-surface-variant mt-2">Preencha os dados abaixo e alcance milhares de compradores</p>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-on-surface">
+            {% if anuncio %}Editar Anúncio{% else %}Publicar Anúncio{% endif %}
+        </h1>
+        <p class="text-on-surface-variant mt-2">
+            Preencha os dados abaixo e alcance milhares de compradores
+        </p>
     </div>
 
-    <form id="form-publicar" class="space-y-8" enctype="multipart/form-data">
+    {# Aviso se não tiver subscrição activa #}
+    {% if not subscricao %}
+    <div class="mb-6 flex items-start gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-900">
+        <span class="material-symbols-outlined text-amber-500 flex-shrink-0 mt-0.5">warning</span>
+        <div>
+            <p class="font-medium text-sm">Não tem um plano activo</p>
+            <p class="text-xs mt-0.5">
+                Para publicar anúncios precisa de uma subscrição activa.
+                <a href="{% url 'planos' %}" class="underline font-medium">Ver planos disponíveis</a>
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <form id="form-publicar" class="space-y-8" novalidate>
         {% csrf_token %}
 
-        <!-- Categoria -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low">
-            <h2 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+        <!-- ═══════════ 1. CATEGORIA ═══════════ -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-surface-container-low">
+            <h2 class="text-lg font-bold text-on-surface mb-1 flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">category</span>
                 Categoria do anúncio
             </h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {% for categoria in categorias %}
-                <label class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-surface-container-low cursor-pointer hover:border-primary transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                    <input type="radio" name="categoria" class="hidden" value="{{ categoria.id }}"/>
-                    <span class="material-symbols-outlined text-2xl text-primary">{{ categoria.icone_url|default:"category" }}</span>
-                    <span class="text-sm font-medium text-center">{{ categoria.nome }}</span>
+            <p class="text-sm text-on-surface-variant mb-5">
+                Seleccione primeiro a categoria principal, depois a subcategoria.
+            </p>
+
+            <!-- Categorias pai -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4" id="categorias-pai">
+                {% for cat in categorias_pai %}
+                <label class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-surface-container-low
+                              cursor-pointer hover:border-primary transition-all
+                              has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+                       onclick="mostrarSubcategorias({{ cat.id }})">
+                    <input type="radio" name="categoria_pai" class="sr-only" value="{{ cat.id }}"
+                           {% if anuncio and anuncio.categoria.pai_id == cat.id %}checked{% endif %}/>
+                    <span class="material-symbols-outlined text-2xl text-primary">{{ cat.icone_url|default:"category" }}</span>
+                    <span class="text-sm font-medium text-center leading-tight">{{ cat.nome }}</span>
                 </label>
                 {% endfor %}
             </div>
+
+            <!-- Subcategorias (mostradas via JS) -->
+            <div id="subcategorias-container" class="{% if not anuncio %}hidden{% endif %}">
+                <p class="text-sm font-medium text-on-surface mb-3">
+                    Subcategoria <span class="text-error">*</span>
+                </p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2" id="subcategorias-lista">
+                    {% for cat in categorias_filho %}
+                    <label class="flex items-center gap-2 p-3 rounded-xl border-2 border-surface-container-low
+                                  cursor-pointer hover:border-primary transition-all
+                                  has-[:checked]:border-primary has-[:checked]:bg-primary/5
+                                  subcategoria-item"
+                           data-pai="{{ cat.pai_id }}"
+                           onclick="carregarAtributos({{ cat.id }})"
+                           {% if anuncio and anuncio.categoria.pai_id != cat.pai_id %}style="display:none"{% endif %}>
+                        <input type="radio" name="categoria" class="sr-only" value="{{ cat.id }}"
+                               {% if anuncio and anuncio.categoria_id == cat.id %}checked{% endif %}/>
+                        <span class="text-sm font-medium leading-tight">{{ cat.nome }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Atributos dinâmicos -->
+            <div id="atributos-container" class="mt-5 hidden">
+                <p class="text-sm font-semibold text-on-surface border-t border-surface-container-low pt-4 mb-4">
+                    Detalhes da categoria
+                </p>
+                <div id="atributos-lista" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
         </div>
 
-        <!-- Fotos -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low">
-            <h2 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+        <!-- ═══════════ 2. FOTOS ═══════════ -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-surface-container-low">
+            <h2 class="text-lg font-bold text-on-surface mb-1 flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">photo_camera</span>
                 Fotos do anúncio
             </h2>
-            <div class="border-2 border-dashed border-outline-variant rounded-xl p-8 text-center hover:border-primary transition-all cursor-pointer"
-                 onclick="document.getElementById('photos').click()">
+            <p class="text-sm text-on-surface-variant mb-4">
+                A primeira foto é a imagem principal.
+                Máximo <strong>{{ subscricao.plano.max_imagens|default:3 }} foto(s)</strong>
+                no seu plano · até 5 MB cada.
+            </p>
+
+            <div class="border-2 border-dashed border-outline-variant rounded-xl p-8 text-center
+                        hover:border-primary hover:bg-primary/5 transition-all cursor-pointer"
+                 onclick="document.getElementById('photos').click()"
+                 id="drop-zone">
                 <span class="material-symbols-outlined text-4xl text-outline">cloud_upload</span>
                 <p class="mt-2 text-sm text-on-surface-variant">Clique ou arraste fotos aqui</p>
-                <p class="text-xs text-on-surface-variant/60 mt-1">Máximo 10 fotos, até 5MB cada</p>
+                <p class="text-xs text-on-surface-variant/60 mt-1">PNG, JPG ou WEBP</p>
             </div>
-            <input type="file" multiple accept="image/*" class="hidden" id="photos" onchange="previewImagens(this)"/>
-            <div class="flex gap-3 mt-4 overflow-x-auto hide-scrollbar pb-2" id="preview-container"></div>
+
+            <input type="file" multiple accept="image/*" class="hidden" id="photos"
+                   onchange="previewImagens(this, {{ subscricao.plano.max_imagens|default:3 }})"/>
+
+            <div class="flex gap-3 mt-4 overflow-x-auto hide-scrollbar pb-2" id="preview-container">
+                {# Preencher com imagens actuais ao editar #}
+                {% if anuncio %}
+                {% for img in anuncio.imagens.all %}
+                <div class="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden relative flex-shrink-0">
+                    <img src="{{ img.imagem.url }}" class="w-full h-full object-cover"/>
+                    {% if img.principal %}
+                    <span class="absolute bottom-0 left-0 right-0 bg-primary text-white text-[9px] text-center py-0.5">Principal</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
         </div>
 
-        <!-- Informações -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low space-y-5">
+        <!-- ═══════════ 3. INFORMAÇÕES ═══════════ -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-surface-container-low space-y-5">
             <h2 class="text-lg font-bold text-on-surface flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">description</span>
                 Informações do produto
             </h2>
+
             <div>
-                <label class="block text-sm font-medium text-on-surface mb-2">Título do anúncio *</label>
-                <input type="text" name="titulo" maxlength="100" required
-                       class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                       placeholder="Ex: iPhone 14 Pro Max 256GB - Como novo"/>
-                <p class="text-xs text-on-surface-variant mt-1">Mínimo 10 caracteres</p>
+                <label class="block text-sm font-medium text-on-surface mb-1.5">
+                    Título <span class="text-error">*</span>
+                </label>
+                <input type="text" name="titulo" maxlength="100" minlength="10" required
+                       value="{{ anuncio.titulo|default:'' }}"
+                       class="w-full px-4 py-3 rounded-xl border border-outline-variant
+                              focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                       placeholder="Ex: iPhone 14 Pro Max 256GB — Como novo"/>
+                <p class="text-xs text-on-surface-variant mt-1">Entre 10 e 100 caracteres</p>
             </div>
+
             <div>
-                <label class="block text-sm font-medium text-on-surface mb-2">Descrição *</label>
+                <label class="block text-sm font-medium text-on-surface mb-1.5">
+                    Descrição <span class="text-error">*</span>
+                </label>
                 <textarea rows="5" name="descricao" maxlength="2000" required
-                          class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                          placeholder="Descreva o seu produto com detalhes..."></textarea>
+                          class="w-full px-4 py-3 rounded-xl border border-outline-variant
+                                 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20
+                                 transition-all resize-none"
+                          placeholder="Descreva o produto com detalhes: estado, acessórios incluídos, motivo da venda...">{{ anuncio.descricao|default:'' }}</textarea>
+                <p class="text-xs text-on-surface-variant mt-1">
+                    <span id="char-count">{{ anuncio.descricao|length|default:0 }}</span>/2000 caracteres
+                </p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Preço -->
                 <div>
-                    <label class="block text-sm font-medium text-on-surface mb-2">Preço (MT) *</label>
+                    <label class="block text-sm font-medium text-on-surface mb-1.5">
+                        Preço (MT) <span class="text-error">*</span>
+                    </label>
                     <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">MT</span>
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm font-semibold">MT</span>
                         <input type="number" name="preco" min="1" required
-                               class="w-full pl-10 pr-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                               value="{{ anuncio.preco|default:'' }}"
+                               class="w-full pl-12 pr-4 py-3 rounded-xl border border-outline-variant
+                                      focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                                placeholder="0"/>
                     </div>
-                    <label class="flex items-center gap-2 mt-2 cursor-pointer">
-                        <input type="checkbox" name="preco_negociavel" class="w-4 h-4 rounded text-primary focus:ring-primary"/>
+                    <label class="flex items-center gap-2 mt-2 cursor-pointer select-none">
+                        <input type="checkbox" name="preco_negociavel" class="w-4 h-4 rounded text-primary focus:ring-primary"
+                               {% if anuncio.preco_negociavel %}checked{% endif %}/>
                         <span class="text-sm text-on-surface-variant">Preço negociável</span>
                     </label>
                 </div>
+
+                <!-- Condição -->
                 <div>
-                    <label class="block text-sm font-medium text-on-surface mb-2">Condição *</label>
+                    <label class="block text-sm font-medium text-on-surface mb-1.5">
+                        Condição <span class="text-error">*</span>
+                    </label>
                     <select name="condicao" required
-                            class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all">
-                        <option value="novo">Novo</option>
-                        <option value="usado">Usado</option>
-                        <option value="recondicionado">Recondicionado</option>
+                            class="w-full px-4 py-3 rounded-xl border border-outline-variant
+                                   focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all">
+                        <option value="">Seleccione...</option>
+                        <option value="novo"          {% if anuncio.condicao == 'novo' %}selected{% endif %}>Novo</option>
+                        <option value="usado"         {% if anuncio.condicao == 'usado' %}selected{% endif %}>Usado</option>
+                        <option value="recondicionado"{% if anuncio.condicao == 'recondicionado' %}selected{% endif %}>Recondicionado</option>
                     </select>
                 </div>
             </div>
         </div>
 
-        <!-- Localização -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low">
+        <!-- ═══════════ 4. LOCALIZAÇÃO ═══════════ -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-surface-container-low">
             <h2 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">location_on</span>
                 Localização
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-on-surface mb-2">Província *</label>
+                    <label class="block text-sm font-medium text-on-surface mb-1.5">
+                        Província <span class="text-error">*</span>
+                    </label>
                     <select name="provincia" required
-                            class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all">
+                            class="w-full px-4 py-3 rounded-xl border border-outline-variant
+                                   focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all">
                         <option value="">Seleccione...</option>
-                        <option>Maputo</option>
-                        <option>Gaza</option>
-                        <option>Inhambane</option>
-                        <option>Sofala</option>
-                        <option>Manica</option>
-                        <option>Tete</option>
-                        <option>Zambézia</option>
-                        <option>Nampula</option>
-                        <option>Niassa</option>
-                        <option>Cabo Delgado</option>
+                        {% for prov in PROVINCIAS %}
+                        <option value="{{ prov }}" {% if anuncio.provincia == prov %}selected{% endif %}>{{ prov }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-on-surface mb-2">Cidade *</label>
+                    <label class="block text-sm font-medium text-on-surface mb-1.5">
+                        Cidade <span class="text-error">*</span>
+                    </label>
                     <input type="text" name="cidade" required
-                           class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                           placeholder="Ex: Maputo, Matola..."/>
+                           value="{{ anuncio.cidade|default:'' }}"
+                           class="w-full px-4 py-3 rounded-xl border border-outline-variant
+                                  focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                           placeholder="Ex: Maputo, Matola, Beira..."/>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-on-surface mb-2">Bairro</label>
+                    <label class="block text-sm font-medium text-on-surface mb-1.5">Bairro</label>
                     <input type="text" name="bairro"
-                           class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                           placeholder="Ex: Polana, Sommerschield..."/>
+                           value="{{ anuncio.bairro|default:'' }}"
+                           class="w-full px-4 py-3 rounded-xl border border-outline-variant
+                                  focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                           placeholder="Ex: Polana, Sommerschield, Malhangalene..."/>
                 </div>
             </div>
         </div>
 
-        <!-- Plano de destaque -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low">
-            <h2 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+        <!-- ═══════════ 5. DESTAQUE (só em criação) ═══════════ -->
+        {% if not anuncio %}
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-surface-container-low">
+            <h2 class="text-lg font-bold text-on-surface mb-1 flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">star</span>
                 Destaque o seu anúncio
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <label class="p-4 rounded-xl border-2 border-surface-container-low hover:border-primary transition-all cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                    <input type="radio" name="plano" value="" class="hidden" checked/>
-                    <div class="text-center">
-                        <span class="material-symbols-outlined text-2xl text-outline">check_circle</span>
-                        <p class="font-bold mt-2">Grátis</p>
-                        <p class="text-sm text-on-surface-variant">Visibilidade padrão</p>
-                        <p class="text-xs text-on-surface-variant/60 mt-1">30 dias</p>
+            <p class="text-sm text-on-surface-variant mb-5">
+                Anúncios destacados aparecem no topo e recebem muito mais contactos.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Sem destaque -->
+                <label class="p-4 rounded-xl border-2 border-surface-container-low hover:border-primary
+                              transition-all cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5 flex flex-col gap-1">
+                    <input type="radio" name="plano_destaque" value="" class="sr-only" checked/>
+                    <div class="flex items-center justify-between">
+                        <span class="material-symbols-outlined text-xl text-outline">check_circle</span>
+                        <span class="text-xs text-on-surface-variant bg-surface-container-low rounded-full px-2 py-0.5">Grátis</span>
                     </div>
+                    <p class="font-bold mt-1 text-sm">Sem destaque</p>
+                    <p class="text-xs text-on-surface-variant">Visibilidade padrão</p>
+                    <p class="text-xs text-on-surface-variant/60 mt-auto pt-1">
+                        {{ subscricao.plano.duracao_anuncio_dias|default:30 }} dias
+                    </p>
                 </label>
-                {% for plano in planos %}
-                <label class="p-4 rounded-xl border-2 border-surface-container-low hover:border-primary transition-all cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                    <input type="radio" name="plano" value="{{ plano.id }}" class="hidden"/>
-                    <div class="text-center">
-                        <span class="material-symbols-outlined text-2xl text-primary">whatshot</span>
-                        <p class="font-bold mt-2">{{ plano.nome }}</p>
-                        <p class="text-sm text-primary font-semibold">+{{ plano.preco|floatformat:0 }} MT</p>
-                        <p class="text-xs text-on-surface-variant/60">{{ plano.duracao_dias }} dias</p>
+
+                {% for plano in planos_destaque %}
+                <label class="p-4 rounded-xl border-2 transition-all flex flex-col gap-1
+                              {% if subscricao %}border-surface-container-low hover:border-primary cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5
+                              {% else %}border-surface-container-low opacity-50 cursor-not-allowed{% endif %}">
+                    <input type="radio" name="plano_destaque" value="{{ plano.id }}" class="sr-only"
+                           {% if not subscricao %}disabled{% endif %}/>
+                    <div class="flex items-center justify-between">
+                        <span class="material-symbols-outlined text-xl text-amber-500">whatshot</span>
+                        <span class="text-xs font-semibold text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                            +{{ plano.preco|floatformat:0 }} MT
+                        </span>
                     </div>
+                    <p class="font-bold mt-1 text-sm">{{ plano.nome }}</p>
+                    <p class="text-xs text-on-surface-variant line-clamp-2">{{ plano.descricao }}</p>
+                    <p class="text-xs text-on-surface-variant/60 mt-auto pt-1">
+                        {{ plano.boost_visualizacoes }}× visibilidade · {{ plano.duracao_dias }} dias
+                    </p>
                 </label>
                 {% endfor %}
             </div>
+
+            {% if not subscricao %}
+            <p class="mt-4 text-xs text-on-surface-variant/70 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">info</span>
+                Destaque disponível apenas com subscrição activa.
+                <a href="#" class="text-primary underline">Ver planos</a>
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- ═══════════ BOTÕES ═══════════ -->
+        <div id="erro-form" class="hidden p-4 bg-error-container rounded-xl text-sm text-error flex items-start gap-3">
+            <span class="material-symbols-outlined text-base flex-shrink-0 mt-0.5">error</span>
+            <span id="erro-form-texto"></span>
         </div>
 
-        <!-- Botões -->
-        <div class="flex flex-col md:flex-row gap-4 pt-4">
-            <a href="{% url 'home' %}" class="flex-1 py-4 rounded-xl border-2 border-outline-variant text-on-surface-variant font-semibold hover:border-primary hover:text-primary transition-all text-center">
+        <div class="flex flex-col md:flex-row gap-4">
+            <a href="{% url 'home' %}"
+               class="flex-1 py-4 rounded-xl border-2 border-outline-variant text-on-surface-variant font-semibold
+                      hover:border-error hover:text-error transition-all text-center">
                 Cancelar
             </a>
             <button type="submit" id="btn-publicar"
-                    class="flex-1 py-4 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary/90 transition-all shadow-md flex items-center justify-center gap-2">
+                    class="flex-1 py-4 rounded-xl bg-primary text-on-primary font-semibold
+                           hover:bg-primary/90 transition-all shadow-md
+                           flex items-center justify-center gap-2
+                           disabled:opacity-60 disabled:cursor-not-allowed">
                 <span class="material-symbols-outlined">publish</span>
-                Publicar Anúncio
+                {% if anuncio %}Guardar alterações{% else %}Publicar Anúncio{% endif %}
             </button>
         </div>
     </form>
@@ -177,80 +324,217 @@
 
 {% block extra_scripts %}
 <script>
-    function previewImagens(input) {
-        const container = document.getElementById('preview-container');
-        container.innerHTML = '';
-        Array.from(input.files).slice(0, 10).forEach((file, i) => {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const div = document.createElement('div');
-                div.className = 'w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden relative';
-                div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover"/>
-                    ${i === 0 ? '<span class="absolute bottom-0 left-0 right-0 bg-primary text-white text-[9px] text-center py-0.5">Principal</span>' : ''}`;
-                container.appendChild(div);
-            };
-            reader.readAsDataURL(file);
-        });
+// Dados injectados pelo Django
+const ATRIBUTOS    = {{ atributos_json|safe }};
+const SUBCATS      = {{ subcategorias_json|safe }};
+const MAX_IMAGENS  = {{ subscricao.plano.max_imagens|default:3 }};
+
+// Contador de caracteres
+document.querySelector('textarea[name="descricao"]').addEventListener('input', function () {
+    document.getElementById('char-count').textContent = this.value.length;
+});
+
+// ─── Subcategorias ─────────────────────────────────────────────────────────
+function mostrarSubcategorias(paiId) {
+    const container = document.getElementById('subcategorias-container');
+    const items = document.querySelectorAll('.subcategoria-item');
+    let visiveis = 0;
+    items.forEach(item => {
+        const vis = parseInt(item.dataset.pai) === paiId;
+        item.style.display = vis ? '' : 'none';
+        if (vis) visiveis++;
+    });
+    container.classList.toggle('hidden', visiveis === 0);
+    // Limpar subcategoria e atributos anteriores
+    document.querySelectorAll('input[name="categoria"]').forEach(r => r.checked = false);
+    document.getElementById('atributos-container').classList.add('hidden');
+    document.getElementById('atributos-lista').innerHTML = '';
+}
+
+// ─── Atributos dinâmicos ───────────────────────────────────────────────────
+function carregarAtributos(catId) {
+    const lista     = document.getElementById('atributos-lista');
+    const container = document.getElementById('atributos-container');
+    const atribs    = ATRIBUTOS[catId] || [];
+    lista.innerHTML = '';
+
+    if (!atribs.length) { container.classList.add('hidden'); return; }
+
+    atribs.forEach(attr => {
+        const obrig = attr.obrigatorio;
+        const label = `${attr.nome}${obrig ? ' <span class="text-error">*</span>' : ''}`;
+        let inputHtml;
+
+        if (attr.opcoes && attr.opcoes.length) {
+            const opts = attr.opcoes.map(o => `<option value="${o}">${o}</option>`).join('');
+            inputHtml = `<select name="atributo_${attr.chave}" ${obrig ? 'required' : ''}
+                class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all">
+                <option value="">Seleccione...</option>${opts}</select>`;
+        } else if (attr.tipo === 'numero') {
+            inputHtml = `<input type="number" name="atributo_${attr.chave}" ${obrig ? 'required' : ''}
+                class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                placeholder="${attr.nome}"/>`;
+        } else if (attr.tipo === 'booleano') {
+            inputHtml = `<div class="flex gap-4 mt-2">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="atributo_${attr.chave}" value="Sim" ${obrig ? 'required' : ''}/>
+                    <span class="text-sm">Sim</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="atributo_${attr.chave}" value="Não"/>
+                    <span class="text-sm">Não</span>
+                </label>
+            </div>`;
+        } else {
+            inputHtml = `<input type="text" name="atributo_${attr.chave}" ${obrig ? 'required' : ''}
+                class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                placeholder="${attr.nome}"/>`;
+        }
+
+        lista.innerHTML += `
+            <div>
+                <label class="block text-sm font-medium text-on-surface mb-1.5">${label}</label>
+                ${inputHtml}
+                <input type="hidden" name="atributo_id_${attr.chave}" value="${attr.id}"/>
+            </div>`;
+    });
+
+    container.classList.remove('hidden');
+}
+
+// ─── Preview de imagens ────────────────────────────────────────────────────
+function previewImagens(input, maxFotos) {
+    if (input.files.length > maxFotos) {
+        showToast(`O seu plano permite no máximo ${maxFotos} foto(s).`, 'warning');
+        const dt = new DataTransfer();
+        Array.from(input.files).slice(0, maxFotos).forEach(f => dt.items.add(f));
+        input.files = dt.files;
+    }
+    const container = document.getElementById('preview-container');
+    container.innerHTML = '';
+    Array.from(input.files).forEach((file, i) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const div = document.createElement('div');
+            div.className = 'w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden relative group';
+            div.innerHTML = `
+                <img src="${e.target.result}" class="w-full h-full object-cover"/>
+                ${i === 0 ? '<span class="absolute bottom-0 left-0 right-0 bg-primary text-white text-[9px] text-center py-0.5">Principal</span>' : ''}
+                <button type="button" onclick="removerFoto(this, ${i})"
+                        class="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full text-[10px]
+                               hidden group-hover:flex items-center justify-center leading-none">✕</button>`;
+            container.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function removerFoto(btn, idx) {
+    const input = document.getElementById('photos');
+    const dt = new DataTransfer();
+    Array.from(input.files).forEach((f, i) => { if (i !== idx) dt.items.add(f); });
+    input.files = dt.files;
+    previewImagens(input, MAX_IMAGENS);
+}
+
+// ─── Submit ────────────────────────────────────────────────────────────────
+document.getElementById('form-publicar').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const btn  = document.getElementById('btn-publicar');
+    const errDiv  = document.getElementById('erro-form');
+    const errText = document.getElementById('erro-form-texto');
+    errDiv.classList.add('hidden');
+
+    const formData = new FormData(form);
+    const catId = parseInt(formData.get('categoria'));
+
+    if (!catId) {
+        errText.textContent = 'Por favor seleccione uma subcategoria.';
+        errDiv.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
     }
 
-    document.getElementById('form-publicar').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const btn = document.getElementById('btn-publicar');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> A publicar...';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> A publicar...';
 
-        const formData = new FormData(form);
+    // Recolher atributos dinâmicos
+    const atributos = [];
+    (ATRIBUTOS[catId] || []).forEach(attr => {
+        const valor = formData.get(`atributo_${attr.chave}`);
+        if (valor) atributos.push({ atributo_id: attr.id, valor });
+    });
 
-        try {
-            // 1. Criar anúncio
-            const resp = await fetch('/api/v1/anuncios/criar/', {
-                method: 'POST',
-                headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    titulo: formData.get('titulo'),
-                    descricao: formData.get('descricao'),
-                    preco: formData.get('preco'),
-                    preco_negociavel: formData.get('preco_negociavel') === 'on',
-                    condicao: formData.get('condicao'),
-                    categoria: parseInt(formData.get('categoria')),
-                    provincia: formData.get('provincia'),
-                    cidade: formData.get('cidade'),
-                    bairro: formData.get('bairro') || '',
-                })
-            });
+    const payload = {
+        titulo:           formData.get('titulo'),
+        descricao:        formData.get('descricao'),
+        preco:            formData.get('preco'),
+        preco_negociavel: formData.get('preco_negociavel') === 'on',
+        condicao:         formData.get('condicao'),
+        categoria:        catId,
+        provincia:        formData.get('provincia'),
+        cidade:           formData.get('cidade'),
+        bairro:           formData.get('bairro') || '',
+        atributos,
+        plano_destaque:   formData.get('plano_destaque') || null,
+    };
 
-            if (!resp.ok) {
-                const err = await resp.json();
-                alert('Erro: ' + JSON.stringify(err));
-                btn.disabled = false;
-                btn.innerHTML = '<span class="material-symbols-outlined">publish</span> Publicar Anúncio';
-                return;
-            }
+    try {
+        const isEdit = !!{{ anuncio.id|default:'null' }};
+        const url    = isEdit ? `/api/v1/anuncios/{{ anuncio.id|default:'' }}/editar/` : '/api/v1/anuncios/criar/';
+        const method = isEdit ? 'PATCH' : 'POST';
 
-            const anuncio = await resp.json();
+        const resp = await fetch(url, {
+            method,
+            headers: Auth.headers(),
+            body: JSON.stringify(payload),
+        });
 
-            // 2. Upload de imagens
-            const fotos = document.getElementById('photos').files;
-            if (fotos.length > 0) {
-                const imgForm = new FormData();
-                imgForm.append('anuncio_id', anuncio.id);
-                Array.from(fotos).forEach(f => imgForm.append('imagens', f));
-                await fetch('/api/v1/anuncios/upload-imagens/', {
-                    method: 'POST',
-                    headers: { 'X-CSRFToken': CSRF_TOKEN },
-                    body: imgForm
-                });
-            }
-
-            // Redirecionar para o anúncio
-            window.location.href = `/anuncios/${anuncio.id}/`;
-
-        } catch (err) {
-            alert('Erro inesperado. Tente novamente.');
+        if (!resp.ok) {
+            const err = await resp.json();
+            const msgs = typeof err === 'object'
+                ? Object.entries(err).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join(' | ')
+                : JSON.stringify(err);
+            errText.textContent = msgs;
+            errDiv.classList.remove('hidden');
+            errDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             btn.disabled = false;
             btn.innerHTML = '<span class="material-symbols-outlined">publish</span> Publicar Anúncio';
+            return;
         }
-    });
+
+        const anuncio = await resp.json();
+
+        // Upload de imagens
+        const fotos = document.getElementById('photos').files;
+        if (fotos.length > 0) {
+            const imgForm = new FormData();
+            imgForm.append('anuncio_id', anuncio.id);
+            Array.from(fotos).forEach(f => imgForm.append('imagens', f));
+            await fetch('/api/v1/anuncios/upload-imagens/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': CSRF_TOKEN, ...( Auth.getAccess() ? { 'Authorization': 'Bearer ' + Auth.getAccess() } : {} ) },
+                body: imgForm,
+            });
+        }
+
+        window.location.href = `/anuncios/${anuncio.id}/`;
+
+    } catch {
+        errText.textContent = 'Erro inesperado. Verifique a ligação e tente novamente.';
+        errDiv.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined">publish</span> Publicar Anúncio';
+    }
+});
+
+// Pré-carregar atributos se estiver em modo de edição
+{% if anuncio %}
+document.addEventListener('DOMContentLoaded', () => {
+    mostrarSubcategorias({{ anuncio.categoria.pai_id|default:'null' }});
+    carregarAtributos({{ anuncio.categoria_id }});
+});
+{% endif %}
 </script>
 {% endblock %}

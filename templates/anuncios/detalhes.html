@@ -1,238 +1,300 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static humanize %}
 
 {% block title %}{{ anuncio.titulo }}{% endblock %}
+{% block meta_description %}{{ anuncio.descricao|truncatewords:30 }}{% endblock %}
 
 {% block content %}
-<main class="pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto">
+<main class="pt-24 pb-24 px-4 md:px-6 max-w-7xl mx-auto">
 
     <!-- Breadcrumbs -->
-    <div class="my-8 flex flex-wrap items-center gap-1 text-xs font-medium text-outline">
+    <nav class="my-6 flex flex-wrap items-center gap-1 text-xs font-medium text-outline" aria-label="Breadcrumb">
         <a class="hover:text-primary transition-colors" href="{% url 'home' %}">Início</a>
         <span class="material-symbols-outlined text-sm">chevron_right</span>
-        <a class="hover:text-primary transition-colors" href="{% url 'anuncio-pesquisa' %}?categoria={{ anuncio.categoria.slug }}">{{ anuncio.categoria.nome }}</a>
+        {% if anuncio.categoria.pai %}
+        <a class="hover:text-primary transition-colors"
+           href="{% url 'anuncio-pesquisa' %}?categoria={{ anuncio.categoria.pai.slug }}">
+            {{ anuncio.categoria.pai.nome }}
+        </a>
         <span class="material-symbols-outlined text-sm">chevron_right</span>
-        <span class="text-primary font-semibold line-clamp-1">{{ anuncio.titulo }}</span>
-    </div>
+        {% endif %}
+        <a class="hover:text-primary transition-colors"
+           href="{% url 'anuncio-pesquisa' %}?categoria={{ anuncio.categoria.slug }}">
+            {{ anuncio.categoria.nome }}
+        </a>
+        <span class="material-symbols-outlined text-sm">chevron_right</span>
+        <span class="text-on-surface font-semibold line-clamp-1">{{ anuncio.titulo }}</span>
+    </nav>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <!-- Coluna principal -->
+
+        <!-- ═══════════ COLUNA PRINCIPAL ═══════════ -->
         <div class="lg:col-span-8 space-y-8">
 
             <!-- Galeria -->
-            <section class="space-y-4">
-                <div class="relative aspect-[16/9] bg-surface-container-low rounded-2xl overflow-hidden group shadow-lg" id="imagem-principal">
+            <section>
+                <div class="relative aspect-[4/3] md:aspect-[16/9] bg-surface-container-low rounded-2xl
+                            overflow-hidden shadow-md group" id="galeria-principal">
                     {% if anuncio.imagens.all %}
-                        <img alt="{{ anuncio.titulo }}"
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                             src="{{ anuncio.imagens.first.imagem.url }}" id="img-principal"/>
+                    <img id="img-principal"
+                         src="{{ anuncio.imagens.all.0.imagem.url }}"
+                         alt="{{ anuncio.titulo }}"
+                         class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"/>
                     {% else %}
-                        <div class="w-full h-full flex items-center justify-center">
-                            <span class="material-symbols-outlined text-7xl text-outline">image</span>
-                        </div>
+                    <div class="w-full h-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-7xl text-outline">image</span>
+                    </div>
                     {% endif %}
+
+                    <!-- Acções sobre imagem -->
                     <div class="absolute top-4 right-4 flex gap-2">
                         <button onclick="toggleFavorito({{ anuncio.id }})"
-                                class="bg-white/90 backdrop-blur p-2.5 rounded-full shadow-md hover:scale-110 hover:bg-white transition-transform" id="btn-favorito">
+                                id="btn-favorito"
+                                class="bg-white/90 backdrop-blur p-2.5 rounded-full shadow-md
+                                       hover:scale-110 hover:bg-white transition-all"
+                                aria-label="Adicionar aos favoritos">
                             <span class="material-symbols-outlined text-tertiary text-xl" id="icon-favorito">favorite</span>
                         </button>
-                        <button class="bg-white/90 backdrop-blur p-2.5 rounded-full shadow-md hover:scale-110 hover:bg-white transition-transform">
+                        <button onclick="partilhar()"
+                                class="bg-white/90 backdrop-blur p-2.5 rounded-full shadow-md
+                                       hover:scale-110 hover:bg-white transition-all"
+                                aria-label="Partilhar">
                             <span class="material-symbols-outlined text-outline text-xl">share</span>
                         </button>
                     </div>
-                    <div class="absolute bottom-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-white text-xs font-medium">
+
+                    {% if anuncio.imagens.count > 0 %}
+                    <div class="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1
+                                rounded-full text-white text-xs font-medium">
                         {{ anuncio.imagens.count }} foto{{ anuncio.imagens.count|pluralize:"s" }}
                     </div>
+                    {% endif %}
                 </div>
 
                 <!-- Miniaturas -->
                 {% if anuncio.imagens.count > 1 %}
-                <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
+                <div class="flex gap-2 mt-3 overflow-x-auto hide-scrollbar pb-1">
                     {% for imagem in anuncio.imagens.all %}
-                    <div class="w-20 h-20 flex-shrink-0 bg-surface-container-low rounded-xl overflow-hidden cursor-pointer hover:opacity-80 transition-opacity border-2 {% if forloop.first %}border-primary{% else %}border-transparent{% endif %}"
-                         onclick="trocarImagem('{{ imagem.imagem.url }}', this)">
-                        <img alt="Foto {{ forloop.counter }}" class="w-full h-full object-cover" src="{{ imagem.imagem.url }}"/>
-                    </div>
+                    <button type="button"
+                            class="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 bg-surface-container-low rounded-xl overflow-hidden
+                                   border-2 transition-all hover:opacity-90
+                                   {% if forloop.first %}border-primary{% else %}border-transparent{% endif %}"
+                            onclick="trocarImagem('{{ imagem.imagem.url }}', this)"
+                            aria-label="Foto {{ forloop.counter }}">
+                        <img alt="Foto {{ forloop.counter }}" class="w-full h-full object-cover"
+                             src="{{ imagem.imagem.url }}"/>
+                    </button>
                     {% endfor %}
                 </div>
                 {% endif %}
             </section>
 
-            <!-- Informações do anúncio -->
-            <section class="bg-white rounded-2xl p-8 shadow-sm border border-surface-container-low">
-                <div class="space-y-6">
-                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                        <h1 class="text-3xl md:text-4xl font-extrabold text-on-surface leading-tight">{{ anuncio.titulo }}</h1>
-                        <div class="text-3xl font-black text-primary whitespace-nowrap">
-                            {{ anuncio.preco|floatformat:0 }} MT
-                            {% if anuncio.preco_negociavel %}<span class="text-sm font-normal text-on-surface-variant block">Negociável</span>{% endif %}
+            <!-- Informações -->
+            <section class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-sm border border-surface-container-low">
+                <!-- Título e preço -->
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+                    <div class="flex-1">
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                            <span class="text-xs font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                                {{ anuncio.categoria.nome }}
+                            </span>
+                            <span class="text-xs font-medium bg-surface-container-low text-on-surface-variant px-2.5 py-0.5 rounded-full">
+                                {{ anuncio.get_condicao_display }}
+                            </span>
                         </div>
+                        <h1 class="text-2xl md:text-3xl font-extrabold text-on-surface leading-tight">
+                            {{ anuncio.titulo }}
+                        </h1>
                     </div>
-
-                    <div class="flex flex-wrap items-center gap-4 text-sm text-on-surface-variant">
-                        <div class="flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-primary text-base">location_on</span>
-                            <span>{{ anuncio.bairro }}{% if anuncio.bairro %}, {% endif %}{{ anuncio.cidade }}, {{ anuncio.provincia }}</span>
-                        </div>
-                        <div class="w-1 h-1 bg-outline-variant rounded-full"></div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-primary text-base">calendar_today</span>
-                            <span>Publicado há {{ anuncio.publicado_em|timesince }}</span>
-                        </div>
-                        <div class="w-1 h-1 bg-outline-variant rounded-full"></div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-primary text-base">visibility</span>
-                            <span>{{ anuncio.visualizacoes }} visualizações</span>
-                        </div>
-                        <div class="flex items-center gap-1.5 bg-surface-container-low px-3 py-1 rounded-full">
-                            <span class="text-xs font-medium text-primary">{{ anuncio.get_condicao_display }}</span>
-                        </div>
+                    <div class="flex-shrink-0">
+                        <p class="text-2xl md:text-3xl font-black text-primary">
+                            {{ anuncio.preco|floatformat:0 }} MT
+                        </p>
+                        {% if anuncio.preco_negociavel %}
+                        <p class="text-sm text-on-surface-variant text-right mt-0.5">Negociável</p>
+                        {% endif %}
                     </div>
                 </div>
 
-                <div class="my-8 h-px bg-gradient-to-r from-transparent via-outline-variant to-transparent"></div>
-
-                <!-- Descrição -->
-                <div class="space-y-6">
-                    <h2 class="text-2xl font-bold text-on-surface">Descrição</h2>
-                    <div class="text-on-surface-variant leading-relaxed space-y-4">
-                        {{ anuncio.descricao|linebreaks }}
+                <!-- Meta info -->
+                <div class="flex flex-wrap items-center gap-4 text-sm text-on-surface-variant pb-6 border-b border-surface-container-low">
+                    <div class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-primary text-base">location_on</span>
+                        <span>
+                            {% if anuncio.bairro %}{{ anuncio.bairro }}, {% endif %}
+                            {{ anuncio.cidade }}, {{ anuncio.provincia }}
+                        </span>
                     </div>
-
-                    <!-- Atributos dinâmicos -->
-                    {% if anuncio.atributos.all %}
-                    <div>
-                        <h3 class="text-lg font-semibold text-on-surface mb-4">Características</h3>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {% for atributo in anuncio.atributos.all %}
-                            <div class="flex items-center gap-2 bg-surface-container-low p-3 rounded-xl">
-                                <span class="material-symbols-outlined text-primary text-base">check_circle</span>
-                                <div>
-                                    <span class="text-xs text-on-surface-variant">{{ atributo.atributo.nome }}</span>
-                                    <p class="text-sm font-medium">{{ atributo.valor }}</p>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
+                    {% if anuncio.publicado_em %}
+                    <div class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-primary text-base">calendar_today</span>
+                        <span>Publicado há {{ anuncio.publicado_em|timesince }}</span>
                     </div>
                     {% endif %}
+                    <div class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-primary text-base">visibility</span>
+                        <span>{{ anuncio.visualizacoes }} visualizações</span>
+                    </div>
                 </div>
+
+                <!-- Descrição -->
+                <div class="py-6 border-b border-surface-container-low">
+                    <h2 class="text-xl font-bold text-on-surface mb-4">Descrição</h2>
+                    <div class="text-on-surface-variant leading-relaxed space-y-3 whitespace-pre-line text-sm md:text-base">
+                        {{ anuncio.descricao }}
+                    </div>
+                </div>
+
+                <!-- Atributos dinâmicos -->
+                {% if anuncio.atributos.all %}
+                <div class="pt-6">
+                    <h3 class="text-lg font-bold text-on-surface mb-4">Características</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {% for atributo in anuncio.atributos.all %}
+                        <div class="flex items-start gap-2 bg-surface-container-low p-3 rounded-xl">
+                            <span class="material-symbols-outlined text-primary text-base flex-shrink-0 mt-0.5">check_circle</span>
+                            <div>
+                                <p class="text-xs text-on-surface-variant">{{ atributo.atributo.nome }}</p>
+                                <p class="text-sm font-semibold text-on-surface mt-0.5">{{ atributo.valor }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </section>
 
             <!-- Localização -->
-            <section class="space-y-4">
-                <h2 class="text-2xl font-bold text-on-surface">Localização</h2>
-                <div class="h-32 w-full bg-surface-container-low rounded-2xl overflow-hidden flex items-center justify-center">
+            <section class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-surface-container-low">
+                <h2 class="text-lg font-bold text-on-surface mb-4">Localização</h2>
+                <div class="h-28 w-full bg-surface-container-low rounded-xl flex items-center justify-center">
                     <div class="text-center text-on-surface-variant">
                         <span class="material-symbols-outlined text-3xl text-primary">location_on</span>
-                        <p class="text-sm mt-2">{{ anuncio.cidade }}, {{ anuncio.provincia }}</p>
+                        <p class="text-sm mt-1 font-medium">
+                            {% if anuncio.bairro %}{{ anuncio.bairro }} - {% endif %}
+                            {{ anuncio.cidade }}, {{ anuncio.provincia }}
+                        </p>
                     </div>
                 </div>
             </section>
         </div>
 
-        <!-- Sidebar -->
-        <div class="lg:col-span-4 space-y-6">
-            <aside class="sticky top-24 space-y-6">
+        <!-- ═══════════ SIDEBAR ═══════════ -->
+        <div class="lg:col-span-4">
+            <aside class="sticky top-24 space-y-5">
 
-                <!-- Card do vendedor -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low space-y-6">
-                    <div class="flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center overflow-hidden">
+                <!-- Card vendedor -->
+                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-surface-container-low">
+                    <div class="flex items-center gap-4 mb-5">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-container
+                                    flex items-center justify-center overflow-hidden flex-shrink-0">
                             {% if anuncio.utilizador.foto_perfil %}
-                                <img alt="{{ anuncio.utilizador.username }}" class="w-full h-full object-cover" src="{{ anuncio.utilizador.foto_perfil.url }}"/>
+                            <img alt="{{ anuncio.utilizador.username }}" class="w-full h-full object-cover"
+                                 src="{{ anuncio.utilizador.foto_perfil.url }}"/>
                             {% else %}
-                                <span class="material-symbols-outlined text-white text-2xl">person</span>
+                            <span class="material-symbols-outlined text-white text-2xl">person</span>
                             {% endif %}
                         </div>
-                        <div>
-                            <h3 class="font-bold text-lg text-on-surface">{{ anuncio.utilizador.get_full_name|default:anuncio.utilizador.username }}</h3>
-                            <p class="text-xs text-outline-variant">Membro desde {{ anuncio.utilizador.date_joined|date:"F Y" }}</p>
-                            {% if anuncio.utilizador.avaliacao_media > 0 %}
-                            <div class="flex items-center gap-1 mt-1">
-                                <span class="material-symbols-outlined text-primary text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
-                                <span class="text-xs font-medium">{{ anuncio.utilizador.avaliacao_media }} ({{ anuncio.utilizador.total_anuncios }} anúncios)</span>
-                            </div>
+                        <div class="min-w-0">
+                            <h3 class="font-bold text-on-surface truncate">
+                                {{ anuncio.utilizador.get_full_name|default:anuncio.utilizador.username }}
+                            </h3>
+                            <p class="text-xs text-on-surface-variant">
+                                Membro desde {{ anuncio.utilizador.date_joined|date:"Y" }}
+                            </p>
+                            {% if anuncio.utilizador.total_anuncios %}
+                            <p class="text-xs text-on-surface-variant mt-0.5">
+                                {{ anuncio.utilizador.total_anuncios }} anúncio{{ anuncio.utilizador.total_anuncios|pluralize:"s" }} publicado{{ anuncio.utilizador.total_anuncios|pluralize:"s" }}
+                            </p>
                             {% endif %}
                         </div>
                     </div>
 
-                    <div class="space-y-3">
+                    <div class="space-y-2.5">
                         {% if user.is_authenticated %}
-                        <button onclick="iniciarConversa({{ anuncio.id }})"
-                                class="w-full bg-primary text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-md hover:scale-[1.02] active:scale-95">
+                        {# Botão de mensagem — placeholder, requer implementação de chat #}
+                        <button disabled
+                                class="w-full bg-primary text-on-primary py-3.5 rounded-xl font-semibold
+                                       flex items-center justify-center gap-2 opacity-60 cursor-not-allowed text-sm"
+                                title="Chat em breve">
                             <span class="material-symbols-outlined text-base">chat</span>
                             Enviar mensagem
                         </button>
                         {% else %}
                         <a href="{% url 'login' %}?next={{ request.path }}"
-                           class="w-full bg-primary text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-md block text-center">
-                            <span class="material-symbols-outlined text-base">chat</span>
+                           class="w-full bg-primary text-on-primary py-3.5 rounded-xl font-semibold
+                                  flex items-center justify-center gap-2 hover:bg-primary/90 transition-all
+                                  shadow-md text-sm">
+                            <span class="material-symbols-outlined text-base">login</span>
                             Entrar para contactar
                         </a>
                         {% endif %}
+
                         {% if anuncio.utilizador.telefone %}
-                        <button onclick="this.innerHTML='<span class=\'material-symbols-outlined text-base\'>call</span> {{ anuncio.utilizador.telefone }}'"
-                                class="w-full bg-surface-container-high text-on-surface py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-surface-container-highest transition-all">
+                        <button id="btn-tel"
+                                onclick="mostrarTelefone()"
+                                class="w-full bg-surface-container-low text-on-surface py-3.5 rounded-xl font-semibold
+                                       flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all text-sm">
                             <span class="material-symbols-outlined text-base">call</span>
-                            Ver número de telefone
+                            <span id="tel-texto">Ver número de telefone</span>
                         </button>
                         {% endif %}
                     </div>
                 </div>
 
-                <!-- Ações -->
-                <div class="flex flex-col gap-3 px-2">
+                <!-- Acções secundárias -->
+                <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-low flex flex-col gap-1">
                     <button onclick="toggleFavorito({{ anuncio.id }})"
-                            class="flex items-center gap-3 text-on-surface-variant hover:text-primary transition-colors font-medium group">
-                        <div class="p-2.5 bg-surface-container-low rounded-xl group-hover:bg-primary/10 transition-colors">
-                            <span class="material-symbols-outlined text-xl">favorite</span>
-                        </div>
-                        Adicionar aos Favoritos
+                            class="flex items-center gap-3 text-on-surface-variant hover:text-primary
+                                   transition-colors font-medium text-sm p-2.5 rounded-xl hover:bg-primary/5 w-full">
+                        <span class="material-symbols-outlined text-xl">favorite</span>
+                        Adicionar aos favoritos
                     </button>
-                    <button class="flex items-center gap-3 text-on-surface-variant hover:text-error transition-colors font-medium group">
-                        <div class="p-2.5 bg-surface-container-low rounded-xl group-hover:bg-error/10 transition-colors">
-                            <span class="material-symbols-outlined text-xl">flag</span>
-                        </div>
-                        Denunciar este anúncio
+                    <button class="flex items-center gap-3 text-on-surface-variant hover:text-error
+                                   transition-colors font-medium text-sm p-2.5 rounded-xl hover:bg-error/5 w-full">
+                        <span class="material-symbols-outlined text-xl">flag</span>
+                        Denunciar anúncio
                     </button>
                 </div>
 
                 <!-- Dicas de segurança -->
-                <div class="bg-primary/5 p-5 rounded-xl border-l-4 border-primary space-y-3">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary">security</span>
-                        <h4 class="font-bold text-on-surface">Dicas de Segurança</h4>
+                <div class="bg-primary/5 p-5 rounded-2xl border-l-4 border-primary">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="material-symbols-outlined text-primary icon-filled">security</span>
+                        <h4 class="font-bold text-on-surface text-sm">Dicas de Segurança</h4>
                     </div>
                     <ul class="text-xs text-on-surface-variant space-y-2 leading-relaxed">
-                        <li>• Nunca pague antecipadamente sem ver o produto.</li>
-                        <li>• Encontre-se sempre em locais públicos.</li>
-                        <li>• Desconfie de preços excessivamente baixos.</li>
+                        <li>✓ Nunca pague antes de ver o produto</li>
+                        <li>✓ Encontre-se sempre em locais públicos</li>
+                        <li>✓ Desconfie de preços excessivamente baixos</li>
+                        <li>✓ Verifique a identidade do vendedor</li>
                     </ul>
                 </div>
 
                 <!-- Anúncios relacionados -->
                 {% if anuncios_relacionados %}
-                <div class="space-y-3">
-                    <h4 class="font-semibold text-on-surface">Anúncios similares</h4>
+                <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-surface-container-low">
+                    <h4 class="font-bold text-on-surface text-sm mb-4">Anúncios semelhantes</h4>
                     <div class="space-y-3">
                         {% for rel in anuncios_relacionados %}
                         <a href="{% url 'anuncio-detalhe-view' rel.id %}"
-                           class="flex gap-3 p-2 hover:bg-surface-container-low rounded-xl transition-colors cursor-pointer">
-                            <div class="w-16 h-16 bg-surface-container-low rounded-lg flex-shrink-0 overflow-hidden">
+                           class="flex gap-3 p-2 hover:bg-surface-container-low rounded-xl transition-colors">
+                            <div class="w-14 h-14 bg-surface-container-low rounded-lg flex-shrink-0 overflow-hidden">
                                 {% if rel.imagem_principal %}
-                                    <img src="{{ rel.imagem_principal }}" alt="{{ rel.titulo }}" class="w-full h-full object-cover"/>
+                                <img src="{{ rel.imagem_principal }}" alt="{{ rel.titulo }}"
+                                     class="w-full h-full object-cover"/>
                                 {% endif %}
                             </div>
-                            <div>
-                                <p class="text-sm font-medium line-clamp-2">{{ rel.titulo }}</p>
-                                <p class="text-xs text-outline mt-1">{{ rel.preco|floatformat:0 }} MT</p>
+                            <div class="min-w-0">
+                                <p class="text-xs font-semibold text-on-surface line-clamp-2">{{ rel.titulo }}</p>
+                                <p class="text-xs text-primary font-bold mt-1">{{ rel.preco|floatformat:0 }} MT</p>
                             </div>
                         </a>
                         {% endfor %}
                     </div>
                 </div>
                 {% endif %}
+
             </aside>
         </div>
     </div>
@@ -241,43 +303,53 @@
 
 {% block extra_scripts %}
 <script>
-    function trocarImagem(url, thumb) {
-        document.getElementById('img-principal').src = url;
-        document.querySelectorAll('[onclick^="trocarImagem"]').forEach(t => {
-            t.classList.remove('border-primary');
-            t.classList.add('border-transparent');
-        });
-        thumb.classList.add('border-primary');
-        thumb.classList.remove('border-transparent');
-    }
+function trocarImagem(url, thumb) {
+    document.getElementById('img-principal').src = url;
+    document.querySelectorAll('[onclick^="trocarImagem"]').forEach(t => {
+        t.classList.remove('border-primary');
+        t.classList.add('border-transparent');
+    });
+    thumb.classList.add('border-primary');
+    thumb.classList.remove('border-transparent');
+}
 
-    async function toggleFavorito(id) {
-        {% if not user.is_authenticated %}
-        window.location.href = "{% url 'login' %}";
-        return;
-        {% endif %}
-        const resp = await fetch(`/api/v1/anuncios/${id}/favorito/`, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': CSRF_TOKEN }
-        });
-        if (resp.ok) {
-            const data = await resp.json();
-            const icon = document.getElementById('icon-favorito');
-            icon.style.fontVariationSettings = data.favorito ? "'FILL' 1" : "'FILL' 0";
-        }
+async function toggleFavorito(id) {
+    {% if not user.is_authenticated %}
+    window.location.href = "{% url 'login' %}?next={{ request.path }}";
+    return;
+    {% endif %}
+    const resp = await fetch(`/api/v1/anuncios/${id}/favorito/`, {
+        method: 'POST',
+        headers: Auth.headers(),
+    });
+    if (resp.ok) {
+        const data = await resp.json();
+        const icon = document.getElementById('icon-favorito');
+        if (icon) icon.style.fontVariationSettings = data.favorito ? "'FILL' 1" : "'FILL' 0";
+        showToast(data.favorito ? 'Adicionado aos favoritos' : 'Removido dos favoritos',
+                  data.favorito ? 'success' : 'info');
     }
+}
 
-    async function iniciarConversa(anuncioId) {
-        const msg = prompt('Escreva a sua mensagem para o vendedor:');
-        if (!msg) return;
-        const resp = await fetch('/api/v1/chat/conversas/', {
-            method: 'POST',
-            headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ anuncio_id: anuncioId, mensagem: msg })
+function mostrarTelefone() {
+    const btn  = document.getElementById('btn-tel');
+    const span = document.getElementById('tel-texto');
+    span.textContent = '{{ anuncio.utilizador.telefone }}';
+    btn.classList.add('bg-primary/10', 'text-primary');
+    btn.onclick = () => window.location.href = 'tel:{{ anuncio.utilizador.telefone }}';
+}
+
+function partilhar() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ anuncio.titulo|escapejs }}',
+            text:  '{{ anuncio.titulo|escapejs }} — {{ anuncio.preco|floatformat:0 }} MT',
+            url:   window.location.href,
         });
-        if (resp.ok) {
-            alert('Mensagem enviada com sucesso!');
-        }
+    } else {
+        navigator.clipboard.writeText(window.location.href);
+        showToast('Link copiado para a área de transferência', 'success');
     }
+}
 </script>
 {% endblock %}

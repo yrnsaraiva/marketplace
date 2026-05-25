@@ -1,106 +1,158 @@
 {% extends "base.html" %}
-{% block title %}Registar{% endblock %}
+{% block title %}Criar Conta{% endblock %}
 
 {% block content %}
-<main class="pt-24 pb-20 px-4 flex items-center justify-center min-h-screen">
+<main class="pt-28 pb-20 px-4 flex items-center justify-center min-h-[80vh]">
     <div class="w-full max-w-md">
-        <div class="bg-white rounded-2xl p-8 shadow-sm border border-surface-container-low">
-            <h1 class="text-2xl font-extrabold text-on-surface mb-2">Criar conta</h1>
-            <p class="text-on-surface-variant text-sm mb-8">
-                Crie a sua conta MozClassificados
-            </p>
+        <div class="text-center mb-8">
+            <a href="{% url 'home' %}" class="text-2xl font-black text-primary">MozClassificados</a>
+            <h1 class="text-2xl font-extrabold text-on-surface mt-4 mb-1">Criar conta</h1>
+            <p class="text-on-surface-variant text-sm">Comece a vender e comprar gratuitamente</p>
+        </div>
 
-            <form method="POST">
+        <div class="bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-surface-container-low">
+
+            <div id="msg-erro" class="hidden mb-5 flex items-start gap-3 p-3 bg-error-container rounded-xl text-sm text-error">
+                <span class="material-symbols-outlined text-base flex-shrink-0 mt-0.5">error</span>
+                <span id="msg-erro-texto"></span>
+            </div>
+
+            <div id="msg-sucesso" class="hidden mb-5 flex items-center gap-3 p-3 bg-primary/10 rounded-xl text-sm text-primary">
+                <span class="material-symbols-outlined text-base flex-shrink-0">check_circle</span>
+                <span>Conta criada! A redirecionar...</span>
+            </div>
+
+            {# Campos alinhados com RegistoSerializer: username, email, password, password2, telefone, provincia, cidade #}
+            <form id="form-registo" novalidate>
                 {% csrf_token %}
-
                 <div class="space-y-4">
-
-                    <div>
-                        <label class="block text-sm font-medium text-on-surface mb-2">
-                            Nome completo
-                        </label>
-                        <input type="text"
-                               name="full_name"
-                               required
-                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                               placeholder="O seu nome completo"/>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-on-surface mb-1.5">
+                                Utilizador <span class="text-error">*</span>
+                            </label>
+                            <input type="text" name="username" required autocomplete="username"
+                                   class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                   placeholder="joao123"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-on-surface mb-1.5">
+                                Telefone
+                            </label>
+                            <input type="tel" name="telefone" autocomplete="tel"
+                                   class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                   placeholder="84 123 4567"/>
+                        </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-on-surface mb-2">
-                            Utilizador
+                        <label class="block text-sm font-medium text-on-surface mb-1.5">
+                            Email <span class="text-error">*</span>
                         </label>
-                        <input type="text"
-                               name="username"
-                               required
-                               autofocus
-                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                               placeholder="Escolha um utilizador"/>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-on-surface mb-2">
-                            Email
-                        </label>
-                        <input type="email"
-                               name="email"
-                               required
-                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        <input type="email" name="email" required autocomplete="email"
+                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                                placeholder="exemplo@email.com"/>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-on-surface mb-2">
-                            Password
+                        <label class="block text-sm font-medium text-on-surface mb-1.5">
+                            Password <span class="text-error">*</span>
                         </label>
-                        <input type="password"
-                               name="password1"
-                               required
-                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                               placeholder="••••••••"/>
+                        <input type="password" name="password" id="pw1" required
+                               autocomplete="new-password"
+                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                               placeholder="Mínimo 8 caracteres"/>
+                        <p class="text-xs text-on-surface-variant mt-1">Use letras, números e símbolos.</p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-on-surface mb-2">
-                            Confirmar Password
+                        <label class="block text-sm font-medium text-on-surface mb-1.5">
+                            Confirmar Password <span class="text-error">*</span>
                         </label>
-                        <input type="password"
-                               name="password2"
-                               required
-                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                               placeholder="••••••••"/>
+                        <input type="password" name="password2" id="pw2" required
+                               autocomplete="new-password"
+                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                               placeholder="Repita a password"/>
                     </div>
-
-                    {% if form.errors %}
-                    <div class="text-error text-sm space-y-1">
-                        {% for field in form %}
-                            {% for error in field.errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        {% endfor %}
-
-                        {% for error in form.non_field_errors %}
-                            <p>{{ error }}</p>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
                 </div>
 
-                <button type="submit"
-                        class="w-full mt-6 py-3 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary/90 transition-all shadow-md">
+                <button type="submit" id="btn-registo"
+                        class="w-full mt-6 py-3.5 rounded-xl bg-primary text-on-primary font-semibold
+                               hover:bg-primary/90 transition-all shadow-md active:scale-[0.98]
+                               flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-base">person_add</span>
                     Criar conta
                 </button>
             </form>
 
-            <p class="text-center text-sm text-on-surface-variant mt-6">
-                Já tem conta?
-                <a href="{% url 'login' %}"
-                   class="text-primary font-semibold hover:underline">
-                    Entrar
-                </a>
-            </p>
+            <div class="mt-6 text-center">
+                <p class="text-sm text-on-surface-variant">
+                    Já tem conta?
+                    <a href="{% url 'login' %}" class="text-primary font-semibold hover:underline ml-1">
+                        Entrar
+                    </a>
+                </p>
+            </div>
         </div>
     </div>
 </main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.getElementById('form-registo').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const btn  = document.getElementById('btn-registo');
+    const errDiv  = document.getElementById('msg-erro');
+    const errText = document.getElementById('msg-erro-texto');
+    const sucDiv  = document.getElementById('msg-sucesso');
+
+    errDiv.classList.add('hidden');
+    sucDiv.classList.add('hidden');
+
+    const pw1 = document.getElementById('pw1').value;
+    const pw2 = document.getElementById('pw2').value;
+    if (pw1 !== pw2) {
+        errText.textContent = 'As passwords não coincidem.';
+        errDiv.classList.remove('hidden');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> A criar conta...';
+
+    const data = Object.fromEntries(new FormData(form));
+
+    try {
+        const resp = await fetch('/api/v1/auth/registo/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+            body: JSON.stringify(data),
+        });
+
+        const json = await resp.json();
+
+        if (resp.ok) {
+            Auth.save(json.tokens);
+            sucDiv.classList.remove('hidden');
+            setTimeout(() => window.location.href = '/', 1200);
+        } else {
+            // Formatar erros do DRF
+            const msgs = Object.entries(json)
+                .flatMap(([k, v]) => Array.isArray(v) ? v : [v])
+                .join(' ');
+            errText.textContent = msgs || 'Erro ao criar conta.';
+            errDiv.classList.remove('hidden');
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined text-base">person_add</span> Criar conta';
+        }
+    } catch {
+        errText.textContent = 'Erro de ligação. Tente novamente.';
+        errDiv.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-base">person_add</span> Criar conta';
+    }
+});
+</script>
 {% endblock %}

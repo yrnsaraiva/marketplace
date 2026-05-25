@@ -7,6 +7,7 @@ urlpatterns = [
     path('anuncios/<int:pk>/', views.anuncio_detalhe_view, name='anuncio-detalhe-view'),
     path('anuncios/publicar/', views.anuncio_publicar_view, name='anuncio-publicar'),
     path('anuncios/<int:pk>/editar/', views.anuncio_editar_view, name='anuncio-editar-view'),
+    path('planos/', views.planos_page_view, name='planos'),
 
     # Dashboard e área do utilizador
     path('dashboard/', views.dashboard_view, name='dashboard'),           # ← novo

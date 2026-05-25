@@ -140,3 +140,4 @@ class MeusPagamentosView(generics.ListAPIView):
             .select_related('subscricao__plano')
             .order_by('-criado_em')
         )
+
