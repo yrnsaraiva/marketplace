@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def _gerar_referencia(pagamento_id: int) -> str:
-    return f"PAG-{pagamento_id:08d}"
+    return f"PAG{pagamento_id:08d}"
 
 
 class PublicacaoService:
