@@ -247,8 +247,8 @@ LOGGING = {
 
 
 # PaySuite — Gateway de Pagamentos (https://paysuite.tech)
-PAYSUITE_API_KEY = config('PAYSUITE_API_KEY', default='')
-PAYSUITE_WEBHOOK_SECRET = config('PAYSUITE_WEBHOOK_SECRET', default='')
+PAYSUITE_API_KEY = config('PAYSUITE_API_KEY', default='2059|OzpGtJH8LR5GY9TxenDdoexZHrWy1sF2cKR5G9ew8bd00523')
+PAYSUITE_WEBHOOK_SECRET = config('PAYSUITE_WEBHOOK_SECRET', default='whsec_e9627dfb7ef4fd9fa3233e734abaa6ebe10cd95c3bc7b765')
 
 # URL para onde o utilizador é redirecionado após o checkout PaySuite.
 # Use o endpoint PaySuiteRetornoView — o <pk> é preenchido dinamicamente na view.
