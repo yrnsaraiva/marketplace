@@ -54,42 +54,9 @@ class PagamentoSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-# ---------------------------------------------------------------------------
-# Compra manual (legado)
-# ---------------------------------------------------------------------------
 class IniciarCompraSerializer(serializers.Serializer):
-    METODO_CHOICES = ['mpesa', 'emola', 'transferencia', 'manual']
-
-    plano_id = serializers.IntegerField()
-    metodo = serializers.ChoiceField(choices=METODO_CHOICES)
-    telefone = serializers.CharField(max_length=20, required=False, allow_blank=True)
-
-    def validate_metodo(self, value):
-        if value in ('mpesa', 'emola') and not self.initial_data.get('telefone'):
-            raise serializers.ValidationError(
-                'Número de telefone é obrigatório para pagamentos M-Pesa/e-Mola.'
-            )
-        return value
-
-
-# ---------------------------------------------------------------------------
-# Compra via PaySuite (checkout online)
-# ---------------------------------------------------------------------------
-class IniciarCompraPaysuiteSerializer(serializers.Serializer):
     """
-    Payload para iniciar o checkout no PaySuite.
-
-    Campos:
-        plano_id  — ID do PlanoPublicacao
-        metodo    — (opcional) 'mpesa', 'emola' ou 'credit_card'
-                     Se omitido, o utilizador escolhe no checkout do PaySuite.
+    O método de pagamento é tratado pelo checkout da PaySuite —
+    só precisamos do plano_id.
     """
-    METODO_CHOICES = ['mpesa', 'emola', 'credit_card']
-
     plano_id = serializers.IntegerField()
-    metodo = serializers.ChoiceField(
-        choices=METODO_CHOICES,
-        required=False,
-        allow_null=True,
-        default=None,
-    )
