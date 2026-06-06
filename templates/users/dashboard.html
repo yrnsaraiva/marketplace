@@ -1,116 +1,134 @@
 {% extends "users/area_utilizador.html" %}
+{% load humanize %}
 
 {% block area_content %}
 
-<!-- Meus Anúncios (últimos 5) -->
-<section>
-    <div class="flex items-center justify-between mb-5">
-        <h2 class="text-xl font-bold text-on-surface flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">inventory_2</span>
+<!-- ═══════════ MEUS ANÚNCIOS (últimos 5) ═══════════ -->
+<section class="bg-surface-container-lowest rounded-2xl shadow-sm border border-surface-container-low overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-surface-container-low">
+        <h2 class="font-bold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-xl">inventory_2</span>
             Meus Anúncios
         </h2>
-        <a href="{% url 'meus-anuncios' %}" class="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
-            Ver todos <span class="material-symbols-outlined text-sm">chevron_right</span>
+        <a href="{% url 'meus-anuncios' %}"
+           class="text-sm text-primary hover:underline font-medium flex items-center gap-0.5">
+            Ver todos
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
         </a>
     </div>
 
-    <div class="space-y-4">
+    <div class="divide-y divide-surface-container-low" id="lista-anuncios">
         {% for anuncio in meus_anuncios %}
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-surface-container-low hover:shadow-md transition-all">
-            <div class="flex gap-4">
-                <div class="w-24 h-24 flex-shrink-0 bg-surface-container-low rounded-xl overflow-hidden">
-                    {% if anuncio.imagem_principal %}
-                        <img class="w-full h-full object-cover" src="{{ anuncio.imagem_principal }}" alt="{{ anuncio.titulo }}"/>
-                    {% else %}
-                        <div class="w-full h-full flex items-center justify-center">
-                            <span class="material-symbols-outlined text-outline">image</span>
-                        </div>
-                    {% endif %}
+        <div class="flex gap-4 p-5 hover:bg-surface-container-low/50 transition-colors anuncio-item"
+             data-id="{{ anuncio.id }}">
+            <!-- Imagem -->
+            <div class="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-surface-container-low">
+                {% if anuncio.imagem_principal %}
+                <img class="w-full h-full object-cover" src="{{ anuncio.imagem_principal }}" alt="{{ anuncio.titulo }}"/>
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-outline">image</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="min-w-0">
-                            <div class="flex items-center gap-2 mb-1 flex-wrap">
-                                <span class="text-xs font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">{{ anuncio.categoria_nome }}</span>
-                                <span class="text-xs font-medium
-                                    {% if anuncio.estado == 'activo' %}text-green-600
-                                    {% elif anuncio.estado == 'expirado' %}text-red-500
-                                    {% elif anuncio.estado == 'pendente_pagamento' %}text-amber-500
-                                    {% else %}text-on-surface-variant{% endif %}">
-                                    ● {{ anuncio.get_estado_display }}
-                                </span>
-                            </div>
-                            <a href="{% url 'anuncio-detalhe-view' anuncio.id %}" class="font-bold text-on-surface hover:text-primary transition-colors truncate block">{{ anuncio.titulo }}</a>
-                            <p class="text-lg font-bold text-primary mt-1">{{ anuncio.preco|floatformat:0 }} MT</p>
+                {% endif %}
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                            <span class="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                {{ anuncio.categoria_nome }}
+                            </span>
+                            <span class="text-[10px] font-semibold
+                                {% if anuncio.estado == 'activo' %}text-green-600
+                                {% elif anuncio.estado == 'expirado' %}text-error
+                                {% elif anuncio.estado == 'pendente_pagamento' %}text-amber-500
+                                {% elif anuncio.estado == 'pausado' %}text-blue-500
+                                {% else %}text-on-surface-variant{% endif %}">
+                                ● {{ anuncio.get_estado_display }}
+                            </span>
                         </div>
-                        <div class="flex gap-1 flex-shrink-0">
-                            <a href="{% url 'anuncio-editar-view' anuncio.id %}" class="p-2 rounded-lg hover:bg-surface-container-low transition-colors" title="Editar">
-                                <span class="material-symbols-outlined text-outline text-base">edit</span>
-                            </a>
-                            <button onclick="eliminarAnuncio({{ anuncio.id }}, this)" class="p-2 rounded-lg hover:bg-red-50 transition-colors" title="Eliminar">
-                                <span class="material-symbols-outlined text-error text-base">delete</span>
-                            </button>
-                        </div>
+                        <a href="{% url 'anuncio-detalhe-view' anuncio.id %}"
+                           class="font-semibold text-on-surface hover:text-primary transition-colors text-sm line-clamp-1 block">
+                            {{ anuncio.titulo }}
+                        </a>
+                        <p class="font-bold text-primary text-sm mt-0.5">{{ anuncio.preco|floatformat:0 }} MT</p>
                     </div>
-                    <div class="flex items-center gap-4 mt-3 text-xs text-on-surface-variant flex-wrap">
-                        <div class="flex items-center gap-1">
-                            <span class="material-symbols-outlined text-sm">visibility</span>
-                            <span>{{ anuncio.visualizacoes }} visualizações</span>
-                        </div>
-                        {% if anuncio.publicado_em %}
-                        <div class="flex items-center gap-1">
-                            <span class="material-symbols-outlined text-sm">schedule</span>
-                            <span>Há {{ anuncio.publicado_em|timesince }}</span>
-                        </div>
-                        {% endif %}
+                    <!-- Acções -->
+                    <div class="flex gap-1 flex-shrink-0">
+                        <a href="{% url 'anuncio-editar-view' anuncio.id %}"
+                           class="p-1.5 rounded-lg hover:bg-surface-container-low transition-colors"
+                           title="Editar">
+                            <span class="material-symbols-outlined text-outline text-base">edit</span>
+                        </a>
+                        <button onclick="eliminarAnuncio({{ anuncio.id }}, this)"
+                                class="p-1.5 rounded-lg hover:bg-error-container/30 transition-colors"
+                                title="Eliminar">
+                            <span class="material-symbols-outlined text-error text-base">delete</span>
+                        </button>
                     </div>
+                </div>
+                <div class="flex items-center gap-4 mt-2 text-xs text-on-surface-variant">
+                    <span class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px]">visibility</span>
+                        {{ anuncio.visualizacoes }}
+                    </span>
+                    {% if anuncio.publicado_em %}
+                    <span class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px]">schedule</span>
+                        Há {{ anuncio.publicado_em|timesince }}
+                    </span>
+                    {% endif %}
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="text-center py-16 text-on-surface-variant bg-white rounded-2xl border border-surface-container-low">
+        <div class="text-center py-16 text-on-surface-variant">
             <span class="material-symbols-outlined text-5xl text-outline">inventory_2</span>
             <p class="mt-4 font-medium">Ainda não publicou nenhum anúncio.</p>
-            <p class="text-sm mt-1">Crie o seu primeiro anúncio agora.</p>
+            <p class="text-sm mt-1 text-on-surface-variant/70">Crie o seu primeiro anúncio agora.</p>
         </div>
         {% endfor %}
     </div>
 
-    <a href="{% url 'anuncio-publicar' %}" class="w-full mt-4 py-3 rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant font-medium hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined">add</span>
-        Criar novo anúncio
-    </a>
-</section>
-
-<!-- Favoritos (últimos 4) -->
-{% if favoritos %}
-<section>
-    <div class="flex items-center justify-between mb-5">
-        <h2 class="text-xl font-bold text-on-surface flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">favorite</span>
-            Favoritos
-        </h2>
-        <a href="{% url 'favoritos' %}" class="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
-            Ver todos <span class="material-symbols-outlined text-sm">chevron_right</span>
+    <div class="p-4 border-t border-surface-container-low">
+        <a href="{% url 'anuncio-publicar' %}"
+           class="w-full py-3 rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant
+                  font-medium hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 text-sm">
+            <span class="material-symbols-outlined text-base">add</span>
+            Criar novo anúncio
         </a>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+</section>
+
+<!-- ═══════════ FAVORITOS (últimos 4) ═══════════ -->
+{% if favoritos %}
+<section class="bg-surface-container-lowest rounded-2xl shadow-sm border border-surface-container-low overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-surface-container-low">
+        <h2 class="font-bold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-xl">favorite</span>
+            Favoritos
+        </h2>
+        <a href="{% url 'favoritos' %}"
+           class="text-sm text-primary hover:underline font-medium flex items-center gap-0.5">
+            Ver todos
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+        </a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-surface-container-low">
         {% for fav in favoritos %}
         <a href="{% url 'anuncio-detalhe-view' fav.anuncio.id %}"
-           class="bg-white rounded-2xl p-4 shadow-sm border border-surface-container-low hover:shadow-md transition-all flex gap-3">
-            <div class="w-16 h-16 flex-shrink-0 bg-surface-container-low rounded-lg overflow-hidden">
+           class="flex gap-3 p-4 hover:bg-surface-container-low/50 transition-colors">
+            <div class="w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-surface-container-low">
                 {% if fav.anuncio.imagem_principal %}
-                    <img class="w-full h-full object-cover" src="{{ fav.anuncio.imagem_principal }}" alt="{{ fav.anuncio.titulo }}"/>
-                {% else %}
-                    <div class="w-full h-full flex items-center justify-center">
-                        <span class="material-symbols-outlined text-outline text-sm">image</span>
-                    </div>
+                <img class="w-full h-full object-cover" src="{{ fav.anuncio.imagem_principal }}" alt="{{ fav.anuncio.titulo }}"/>
                 {% endif %}
             </div>
-            <div class="flex-1 min-w-0">
-                <h3 class="font-semibold text-on-surface text-sm line-clamp-2">{{ fav.anuncio.titulo }}</h3>
-                <p class="text-primary font-bold text-sm mt-1">{{ fav.anuncio.preco|floatformat:0 }} MT</p>
-                <p class="text-xs text-on-surface-variant mt-1">{{ fav.anuncio.cidade }}</p>
+            <div class="min-w-0">
+                <p class="text-xs font-semibold text-on-surface line-clamp-2">{{ fav.anuncio.titulo }}</p>
+                <p class="text-primary font-bold text-sm mt-0.5">{{ fav.anuncio.preco|floatformat:0 }} MT</p>
+                <p class="text-[10px] text-on-surface-variant mt-0.5">{{ fav.anuncio.cidade }}</p>
             </div>
         </a>
         {% endfor %}
@@ -122,16 +140,40 @@
 
 {% block extra_scripts %}
 <script>
+// Usa CSRF (sessão Django) + JWT se disponível — corrige "token_not_valid"
+function authHeaders() {
+    const h = { 'X-CSRFToken': CSRF_TOKEN };
+    const t = typeof Auth !== 'undefined' ? Auth.getAccess() : null;
+    if (t) h['Authorization'] = 'Bearer ' + t;
+    return h;
+}
+
 async function eliminarAnuncio(id, btn) {
     if (!confirm('Tem a certeza que deseja eliminar este anúncio?')) return;
+
+    btn.disabled = true;
+    btn.querySelector('.material-symbols-outlined').textContent = 'progress_activity';
+
     const resp = await fetch(`/api/v1/anuncios/${id}/editar/`, {
         method: 'DELETE',
-        headers: { 'X-CSRFToken': CSRF_TOKEN }
+        headers: authHeaders(),
     });
+
     if (resp.ok) {
-        btn.closest('.bg-white.rounded-2xl').remove();
+        const item = btn.closest('.anuncio-item');
+        item.style.opacity = '0';
+        item.style.transition = 'opacity 0.3s';
+        setTimeout(() => {
+            item.remove();
+            // Actualizar contador na sidebar
+            const stat = document.getElementById('stat-anuncios');
+            if (stat) stat.textContent = Math.max(0, parseInt(stat.textContent) - 1);
+        }, 300);
+        showToast('Anúncio eliminado.', 'success');
     } else {
-        alert('Erro ao eliminar o anúncio.');
+        showToast('Erro ao eliminar o anúncio.', 'error');
+        btn.disabled = false;
+        btn.querySelector('.material-symbols-outlined').textContent = 'delete';
     }
 }
 </script>

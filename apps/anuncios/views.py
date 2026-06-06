@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -14,7 +15,7 @@ from rest_framework.views import APIView
 
 from .filters import AnuncioFilter
 from .models import Anuncio, Favorito, ImagemAnuncio
-from apps.pagamentos.models import PlanoDestaque, PlanoPublicacao
+from apps.pagamentos.models import PlanoDestaque, PlanoPublicacao, SubscricaoUtilizador
 from .serializers import (
     AnuncioCriarSerializer,
     AnuncioDetalheSerializer,
@@ -555,15 +556,59 @@ def perfil_view(request):
 # planos
 # ---------------------------------------------------------------------------
 
+
+METODOS_PAGAMENTO = [
+    ('mpesa',        'M-Pesa',       'smartphone'),
+    ('emola',        'e-Mola',       'phone_android'),
+    ('transferencia', 'Transferência', 'account_balance'),
+]
+
+FAQ_ESTATICO = [
+    (
+        'Posso cancelar a qualquer momento?',
+        'Sim. Pode cancelar a sua subscrição quando quiser. O plano permanece activo até ao final do período pago e não há reembolsos parciais.',
+    ),
+    (
+        'O que acontece quando a subscrição expira?',
+        'Os seus anúncios ficam em estado "expirado" e deixam de aparecer nas pesquisas. Pode renovar o plano para reactivá-los automaticamente.',
+    ),
+    (
+        'Como funciona o destaque de anúncios?',
+        'Os anúncios em destaque aparecem no topo das pesquisas e na página inicial. Pode comprar destaque avulso ou usufruir dos dias incluídos no plano Pro e Empresarial.',
+    ),
+    (
+        'Como pago via M-Pesa ou e-Mola?',
+        'Após escolher o plano, introduza o seu número. Receberá uma notificação no telemóvel para aprovar o pagamento. O plano é activado imediatamente após confirmação.',
+    ),
+    (
+        'Posso fazer upgrade ou downgrade de plano?',
+        'Sim. Pode mudar de plano a qualquer momento. O upgrade é efectivo imediatamente; o downgrade aplica-se no próximo ciclo de facturação.',
+    ),
+    (
+        'O plano Gratuito tem limitações?',
+        'O plano Gratuito permite até 3 anúncios activos em simultâneo, com 3 fotos cada e duração de 30 dias. Não inclui destaque nem estatísticas avançadas.',
+    ),
+]
+
+
 def planos_page_view(request):
+    planos_publicacao = PlanoPublicacao.objects.filter(activo=True).order_by('ordem')
+    planos_destaque = PlanoDestaque.objects.filter(activo=True).order_by('ordem')
 
-    planos_publicacao = PlanoPublicacao.objects.filter(activo=True).order_by('ordem', 'preco')
+    subscricao_activa = None
+    if request.user.is_authenticated:
+        subscricao_activa = (
+            SubscricaoUtilizador.objects
+            .filter(utilizador=request.user, estado='activa', expira_em__gt=timezone.now())
+            .select_related('plano')
+            .order_by('-inicio_em')
+            .first()
+        )
 
-    planos_destaque = PlanoDestaque.objects.filter(activo=True).order_by('ordem', 'preco')
-
-    ctx = {
-        'planos_publicacao': planos_publicacao,
-        'planos_destaque': planos_destaque,
-    }
-
-    return render(request, 'anuncios/planos.html', ctx)
+    return render(request, 'pagamentos/planos.html', {
+        'planos_publicacao':  planos_publicacao,
+        'planos_destaque':    planos_destaque,
+        'subscricao_activa':  subscricao_activa,
+        'metodos_pagamento':  METODOS_PAGAMENTO,
+        'faq_estatico':       FAQ_ESTATICO,
+    })

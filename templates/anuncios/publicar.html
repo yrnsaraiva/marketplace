@@ -351,7 +351,7 @@ function mostrarSubcategorias(paiId) {
     document.getElementById('atributos-lista').innerHTML = '';
 }
 
-// ─── Atributos dinâmicos ───────────────────────────────────────────────────
+// ─── Atributos dinâmicos ──────────────────────────────────────────────────
 function carregarAtributos(catId) {
     const lista     = document.getElementById('atributos-lista');
     const container = document.getElementById('atributos-container');
@@ -437,6 +437,17 @@ function removerFoto(btn, idx) {
     previewImagens(input, MAX_IMAGENS);
 }
 
+// ─── Headers: usa sessão Django (CSRF) + JWT se disponível ────────────────
+// O utilizador pode estar autenticado via sessão Django (login normal)
+// ou via JWT (login API). A API aceita ambos via SessionAuthentication +
+// JWTAuthentication. O CSRF é sempre necessário para a sessão.
+function apiHeaders(extra = {}) {
+    const h = { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN, ...extra };
+    const token = typeof Auth !== 'undefined' ? Auth.getAccess() : null;
+    if (token) h['Authorization'] = 'Bearer ' + token;
+    return h;
+}
+
 // ─── Submit ────────────────────────────────────────────────────────────────
 document.getElementById('form-publicar').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -487,7 +498,7 @@ document.getElementById('form-publicar').addEventListener('submit', async (e) =>
 
         const resp = await fetch(url, {
             method,
-            headers: Auth.headers(),
+            headers: apiHeaders(),
             body: JSON.stringify(payload),
         });
 
@@ -506,15 +517,18 @@ document.getElementById('form-publicar').addEventListener('submit', async (e) =>
 
         const anuncio = await resp.json();
 
-        // Upload de imagens
+        // Upload de imagens (usa FormData — sem Content-Type, o browser define multipart)
         const fotos = document.getElementById('photos').files;
         if (fotos.length > 0) {
             const imgForm = new FormData();
             imgForm.append('anuncio_id', anuncio.id);
             Array.from(fotos).forEach(f => imgForm.append('imagens', f));
+            const imgHeaders = { 'X-CSRFToken': CSRF_TOKEN };
+            const token = typeof Auth !== 'undefined' ? Auth.getAccess() : null;
+            if (token) imgHeaders['Authorization'] = 'Bearer ' + token;
             await fetch('/api/v1/anuncios/upload-imagens/', {
                 method: 'POST',
-                headers: { 'X-CSRFToken': CSRF_TOKEN, ...( Auth.getAccess() ? { 'Authorization': 'Bearer ' + Auth.getAccess() } : {} ) },
+                headers: imgHeaders,
                 body: imgForm,
             });
         }

@@ -28,7 +28,6 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1',
 ]
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -67,6 +66,7 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
@@ -244,3 +244,22 @@ LOGGING = {
         },
     },
 }
+
+
+# PaySuite — Gateway de Pagamentos (https://paysuite.tech)
+PAYSUITE_API_KEY = config('PAYSUITE_API_KEY', default='')
+PAYSUITE_WEBHOOK_SECRET = config('PAYSUITE_WEBHOOK_SECRET', default='')
+
+# URL para onde o utilizador é redirecionado após o checkout PaySuite.
+# Use o endpoint PaySuiteRetornoView — o <pk> é preenchido dinamicamente na view.
+# Exemplo: a view IniciarCompraView passa o URL completo ao criar o pagamento.
+PAYSUITE_RETURN_URL = config(
+    'PAYSUITE_RETURN_URL',
+    default='https://zonal.up.railway.app/api/pagamentos/retorno/'
+)
+
+# URL do webhook que a PaySuite vai chamar (configurar no dashboard PaySuite).
+PAYSUITE_CALLBACK_URL = config(
+    'PAYSUITE_CALLBACK_URL',
+    default='https://zonal.up.railway.app/api/pagamentos/webhook/paysuite/'
+)

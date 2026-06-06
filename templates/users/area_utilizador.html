@@ -4,35 +4,55 @@
 {% block title %}{{ page_title|default:"Meu Painel" }}{% endblock %}
 
 {% block content %}
-<main class="pt-24 pb-20 px-4 mt-8 md:px-8 max-w-7xl mx-auto">
+<main class="pt-24 pb-24 px-4 md:px-8 max-w-7xl mx-auto mt-4">
 
     <div class="mb-8">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight">{{ page_title|default:"Meu Painel" }}</h1>
-        <p class="text-on-surface-variant mt-2">{{ page_subtitle|default:"Gerencie os seus anúncios e acompanhe o desempenho" }}</p>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight">
+            {{ page_title|default:"Meu Painel" }}
+        </h1>
+        <p class="text-on-surface-variant mt-2">
+            {{ page_subtitle|default:"Gerencie os seus anúncios e acompanhe o desempenho" }}
+        </p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        <!-- ── SIDEBAR ─────────────────────────────────────── -->
+        <!-- ═══════════ SIDEBAR ═══════════ -->
         <div class="lg:col-span-3">
-            <aside class="sticky top-24 space-y-6">
+            <aside class="sticky top-24 space-y-4">
+
+                <!-- Avatar + nome -->
+                <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-surface-container-low text-center">
+                    <div class="w-16 h-16 rounded-full mx-auto mb-3 overflow-hidden
+                                bg-gradient-to-br from-primary to-primary-container flex items-center justify-center">
+                        {% if request.user.foto_perfil %}
+                        <img src="{{ request.user.foto_perfil.url }}"
+                             class="w-full h-full object-cover"
+                             alt="{{ request.user.username }}"/>
+                        {% else %}
+                        <span class="material-symbols-outlined text-white text-3xl">person</span>
+                        {% endif %}
+                    </div>
+                    <p class="font-bold text-on-surface truncate">
+                        {{ request.user.get_full_name|default:request.user.username }}
+                    </p>
+                    <p class="text-xs text-on-surface-variant truncate">{{ request.user.email }}</p>
+                </div>
 
                 <!-- Stats -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-low">
-                    <div class="grid grid-cols-2 gap-4 text-center">
+                <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-surface-container-low">
+                    <div class="grid grid-cols-3 gap-3 text-center">
                         <div>
-                            <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 mb-2">
-                                <span class="material-symbols-outlined text-primary text-xl">inventory_2</span>
-                            </div>
-                            <div class="text-2xl font-black text-primary">{{ total_anuncios|default:0 }}</div>
-                            <p class="text-xs text-on-surface-variant font-medium">Anúncios</p>
+                            <p class="text-xl font-black text-primary" id="stat-anuncios">{{ total_anuncios|default:0 }}</p>
+                            <p class="text-[10px] text-on-surface-variant font-medium mt-0.5">Anúncios</p>
                         </div>
                         <div>
-                            <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 mb-2">
-                                <span class="material-symbols-outlined text-primary text-xl">visibility</span>
-                            </div>
-                            <div class="text-2xl font-black text-primary">{{ total_visualizacoes|default:0 }}</div>
-                            <p class="text-xs text-on-surface-variant font-medium">Visualizações</p>
+                            <p class="text-xl font-black text-primary">{{ total_visualizacoes|default:0 }}</p>
+                            <p class="text-[10px] text-on-surface-variant font-medium mt-0.5">Visitas</p>
+                        </div>
+                        <div>
+                            <p class="text-xl font-black text-primary" id="stat-favoritos">{{ total_favoritos|default:0 }}</p>
+                            <p class="text-[10px] text-on-surface-variant font-medium mt-0.5">Favoritos</p>
                         </div>
                     </div>
                 </div>
@@ -40,87 +60,100 @@
                 <!-- Plano activo -->
                 {% if subscricao_activa %}
                 <div class="bg-gradient-to-br from-primary to-primary-container rounded-2xl p-5 text-white shadow-sm">
-                    <div class="flex items-center gap-2 mb-3">
-                        <span class="material-symbols-outlined text-white/80 text-lg">workspace_premium</span>
-                        <span class="text-xs font-semibold text-white/80 uppercase tracking-wider">Plano activo</span>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-white/80 text-base">workspace_premium</span>
+                        <span class="text-[10px] font-bold text-white/70 uppercase tracking-widest">Plano activo</span>
                     </div>
-                    <p class="font-bold text-lg">{{ subscricao_activa.plano.nome }}</p>
-                    {% if not subscricao_activa.ilimitado %}
-                    <p class="text-sm text-white/80 mt-1">
+                    <p class="font-bold text-base">{{ subscricao_activa.plano.nome }}</p>
+                    {% if subscricao_activa.ilimitado %}
+                    <p class="text-xs text-white/80 mt-1">Anúncios ilimitados</p>
+                    {% else %}
+                    <p class="text-xs text-white/80 mt-1">
                         {{ subscricao_activa.creditos_disponiveis }} crédito{{ subscricao_activa.creditos_disponiveis|pluralize:"s" }} restante{{ subscricao_activa.creditos_disponiveis|pluralize:"s" }}
                     </p>
-                    {% else %}
-                    <p class="text-sm text-white/80 mt-1">Anúncios ilimitados</p>
                     {% endif %}
-                    <p class="text-xs text-white/60 mt-2">Expira em {{ subscricao_activa.expira_em|date:"d/m/Y" }}</p>
+                    <p class="text-[10px] text-white/60 mt-2">
+                        Expira em {{ subscricao_activa.expira_em|date:"d/m/Y" }}
+                    </p>
                 </div>
                 {% else %}
-                <div class="bg-white rounded-2xl p-5 border-2 border-dashed border-outline-variant shadow-sm">
-                    <div class="text-center">
-                        <span class="material-symbols-outlined text-outline text-3xl">workspace_premium</span>
-                        <p class="text-sm font-medium text-on-surface-variant mt-2">Sem plano activo</p>
-                        <a href="#" class="mt-3 inline-block text-xs font-semibold text-primary hover:underline">Ver planos →</a>
-                    </div>
-                </div>
+                <a href="{% url 'planos' %}"
+                   class="block bg-surface-container-lowest rounded-2xl p-5 border-2 border-dashed
+                          border-outline-variant hover:border-primary transition-all text-center group">
+                    <span class="material-symbols-outlined text-outline text-3xl group-hover:text-primary transition-colors">workspace_premium</span>
+                    <p class="text-sm font-medium text-on-surface-variant group-hover:text-primary transition-colors mt-2">
+                        Activar plano
+                    </p>
+                    <p class="text-xs text-on-surface-variant/60 mt-0.5">Ver planos disponíveis →</p>
+                </a>
                 {% endif %}
 
                 <!-- Navegação -->
-                <div class="bg-white rounded-2xl p-4 shadow-sm border border-surface-container-low">
-                    <div class="space-y-1">
+                <div class="bg-surface-container-lowest rounded-2xl p-3 shadow-sm border border-surface-container-low">
+                    <nav class="space-y-0.5">
                         <a href="{% url 'dashboard' %}"
-                           class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                                  {% if active_tab == 'dashboard' %}bg-primary/10 text-primary font-semibold{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %}">
-                            <span class="material-symbols-outlined {% if active_tab != 'dashboard' %}group-hover:text-primary{% endif %} transition-colors">dashboard</span>
-                            <span>Visão Geral</span>
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all
+                                  {% if active_tab == 'dashboard' %}bg-primary/10 text-primary font-semibold
+                                  {% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface{% endif %}">
+                            <span class="material-symbols-outlined text-base">dashboard</span>
+                            Visão Geral
                         </a>
-
                         <a href="{% url 'meus-anuncios' %}"
-                           class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
-                                  {% if active_tab == 'anuncios' %}bg-primary/10 text-primary font-semibold{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %}">
-                            <span class="material-symbols-outlined group-hover:text-primary transition-colors">inventory_2</span>
-                            <span>Meus Anúncios</span>
-                            <span class="ml-auto text-xs bg-surface-container-low px-2 py-0.5 rounded-full">{{ total_anuncios|default:0 }}</span>
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all
+                                  {% if active_tab == 'anuncios' %}bg-primary/10 text-primary font-semibold
+                                  {% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface{% endif %}">
+                            <span class="material-symbols-outlined text-base">inventory_2</span>
+                            Meus Anúncios
+                            <span class="ml-auto text-xs bg-surface-container-low px-2 py-0.5 rounded-full
+                                         {% if active_tab == 'anuncios' %}bg-primary/20{% endif %}">
+                                {{ total_anuncios|default:0 }}
+                            </span>
                         </a>
-
                         <a href="{% url 'favoritos' %}"
-                           class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
-                                  {% if active_tab == 'favoritos' %}bg-primary/10 text-primary font-semibold{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %}">
-                            <span class="material-symbols-outlined group-hover:text-primary transition-colors">favorite</span>
-                            <span>Favoritos</span>
-                            {% if total_favoritos %}<span class="ml-auto text-xs bg-surface-container-low px-2 py-0.5 rounded-full">{{ total_favoritos }}</span>{% endif %}
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all
+                                  {% if active_tab == 'favoritos' %}bg-primary/10 text-primary font-semibold
+                                  {% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface{% endif %}">
+                            <span class="material-symbols-outlined text-base">favorite</span>
+                            Favoritos
+                            {% if total_favoritos %}
+                            <span class="ml-auto text-xs bg-surface-container-low px-2 py-0.5 rounded-full">
+                                {{ total_favoritos }}
+                            </span>
+                            {% endif %}
                         </a>
-
+                        <a href="{% url 'planos' %}"
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all
+                                  text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface">
+                            <span class="material-symbols-outlined text-base">workspace_premium</span>
+                            Planos
+                        </a>
                         <a href="{% url 'perfil' %}"
-                           class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
-                                  {% if active_tab == 'perfil' %}bg-primary/10 text-primary font-semibold{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %}">
-                            <span class="material-symbols-outlined group-hover:text-primary transition-colors">person</span>
-                            <span>Perfil</span>
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all
+                                  {% if active_tab == 'perfil' %}bg-primary/10 text-primary font-semibold
+                                  {% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface{% endif %}">
+                            <span class="material-symbols-outlined text-base">manage_accounts</span>
+                            Perfil
                         </a>
-                    </div>
-                </div>
-
-                <!-- Dica -->
-                <div class="bg-gradient-to-r from-primary/5 to-primary-container/5 rounded-2xl p-5 border border-primary/20">
-                    <div class="flex items-start gap-3">
-                        <span class="material-symbols-outlined text-primary">lightbulb</span>
-                        <div>
-                            <h4 class="font-semibold text-on-surface text-sm">Dica do dia</h4>
-                            <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">
-                                Anúncios com fotos de qualidade recebem até 3x mais visualizações.
-                            </p>
-                        </div>
-                    </div>
+                        <hr class="border-surface-container-low my-1"/>
+                        <form method="POST" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm
+                                           text-error hover:bg-error-container/20 transition-all">
+                                <span class="material-symbols-outlined text-base">logout</span>
+                                Sair
+                            </button>
+                        </form>
+                    </nav>
                 </div>
 
             </aside>
         </div>
-        <!-- ── FIM SIDEBAR ──────────────────────────────────── -->
 
-        <!-- ── CONTEÚDO PRINCIPAL ───────────────────────────── -->
-        <div class="lg:col-span-9 space-y-8">
+        <!-- ═══════════ CONTEÚDO ═══════════ -->
+        <div class="lg:col-span-9 space-y-6">
             {% block area_content %}{% endblock %}
         </div>
-        <!-- ── FIM CONTEÚDO ─────────────────────────────────── -->
 
     </div>
 </main>
