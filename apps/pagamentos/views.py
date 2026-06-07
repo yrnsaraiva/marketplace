@@ -126,14 +126,15 @@ class PaySuiteWebhookView(APIView):
 # Redirect de retorno após checkout PaySuite
 # ---------------------------------------------------------------------------
 class PaySuiteRetornoView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = []
+    authentication_classes = []
 
     def get(self, request, pk):
-        pagamento = get_object_or_404(
-            Pagamento, pk=pk, subscricao__utilizador=request.user
-        )
-        service = PublicacaoService(utilizador=request.user)
-        pagamento = service.sincronizar_pagamento(pagamento)
+        pagamento = get_object_or_404(Pagamento, pk=pk)
+        if pagamento.estado != 'confirmado':
+            # Tentar sincronizar antes de redirigir
+            service = PublicacaoService(utilizador=pagamento.subscricao.utilizador)
+            pagamento = service.sincronizar_pagamento(pagamento)
 
         if pagamento.estado == 'confirmado':
             return redirect('/conta/dashboard/?pagamento=sucesso')
