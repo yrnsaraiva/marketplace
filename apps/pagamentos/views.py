@@ -79,31 +79,44 @@ class PaySuiteWebhookView(APIView):
     authentication_classes = []
 
     def post(self, request):
-        signature = request.headers.get('X-Webhook-Signature', '')
-        try:
-            client = PaySuiteClient()
-            if not client.verificar_webhook(request.body, signature):
-                return Response({'erro': 'Assinatura inválida'}, status=status.HTTP_401_UNAUTHORIZED)
-        except PaySuiteError as e:
-            return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.info("PaySuite webhook recebido — body: %s", request.body[:500])
+
+        # Verificar assinatura apenas se o segredo estiver configurado
+        from django.conf import settings
+        webhook_secret = getattr(settings, 'PAYSUITE_WEBHOOK_SECRET', '')
+        if webhook_secret:
+            signature = request.headers.get('X-Webhook-Signature', '')
+            try:
+                client = PaySuiteClient()
+                if not client.verificar_webhook(request.body, signature):
+                    logger.warning("PaySuite webhook: assinatura inválida — sig=%s", signature)
+                    return Response({'erro': 'Assinatura inválida'}, status=status.HTTP_401_UNAUTHORIZED)
+            except PaySuiteError as e:
+                logger.error("PaySuite webhook: erro de configuração: %s", e)
+                return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         try:
             payload = json.loads(request.body)
         except json.JSONDecodeError:
+            logger.error("PaySuite webhook: JSON inválido")
             return Response({'erro': 'JSON inválido'}, status=status.HTTP_400_BAD_REQUEST)
 
         event = payload.get('event')
         data = payload.get('data', {})
         paysuite_id = data.get('id', '')
 
-        logger.info("PaySuite webhook: event=%s id=%s", event, paysuite_id)
+        logger.info("PaySuite webhook: event=%s paysuite_id=%s", event, paysuite_id)
 
         try:
             pagamento = Pagamento.objects.select_related('subscricao').get(
                 referencia_externa=paysuite_id
             )
         except Pagamento.DoesNotExist:
+            logger.warning("PaySuite webhook: nenhum pagamento com referencia_externa=%s", paysuite_id)
+            # Responder 200 para a PaySuite não reenviar
             return Response({'mensagem': 'Ignorado'})
+
+        logger.info("PaySuite webhook: pagamento #%s encontrado — estado actual: %s", pagamento.pk, pagamento.estado)
 
         if pagamento.estado != 'pendente':
             return Response({'mensagem': 'Já processado'})
@@ -111,13 +124,17 @@ class PaySuiteWebhookView(APIView):
         pagamento.resposta_gateway = payload
         pagamento.save(update_fields=['resposta_gateway', 'actualizado_em'])
 
-        if event == 'payment.success':
+        if event in ('payment.success', 'payment.completed') or \
+           data.get('transaction', {}).get('status') == 'completed':
             pagamento.confirmar()
-            logger.info("Pagamento #%s confirmado — subscrição #%s activada",
+            logger.info("PaySuite webhook: pagamento #%s confirmado — subscrição #%s activada",
                         pagamento.pk, pagamento.subscricao_id)
         elif event == 'payment.failed':
             pagamento.estado = 'falhado'
             pagamento.save(update_fields=['estado', 'actualizado_em'])
+            logger.info("PaySuite webhook: pagamento #%s falhado", pagamento.pk)
+        else:
+            logger.info("PaySuite webhook: evento '%s' ignorado", event)
 
         return Response({'mensagem': 'OK'})
 
@@ -137,8 +154,8 @@ class PaySuiteRetornoView(APIView):
             pagamento = service.sincronizar_pagamento(pagamento)
 
         if pagamento.estado == 'confirmado':
-            return redirect('/conta/dashboard/?pagamento=sucesso')
-        return redirect(f'/planos/?pagamento=pendente&ref={pk}')
+            return redirect('/dashboard/?pagamento=sucesso')
+        return redirect('/planos/?pagamento=pendente')
 
 
 # ---------------------------------------------------------------------------

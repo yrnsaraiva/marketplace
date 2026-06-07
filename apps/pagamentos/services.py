@@ -99,8 +99,9 @@ class PublicacaoService:
         # Chamar PaySuite para obter o checkout_url
         referencia = _gerar_referencia(pagamento.pk)
         from django.conf import settings
-        base = getattr(settings, 'PAYSUITE_RETURN_URL', '').rstrip('/')
-        return_url = f"{base}/{pagamento.pk}/" if base else None
+        base_return = getattr(settings, 'PAYSUITE_RETURN_URL', '').rstrip('/')
+        return_url = f"{base_return}/{pagamento.pk}/" if base_return else None
+        callback_url = getattr(settings, 'PAYSUITE_CALLBACK_URL', '') or None
 
         try:
             client = PaySuiteClient()
@@ -109,6 +110,7 @@ class PublicacaoService:
                 reference=referencia,
                 description=f"Plano {plano.nome}",
                 return_url=return_url,
+                callback_url=callback_url,
             )
         except PaySuiteError as e:
             logger.error("PaySuite erro ao criar pagamento: %s", e)
@@ -138,7 +140,8 @@ class PublicacaoService:
         pagamento.resposta_gateway = resultado
         pagamento.save(update_fields=['resposta_gateway', 'actualizado_em'])
 
-        if resultado.get("status") == "paid":
+        if resultado.get("status") in ("paid", "completed") or \
+           resultado.get("transaction", {}).get("status") == "completed":
             pagamento.confirmar()
 
         return pagamento
