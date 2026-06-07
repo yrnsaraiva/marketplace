@@ -255,7 +255,7 @@ PAYSUITE_WEBHOOK_SECRET = config('PAYSUITE_WEBHOOK_SECRET', default='whsec_e9627
 # Exemplo: a view IniciarCompraView passa o URL completo ao criar o pagamento.
 PAYSUITE_RETURN_URL = config(
     'PAYSUITE_RETURN_URL',
-    default='https://zonal.up.railway.app/api/pagamentos/retorno/'
+    default='https://zonal.up.railway.app/api/pagamentos/retorno'
 )
 
 # URL do webhook que a PaySuite vai chamar (configurar no dashboard PaySuite).
