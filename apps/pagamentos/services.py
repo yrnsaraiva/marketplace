@@ -96,12 +96,17 @@ class PublicacaoService:
 
         # Chamar PaySuite para obter o checkout_url
         referencia = _gerar_referencia(pagamento.pk)
+        from django.conf import settings
+        base = getattr(settings, 'PAYSUITE_RETURN_URL', '').rstrip('/')
+        return_url = f"{base}/{pagamento.pk}/" if base else None
+
         try:
             client = PaySuiteClient()
             resultado = client.criar_pagamento(
                 amount=float(plano.preco),
                 reference=referencia,
                 description=f"Plano {plano.nome}",
+                return_url=return_url,
             )
         except PaySuiteError as e:
             logger.error("PaySuite erro ao criar pagamento: %s", e)
