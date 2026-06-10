@@ -612,3 +612,19 @@ def planos_page_view(request):
         'metodos_pagamento':  METODOS_PAGAMENTO,
         'faq_estatico':       FAQ_ESTATICO,
     })
+
+
+def termos_condicoes(request):
+    return render(request, 'anuncios/termos.html')
+
+
+def politica_view(request):
+    return render(request, 'anuncios/privacidade.html')
+
+
+def contactos(request):
+    return render(request, 'anuncios/contactos.html')
+
+
+def instrucoes(request):
+    return render(request, 'anuncios/instrucoes.html')

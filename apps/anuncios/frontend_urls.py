@@ -14,4 +14,8 @@ urlpatterns = [
     path('dashboard/anuncios/', views.meus_anuncios_view, name='meus-anuncios'),
     path('dashboard/favoritos/', views.favoritos_view, name='favoritos'), # ← novo
     path('dashboard/perfil/', views.perfil_view, name='perfil'),          # ← novo
+    path('termos-e-condicoes/', views.termos_condicoes, name='termos-e-condicoes'),
+    path('politica-de-privacidade', views.politica_view, name='politica-de-privacidade'),
+    path('linha-do-cliente/', views.contactos, name='contactos'),
+    path('como-funciona/', views.instrucoes, name='instrucoes'),
 ]

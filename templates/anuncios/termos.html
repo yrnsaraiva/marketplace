@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Termos e Condições{% endblock %}
+{% block meta_description %}Leia os Termos e Condições do MozClassificados antes de publicar ou comprar anúncios na plataforma.{% endblock %}
+
+{% block content %}
+<main class="pt-19 pb-32">
+
+    <!-- ═══════════ HERO ═══════════ -->
+    <section class="px-4 py-14 md:py-20 bg-gradient-to-b from-primary/10 to-transparent">
+        <div class="max-w-2xl mx-auto text-center pt-6">
+            <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full
+                        text-xs font-bold uppercase tracking-widest mb-6">
+                <span class="material-symbols-outlined text-sm icon-filled">gavel</span>
+                Termos e Condições
+            </div>
+            <h1 class="font-headline text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-on-surface">
+                As regras que nos guiam
+            </h1>
+            <p class="text-on-surface-variant text-base leading-relaxed">
+                Leia com atenção antes de publicar ou utilizar a plataforma.
+                Ao criar uma conta, aceita automaticamente estes termos.
+            </p>
+            <p class="text-xs text-on-surface-variant/60 mt-4">
+                Última actualização: Junho de 2026
+            </p>
+        </div>
+    </section>
+
+    <!-- ═══════════ ÍNDICE DE NAVEGAÇÃO ═══════════ -->
+    <section class="px-4 my-10 max-w-4xl mx-auto">
+        <div class="bg-surface-container-lowest border border-surface-container-low rounded-2xl p-6">
+            <p class="text-xs font-bold uppercase tracking-widest text-primary mb-4">Índice</p>
+            <nav class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {% for section in sections %}
+                <a href="#{{ section.anchor }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                          text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors
+                                 flex-shrink-0">{{ forloop.counter }}</span>
+                    <span class="font-semibold text-sm">{{ section.titulo }}</span>
+                </a>
+                {% empty %}
+                <a href="#anuncios" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                           text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors
+                                 flex-shrink-0">1</span>
+                    <span class="font-semibold text-sm">Anúncios</span>
+                </a>
+                <a href="#verificacao" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                              text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors
+                                 flex-shrink-0">2</span>
+                    <span class="font-semibold text-sm">Verificação da Conta</span>
+                </a>
+                <a href="#pagamentos" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                             text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors
+                                 flex-shrink-0">3</span>
+                    <span class="font-semibold text-sm">Pagamentos</span>
+                </a>
+                <a href="#plano-ilimitado" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                                  text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors
+                                 flex-shrink-0">4</span>
+                    <span class="font-semibold text-sm">Plano Ilimitado</span>
+                </a>
+                <a href="#promocoes" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                            text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors
+                                 flex-shrink-0">5</span>
+                    <span class="font-semibold text-sm">Promoções e Bónus</span>
+                </a>
+                <a href="#privacidade" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                              text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors
+                                 flex-shrink-0">6</span>
+                    <span class="font-semibold text-sm">Privacidade e Dados</span>
+                </a>
+                {% endfor %}
+            </nav>
+        </div>
+    </section>
+
+    <!-- ═══════════ CONTEÚDO PRINCIPAL ═══════════ -->
+    <div class="px-4 max-w-4xl mx-auto space-y-6">
+
+        <!-- ── 1. ANÚNCIOS ── -->
+        <section id="anuncios"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <!-- Cabeçalho da secção -->
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl">campaign</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 1</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Anúncios</h2>
+                </div>
+            </div>
+            <!-- Itens -->
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">a</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Anúncios fora de qualidade, categoria errada, fotografias de baixa qualidade,
+                        preço incorrecto, ou duplicados, serão notificados para rectificação no prazo
+                        de <strong class="text-on-surface">2 horas</strong>. Casos graves poderão ser
+                        removidos imediatamente sem reembolso.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">b</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        O uso de serviços pagos não garante reembolso em caso de remoção por incumprimento.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">c</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Anúncios denunciados serão tratados segundo as alíneas anteriores.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">d</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Cada anúncio deve representar <strong class="text-on-surface">um único produto ou serviço</strong>.
+                        Anúncios com múltiplos itens serão removidos.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6 bg-error/5">
+                    <span class="w-6 h-6 bg-error/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-error flex-shrink-0 mt-0.5">e</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-error">Não são permitidos</strong> anúncios com animais de estimação.
+                        A remoção é imediata e o anunciante será notificado.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6 bg-error/5">
+                    <span class="w-6 h-6 bg-error/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-error flex-shrink-0 mt-0.5">f</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-error">Não são permitidos</strong> anúncios que incidam, directa ou
+                        indirectamente, à prática sexual. A remoção é imediata.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6 bg-error/5">
+                    <span class="w-6 h-6 bg-error/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-error flex-shrink-0 mt-0.5">g</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Fotografias com menção a concorrentes serão removidas de imediato. Em caso de
+                        reincidência, a conta poderá ser suspensa por tempo indeterminado.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6 bg-error/5">
+                    <span class="w-6 h-6 bg-error/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-error flex-shrink-0 mt-0.5">h</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-error">Não são permitidos</strong> anúncios de procura. A plataforma
+                        aceita apenas anúncios de oferta de produtos ou serviços.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">i</span>
+                    <div class="flex-1">
+                        <p class="text-sm text-on-surface-variant leading-relaxed mb-3">
+                            Cada anúncio tem validade de <strong class="text-on-surface">30 dias</strong>.
+                            Findo esse prazo, o anúncio é automaticamente removido caso não seja renovado.
+                        </p>
+                        <!-- Pill visual -->
+                        <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5
+                                    rounded-full text-xs font-bold">
+                            <span class="material-symbols-outlined text-sm icon-filled">schedule</span>
+                            Validade: 30 dias
+                        </div>
+                    </div>
+                </li>
+
+            </ul>
+        </section>
+
+        <!-- ── 2. VERIFICAÇÃO DA CONTA ── -->
+        <section id="verificacao"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">verified_user</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 2</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Verificação da Conta</h2>
+                </div>
+            </div>
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">a</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        As contas devem ser verificadas por razões de segurança. O processo requer
+                        fotografia do utilizador e do respectivo documento de identificação.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">b</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Os dados são armazenados em segurança e acedidos apenas em casos comprovados
+                        de fraude, sendo então partilhados com as autoridades competentes.
+                    </p>
+                </li>
+
+            </ul>
+        </section>
+
+        <!-- ── 3. PAGAMENTOS ── -->
+        <section id="pagamentos"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">payments</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 3</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Pagamentos</h2>
+                </div>
+            </div>
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">a</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Não são aceites reembolsos</strong> referentes a
+                        carregamentos ou verificações de conta. Certifique-se de que tem todos os
+                        requisitos disponíveis antes de efectuar qualquer pagamento.
+                    </p>
+                </li>
+
+            </ul>
+
+            <!-- Alerta de atenção -->
+            <div class="mx-6 mb-6 bg-highlights/10 border border-highlights/20 rounded-xl
+                        flex items-start gap-3 p-4">
+                <span class="material-symbols-outlined text-highlights text-xl icon-filled flex-shrink-0 mt-0.5">warning</span>
+                <p class="text-xs text-on-surface-variant leading-relaxed">
+                    Verifique sempre os requisitos necessários antes de efectuar pagamentos
+                    para evitar constrangimentos futuros.
+                </p>
+            </div>
+        </section>
+
+        <!-- ── 4. PLANO ILIMITADO ── -->
+        <section id="plano-ilimitado"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">all_inclusive</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 4</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Plano Ilimitado</h2>
+                </div>
+            </div>
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">a</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Anúncios com imagens impróprias, manchas escuras, preço ou categoria errada,
+                        duplicações ou repetições resultarão na remoção dos anúncios
+                        <strong class="text-on-surface">e no cancelamento imediato do plano sem reembolso</strong>.
+                    </p>
+                </li>
+
+            </ul>
+        </section>
+
+        <!-- ── 5. PROMOÇÕES / BÓNUS ── -->
+        <section id="promocoes"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">redeem</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 5</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Promoções e Bónus</h2>
+                </div>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-on-surface-variant leading-relaxed">
+                    A plataforma disponibiliza, de forma aleatória, promoções e bónus em determinados
+                    produtos e períodos, para criar valor aos utilizadores. Estas promoções podem ser
+                    <strong class="text-on-surface">removidas ou ajustadas a qualquer momento sem aviso prévio</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- ── 6. PRIVACIDADE E DADOS ── -->
+        <section id="privacidade"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">lock</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 6</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Privacidade e Dados</h2>
+                </div>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-on-surface-variant leading-relaxed">
+                    Os seus dados pessoais são tratados com confidencialidade e não são partilhados com
+                    terceiros, excepto quando exigido por lei ou em casos comprovados de fraude ou
+                    actividade ilegal, em que as informações poderão ser fornecidas às autoridades competentes.
+                </p>
+                <p class="text-sm text-on-surface-variant leading-relaxed">
+                    A plataforma reserva o direito de rever estes termos e condições
+                    <strong class="text-on-surface">sem aviso prévio</strong>. Ao publicar qualquer
+                    anúncio, o utilizador concorda automaticamente com os termos em vigor.
+                </p>
+            </div>
+        </section>
+
+        <!-- ═══════════ BANNER DE ACEITAÇÃO ═══════════ -->
+        <div class="bg-primary/5 rounded-2xl p-8 border border-primary/10 text-center">
+            <span class="material-symbols-outlined text-4xl text-primary icon-filled mb-4 block">handshake</span>
+            <h3 class="text-xl font-black tracking-tight mb-2 text-on-surface">
+                Ao usar a plataforma, aceita estes termos
+            </h3>
+            <p class="text-sm text-on-surface-variant mb-6 max-w-md mx-auto leading-relaxed">
+                O registo e utilização do MozClassificados implica a aceitação integral
+                destas condições. Em caso de dúvidas, entre em contacto connosco.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="{% url 'anuncio-publicar' %}"
+                   class="bg-primary text-on-primary px-8 py-3.5 rounded-full font-bold text-sm
+                          hover:bg-primary/90 transition-all shadow-md inline-flex items-center gap-2 justify-center">
+                    <span class="material-symbols-outlined text-base">add</span>
+                    Publicar um anúncio
+                </a>
+                <a href="#"
+                   class="border-2 border-primary text-primary px-8 py-3.5 rounded-full font-bold text-sm
+                          hover:bg-primary hover:text-on-primary transition-all inline-flex items-center gap-2 justify-center">
+                    <span class="material-symbols-outlined text-base">mail</span>
+                    Contactar suporte
+                </a>
+            </div>
+        </div>
+
+    </div><!-- /content -->
+
+</main>
+{% endblock %}

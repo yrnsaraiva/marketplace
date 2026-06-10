@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Instruções — Zonal{% endblock %}
+{% block meta_description %}Aprenda a publicar anúncios, gerir a sua conta e tirar o máximo partido da plataforma zonal.co.mz.{% endblock %}
+
+{% block content %}
+<main class="pt-19 pb-32">
+
+    <!-- ═══════════ HERO ═══════════ -->
+    <section class="px-4 py-14 md:py-20 bg-gradient-to-b from-primary/10 to-transparent">
+        <div class="max-w-2xl mx-auto text-center pt-6">
+            <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full
+                        text-xs font-bold uppercase tracking-widest mb-6">
+                <span class="material-symbols-outlined text-sm icon-filled">menu_book</span>
+                Instruções
+            </div>
+            <h1 class="font-headline text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-on-surface">
+                Como usar a plataforma
+            </h1>
+            <p class="text-on-surface-variant text-base leading-relaxed">
+                Guias passo a passo para publicar anúncios, gerir a conta e
+                tirar o máximo partido da Zonal.
+            </p>
+        </div>
+    </section>
+
+    <!-- ═══════════ ÍNDICE ═══════════ -->
+    <section class="px-4 my-10 max-w-4xl mx-auto">
+        <div class="bg-surface-container-lowest border border-surface-container-low rounded-2xl p-6">
+            <p class="text-xs font-bold uppercase tracking-widest text-primary mb-4">Índice</p>
+            <nav class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+
+                <a href="#criar-conta" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                              text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">1</span>
+                    <span class="font-semibold text-sm">Criar Conta</span>
+                </a>
+
+                <a href="#publicar-anuncio" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                                   text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">2</span>
+                    <span class="font-semibold text-sm">Publicar um Anúncio</span>
+                </a>
+
+                <a href="#boas-fotos" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                             text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">3</span>
+                    <span class="font-semibold text-sm">Dicas para Boas Fotos</span>
+                </a>
+
+                <a href="#gerir-anuncio" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                                text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">4</span>
+                    <span class="font-semibold text-sm">Gerir os Meus Anúncios</span>
+                </a>
+
+                <a href="#planos" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                         text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">5</span>
+                    <span class="font-semibold text-sm">Planos e Destaque</span>
+                </a>
+
+                <a href="#pagamento" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                            text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">6</span>
+                    <span class="font-semibold text-sm">Como Pagar</span>
+                </a>
+
+                <a href="#seguranca" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                            text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">7</span>
+                    <span class="font-semibold text-sm">Segurança e Fraudes</span>
+                </a>
+
+            </nav>
+        </div>
+    </section>
+
+    <!-- ═══════════ CONTEÚDO ═══════════ -->
+    <div class="px-4 max-w-4xl mx-auto space-y-6">
+
+        <!-- ── 1. CRIAR CONTA ── -->
+        <section id="criar-conta"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">person_add</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Passo 1</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Criar Conta</h2>
+                </div>
+            </div>
+            <!-- Passos numerados -->
+            <ol class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-7 h-7 bg-primary rounded-full flex items-center justify-center
+                                 text-xs font-black text-on-primary flex-shrink-0 mt-0.5">1</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Aceda a <strong class="text-on-surface">zonal.co.mz</strong> e clique em
+                        <strong class="text-on-surface">"Entrar"</strong> no canto superior direito.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-7 h-7 bg-primary rounded-full flex items-center justify-center
+                                 text-xs font-black text-on-primary flex-shrink-0 mt-0.5">2</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Preencha o formulário com o seu nome, número de telefone, endereço de
+                        e-mail e uma palavra-passe segura.
+                    </p>
+                </li>
+                
+                <li class="flex gap-4 p-6">
+                    <span class="w-7 h-7 bg-primary rounded-full flex items-center justify-center
+                                 text-xs font-black text-on-primary flex-shrink-0 mt-0.5">3</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        A sua conta fica activa de imediato.
+                    </p>
+                </li>
+
+            </ol>
+        </section>
+        
+        <!-- ── 2. PUBLICAR ANÚNCIO ── -->
+        <section id="publicar-anuncio"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">campaign</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Passo 2</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Publicar um Anúncio</h2>
+                </div>
+            </div>
+            <ol class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-7 h-7 bg-primary rounded-full flex items-center justify-center
+                                 text-xs font-black text-on-primary flex-shrink-0 mt-0.5">1</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Clique em <strong class="text-on-surface">"Publicar anúncio"</strong> no menu
+                        principal e faça login se ainda não o fez.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-7 h-7 bg-primary rounded-full flex items-center justify-center
+                                 text-xs font-black text-on-primary flex-shrink-0 mt-0.5">2</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Escolha a <strong class="text-on-surface">categoria correcta</strong> para o
+                        seu produto ou serviço. Anúncios em categorias erradas serão removidos.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-7 h-7 bg-primary rounded-full flex items-center justify-center
+                                 text-xs font-black text-on-primary flex-shrink-0 mt-0.5">3</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Preencha o título, descrição detalhada e
+                        <strong class="text-on-surface">preço real</strong> do produto. Preços
+                        incorrectos ou enganosos resultam na remoção do anúncio.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-7 h-7 bg-primary rounded-full flex items-center justify-center
+                                 text-xs font-black text-on-primary flex-shrink-0 mt-0.5">4</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Adicione <strong class="text-on-surface">fotografias de qualidade</strong>
+                        (veja o passo 4 para dicas). Cada anúncio representa
+                        um único produto ou serviço.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-7 h-7 bg-primary rounded-full flex items-center justify-center
+                                 text-xs font-black text-on-primary flex-shrink-0 mt-0.5">5</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Reveja toda a informação e clique em
+                        <strong class="text-on-surface">"Publicar"</strong>. O anúncio fica activo
+                        por <strong class="text-on-surface">30 dias</strong> e pode ser renovado
+                        antes de expirar.
+                    </p>
+                </li>
+
+            </ol>
+
+            <!-- Regras rápidas -->
+            <div class="mx-6 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="bg-error/5 border border-error/10 rounded-xl flex items-start gap-3 p-4">
+                    <span class="material-symbols-outlined text-error text-lg icon-filled flex-shrink-0 mt-0.5">block</span>
+                    <div>
+                        <p class="text-xs font-bold text-error mb-1">Não são permitidos</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Animais, conteúdo sexual, anúncios de procura, logos de concorrentes ou múltiplos itens por anúncio.</p>
+                    </div>
+                </div>
+                <div class="bg-primary/5 border border-primary/10 rounded-xl flex items-start gap-3 p-4">
+                    <span class="material-symbols-outlined text-primary text-lg icon-filled flex-shrink-0 mt-0.5">schedule</span>
+                    <div>
+                        <p class="text-xs font-bold text-primary mb-1">Validade</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Cada anúncio é válido por 30 dias. Renove antes de expirar para manter a visibilidade.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── 3. BOAS FOTOS ── -->
+        <section id="boas-fotos"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">photo_camera</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Passo 3</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Dicas para Boas Fotos</h2>
+                </div>
+            </div>
+            <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <div class="flex gap-3 items-start">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">light_mode</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-0.5">Boa iluminação</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Fotografe perto de uma janela ou ao ar livre. Evite sombras fortes e zonas escuras.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 items-start">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">crop_free</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-0.5">Fundo neutro</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Use fundo branco, cinzento ou uma parede lisa. Evite fundos desordenados.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 items-start">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">center_focus_strong</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-0.5">Foco nítido</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Certifique-se de que o produto está bem focado. Evite imagens desfocadas ou tremidas.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 items-start">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">360</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-0.5">Vários ângulos</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Inclua frente, costas e detalhes relevantes. Mais fotos aumentam a confiança do comprador.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 items-start">
+                    <span class="material-symbols-outlined text-error text-xl icon-filled flex-shrink-0 mt-0.5">no_photography</span>
+                    <div>
+                        <p class="text-sm font-bold text-error mb-0.5">Sem logótipos de concorrentes</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Fotografias com menção a outras plataformas serão removidas de imediato.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 items-start">
+                    <span class="material-symbols-outlined text-error text-xl icon-filled flex-shrink-0 mt-0.5">hide_image</span>
+                    <div>
+                        <p class="text-sm font-bold text-error mb-0.5">Sem marcas de água</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Não adicione texto, marcas de água ou filtros excessivos que ocultem o produto.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ── 4. GERIR ANÚNCIOS ── -->
+        <section id="gerir-anuncio"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">manage_accounts</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Passo 4</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Gerir os Meus Anúncios</h2>
+                </div>
+            </div>
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">edit</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-1">Editar</p>
+                        <p class="text-sm text-on-surface-variant leading-relaxed">
+                            Aceda a <strong class="text-on-surface">"Os meus anúncios"</strong> e clique
+                            em <strong class="text-on-surface">"Editar"</strong> para alterar título,
+                            descrição, preço ou fotografias a qualquer momento.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">delete</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-1">Remover</p>
+                        <p class="text-sm text-on-surface-variant leading-relaxed">
+                            Se o produto já foi vendido ou deixou de estar disponível, remova o
+                            anúncio para evitar contactos desnecessários.
+                        </p>
+                    </div>
+                </li>
+
+            </ul>
+        </section>
+
+        <!-- ── 5. PLANOS ── -->
+        <section id="planos"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">workspace_premium</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Passo 5</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Planos e Destaque</h2>
+                </div>
+            </div>
+            <div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                <!-- Gratuito -->
+                <div class="border border-surface-container rounded-xl p-5 flex flex-col gap-3">
+                    <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Gratuito</p>
+                    <p class="text-2xl font-black text-on-surface">0 MT</p>
+                    <ul class="space-y-1.5 text-xs text-on-surface-variant flex-1">
+                        <li class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-base">check</span>
+                            Publicação de anúncios
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-base">check</span>
+                            Validade de 30 dias
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-on-surface-variant/30 text-base">close</span>
+                            Sem destaque
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Destaque -->
+                <div class="border-2 border-primary rounded-xl p-5 flex flex-col gap-3 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-primary text-on-primary text-[10px] font-black
+                                uppercase tracking-widest px-3 py-1 rounded-bl-xl">Popular</div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-primary">Destaque</p>
+                    <p class="text-2xl font-black text-on-surface">XX MT</p>
+                    <ul class="space-y-1.5 text-xs text-on-surface-variant flex-1">
+                        <li class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-base">check</span>
+                            Aparece no topo da categoria
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-base">check</span>
+                            Maior visibilidade
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-base">check</span>
+                            Validade de 30 dias
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Ilimitado -->
+                <div class="border border-surface-container rounded-xl p-5 flex flex-col gap-3">
+                    <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Ilimitado</p>
+                    <p class="text-2xl font-black text-on-surface">XX MT<span class="text-sm font-normal text-on-surface-variant">/mês</span></p>
+                    <ul class="space-y-1.5 text-xs text-on-surface-variant flex-1">
+                        <li class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-base">check</span>
+                            Anúncios ilimitados
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-base">check</span>
+                            Destaque automático
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-base">check</span>
+                            Suporte prioritário
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+            <div class="mx-6 mb-6 bg-highlights/10 border border-highlights/20 rounded-xl flex items-start gap-3 p-4">
+                <span class="material-symbols-outlined text-highlights text-xl icon-filled flex-shrink-0 mt-0.5">warning</span>
+                <p class="text-xs text-on-surface-variant leading-relaxed">
+                    No plano Ilimitado, anúncios com imagens de baixa qualidade, preço errado ou
+                    duplicações resultam no <strong class="text-on-surface">cancelamento imediato do plano sem reembolso</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- ── 6. COMO PAGAR ── -->
+        <section id="pagamento"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">payments</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Passo 6</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Como Pagar</h2>
+                </div>
+            </div>
+            <ol class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-7 h-7 bg-primary rounded-full flex items-center justify-center
+                                 text-xs font-black text-on-primary flex-shrink-0 mt-0.5">1</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Seleccione o plano ou serviço pretendido e clique em
+                        <strong class="text-on-surface">"Pagar"</strong>.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-7 h-7 bg-primary rounded-full flex items-center justify-center
+                                 text-xs font-black text-on-primary flex-shrink-0 mt-0.5">2</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Escolha o método de pagamento: <strong class="text-on-surface">M-Pesa</strong>,
+                        <strong class="text-on-surface">e-Mola</strong> ou transferência bancária.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-7 h-7 bg-primary rounded-full flex items-center justify-center
+                                 text-xs font-black text-on-primary flex-shrink-0 mt-0.5">3</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Confirme o pagamento introduzindo o PIN solicitado pelo seu operador.
+                        Receberá uma confirmação imediata por SMS.
+                    </p>
+                </li>
+
+            </ol>
+            <div class="mx-6 mb-6 bg-highlights/10 border border-highlights/20 rounded-xl flex items-start gap-3 p-4">
+                <span class="material-symbols-outlined text-highlights text-xl icon-filled flex-shrink-0 mt-0.5">warning</span>
+                <p class="text-xs text-on-surface-variant leading-relaxed">
+                    <strong class="text-on-surface">Não são aceites reembolsos</strong> de pagamentos
+                    já efectuados. Verifique todos os requisitos antes de pagar.
+                </p>
+            </div>
+        </section>
+
+        <!-- ── 7. SEGURANÇA ── -->
+        <section id="seguranca"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">security</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Passo 7</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Segurança e Fraudes</h2>
+                </div>
+            </div>
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">1</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Encontre em local público.</strong> Prefira
+                        mercados, centros comerciais ou outras zonas movimentadas para trocar produtos.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">visibility</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Verifique o produto.</strong> Inspecione
+                        o produto antes de efectuar qualquer pagamento.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="material-symbols-outlined text-error text-xl icon-filled flex-shrink-0 mt-0.5">phishing</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-error">Cuidado com links externos.</strong> A Zonal nunca
+                        solicita pagamentos por links enviados por mensagem. Desconfie de pedidos de
+                        pagamento antecipado antes de ver o produto.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">flag</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Denuncie anúncios suspeitos.</strong> Use o
+                        botão <strong class="text-on-surface">"Denunciar"</strong> em qualquer anúncio.
+                        A nossa equipa analisará a situação rapidamente.
+                    </p>
+                </li>
+
+            </ul>
+        </section>
+
+        <!-- ═══════════ BANNER FINAL ═══════════ -->
+        <div class="bg-primary/5 rounded-2xl p-8 border border-primary/10 text-center">
+            <span class="material-symbols-outlined text-4xl text-primary icon-filled mb-4 block">support_agent</span>
+            <h3 class="text-xl font-black tracking-tight mb-2 text-on-surface">
+                Ainda tem dúvidas?
+            </h3>
+            <p class="text-sm text-on-surface-variant mb-6 max-w-md mx-auto leading-relaxed">
+                A nossa equipa está disponível para ajudar. Entre em contacto
+                pelo canal mais conveniente.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="{% url 'anuncio-publicar' %}"
+                   class="bg-primary text-on-primary px-8 py-3.5 rounded-full font-bold text-sm
+                          hover:bg-primary/90 transition-all shadow-md inline-flex items-center gap-2 justify-center">
+                    <span class="material-symbols-outlined text-base">add</span>
+                    Publicar um anúncio
+                </a>
+                <a href="{% url 'contactos' %}"
+                   class="border-2 border-primary text-primary px-8 py-3.5 rounded-full font-bold text-sm
+                          hover:bg-primary hover:text-on-primary transition-all inline-flex items-center gap-2 justify-center">
+                    <span class="material-symbols-outlined text-base">headset_mic</span>
+                    Falar com suporte
+                </a>
+            </div>
+        </div>
+
+    </div><!-- /content -->
+
+</main>
+{% endblock %}

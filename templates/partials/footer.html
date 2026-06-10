@@ -39,10 +39,10 @@
         <div>
             <h4 class="font-bold text-on-surface mb-4">Suporte</h4>
             <ul class="space-y-2 text-sm text-on-surface-variant">
-                <li><a href="#" class="hover:text-primary transition-colors">Centro de Ajuda</a></li>
-                <li><a href="#" class="hover:text-primary transition-colors">Política de Privacidade</a></li>
-                <li><a href="#" class="hover:text-primary transition-colors">Termos e Condições</a></li>
-                <li><a href="#" class="hover:text-primary transition-colors">Contacto</a></li>
+                <li><a href="{% url 'instrucoes' %}" class="hover:text-primary transition-colors">Centro de Ajuda</a></li>
+                <li><a href="{% url 'politica-de-privacidade' %}" class="hover:text-primary transition-colors">Política de Privacidade</a></li>
+                <li><a href="{% url 'termos-e-condicoes' %}" class="hover:text-primary transition-colors">Termos e Condições</a></li>
+                <li><a href="{% url 'contactos' %}" class="hover:text-primary transition-colors">Contacto</a></li>
             </ul>
         </div>
 

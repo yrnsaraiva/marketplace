@@ -1,0 +1,639 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Política de Privacidade — Zonal{% endblock %}
+{% block meta_description %}Saiba como a Zonal recolhe, utiliza e protege os seus dados pessoais em zonal.co.mz.{% endblock %}
+
+{% block content %}
+<main class="pt-19 pb-32">
+
+    <!-- ═══════════ HERO ═══════════ -->
+    <section class="px-4 py-14 md:py-20 bg-gradient-to-b from-primary/10 to-transparent">
+        <div class="max-w-2xl mx-auto text-center pt-6">
+            <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full
+                        text-xs font-bold uppercase tracking-widest mb-6">
+                <span class="material-symbols-outlined text-sm icon-filled">shield</span>
+                Política de Privacidade
+            </div>
+            <h1 class="font-headline text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-on-surface">
+                Os seus dados, protegidos
+            </h1>
+            <p class="text-on-surface-variant text-base leading-relaxed">
+                Explicamos de forma clara como recolhemos, utilizamos e protegemos
+                as suas informações pessoais em <strong class="text-on-surface">zonal.co.mz</strong>.
+            </p>
+            <p class="text-xs text-on-surface-variant/60 mt-4">
+                Última actualização: Junho de 2026
+            </p>
+        </div>
+    </section>
+
+    <!-- ═══════════ ÍNDICE ═══════════ -->
+    <section class="px-4 my-10 max-w-4xl mx-auto">
+        <div class="bg-surface-container-lowest border border-surface-container-low rounded-2xl p-6">
+            <p class="text-xs font-bold uppercase tracking-widest text-primary mb-4">Índice</p>
+            <nav class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+
+                <a href="#aplicacao" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                            text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">1</span>
+                    <span class="font-semibold text-sm">Aplicação desta Política</span>
+                </a>
+
+                <a href="#dados-recolhidos" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                                   text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">2</span>
+                    <span class="font-semibold text-sm">Dados Recolhidos</span>
+                </a>
+
+                <a href="#uso-dados" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                            text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">3</span>
+                    <span class="font-semibold text-sm">Uso das Informações</span>
+                </a>
+
+                <a href="#partilha" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                           text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">4</span>
+                    <span class="font-semibold text-sm">Partilha de Informação</span>
+                </a>
+
+                <a href="#direitos" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                           text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">5</span>
+                    <span class="font-semibold text-sm">Direitos do Utilizador</span>
+                </a>
+
+                <a href="#controlo" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                           text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">6</span>
+                    <span class="font-semibold text-sm">Controlo dos Seus Dados</span>
+                </a>
+
+                <a href="#criancas" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                           text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">7</span>
+                    <span class="font-semibold text-sm">Crianças e Adolescentes</span>
+                </a>
+
+                <a href="#retencao" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                           text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">8</span>
+                    <span class="font-semibold text-sm">Retenção e Eliminação</span>
+                </a>
+
+                <a href="#alteracoes" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                             text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">9</span>
+                    <span class="font-semibold text-sm">Alterações à Política</span>
+                </a>
+
+                <a href="#contacto" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5
+                                           text-on-surface-variant hover:text-primary transition-all group">
+                    <span class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-xs font-black text-primary group-hover:bg-primary/20 transition-colors flex-shrink-0">10</span>
+                    <span class="font-semibold text-sm">Contacto e Encarregado</span>
+                </a>
+
+            </nav>
+        </div>
+    </section>
+
+    <!-- ═══════════ CONTEÚDO PRINCIPAL ═══════════ -->
+    <div class="px-4 max-w-4xl mx-auto space-y-6">
+
+        <!-- ── 1. APLICAÇÃO ── -->
+        <section id="aplicacao"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">policy</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 1</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Aplicação desta Política</h2>
+                </div>
+            </div>
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">a</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Esta Política de Privacidade aplica-se a todos os dados fornecidos e recolhidos
+                        quando o utilizador cria uma conta, publica anúncios, navega ou faz qualquer
+                        utilização de <strong class="text-on-surface">zonal.co.mz</strong> e dos seus
+                        serviços associados (aplicações móveis, ferramentas e plataformas digitais).
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">b</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Esta Política <strong class="text-on-surface">não se aplica</strong> a sites de
+                        terceiros acedidos por links disponíveis na plataforma. A Zonal não se
+                        responsabiliza pelas práticas de privacidade desses sites. Recomendamos a
+                        consulta das respectivas políticas antes de fornecer quaisquer dados.
+                    </p>
+                </li>
+
+            </ul>
+        </section>
+
+        <!-- ── 2. DADOS RECOLHIDOS ── -->
+        <section id="dados-recolhidos"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">database</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 2</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Dados Recolhidos</h2>
+                </div>
+            </div>
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">a</span>
+                    <div class="flex-1">
+                        <p class="text-sm text-on-surface-variant leading-relaxed mb-3">
+                            <strong class="text-on-surface">Dados de conta.</strong> Ao criar uma conta,
+                            recolhemos nome, endereço de e-mail, senha, número de telefone, documento de
+                            identificação, fotografias e histórico de transacções na plataforma.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">b</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Dados de anúncios.</strong> Ao publicar um anúncio,
+                        além das informações do produto ou serviço, algumas informações do seu perfil
+                        ficam acessíveis a terceiros (nome, telefone, data do último acesso e data de
+                        criação do perfil). Os anúncios podem ser indexados por motores de pesquisa.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">c</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Dados técnicos.</strong> Recolhemos automaticamente
+                        o endereço IP, cookies, identificadores de dispositivo, dados de localização
+                        (GPS ou rede celular) e informações sobre a navegação, para personalizar a
+                        experiência e melhorar os nossos serviços.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">d</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Atendimento ao cliente.</strong> Quando contacta o
+                        nosso suporte, recolhemos as informações necessárias para dar resposta ao seu
+                        pedido e manter o histórico da comunicação.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">e</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Promoções e marketing.</strong> Caso participe em
+                        acções de marketing ou promoções da Zonal, poderemos recolher informações
+                        adicionais relacionadas com a sua participação.
+                    </p>
+                </li>
+
+            </ul>
+
+            <!-- Info pill -->
+            <div class="mx-6 mb-6 bg-primary/5 border border-primary/10 rounded-xl flex items-start gap-3 p-4">
+                <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">info</span>
+                <p class="text-xs text-on-surface-variant leading-relaxed">
+                    Pode desactivar os cookies no seu navegador, mas isso pode afectar o funcionamento
+                    de algumas funcionalidades da plataforma.
+                </p>
+            </div>
+        </section>
+
+        <!-- ── 3. USO DAS INFORMAÇÕES ── -->
+        <section id="uso-dados"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">manage_search</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 3</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Uso das Informações</h2>
+                </div>
+            </div>
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">a</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Criar e gerir a sua conta, verificar a sua identidade, prestar os nossos
+                        serviços e resolver dificuldades técnicas.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">b</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Personalizar a sua experiência na plataforma, mostrando conteúdos e ofertas
+                        relevantes para o seu perfil.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">c</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Entrar em contacto consigo sobre questões relacionadas com o serviço,
+                        atendimento ao cliente ou comunicações de marketing (com possibilidade de
+                        cancelamento a qualquer momento).
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">d</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Realizar análises internas, testes e pesquisas para melhorar continuamente
+                        a qualidade da plataforma e dos nossos serviços.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">e</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Combater fraudes, actividades ilícitas e cumprir obrigações legais e
+                        regulatórias aplicáveis em Moçambique.
+                    </p>
+                </li>
+
+            </ul>
+        </section>
+
+        <!-- ── 4. PARTILHA ── -->
+        <section id="partilha"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">share</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 4</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Partilha de Informação</h2>
+                </div>
+            </div>
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">a</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Entre utilizadores.</strong> Dados de contacto de
+                        um anunciante (ex.: telefone) podem ser visíveis a utilizadores interessados,
+                        caso o anunciante tenha optado por os disponibilizar.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">b</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Prestadores de serviços.</strong> Partilhamos dados
+                        com fornecedores externos que nos apoiam na operação da plataforma, exigindo
+                        que tratem os dados de acordo com as nossas instruções e termos.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6 bg-highlights/5">
+                    <span class="w-6 h-6 bg-highlights/20 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-highlights flex-shrink-0 mt-0.5">c</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Autoridades competentes.</strong> Em casos de
+                        investigação de fraude, actividade ilegal ou por exigência legal, os dados
+                        poderão ser partilhados com as autoridades judiciais ou administrativas competentes.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">d</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Transferência de activos.</strong> Em caso de
+                        reorganização ou venda da Zonal, os dados podem ser transferidos ao novo
+                        titular para garantir a continuidade dos serviços.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">e</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        <strong class="text-on-surface">Com o seu consentimento.</strong> Noutras situações
+                        não previstas acima, solicitaremos sempre o seu consentimento antes de qualquer
+                        partilha de dados pessoais.
+                    </p>
+                </li>
+
+            </ul>
+        </section>
+
+        <!-- ── 5. DIREITOS DO UTILIZADOR ── -->
+        <section id="direitos"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">gavel</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 5</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Direitos do Utilizador</h2>
+                </div>
+            </div>
+
+            <!-- Grid de direitos -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-6">
+
+                <div class="bg-primary/5 rounded-xl p-4 flex gap-3">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">visibility</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-1">Acesso</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">
+                            Pode solicitar a confirmação e acesso aos dados pessoais que armazenamos sobre si.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-primary/5 rounded-xl p-4 flex gap-3">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">edit</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-1">Correcção</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">
+                            Pode corrigir dados incompletos, inexactos ou desactualizados a qualquer momento.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-primary/5 rounded-xl p-4 flex gap-3">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">delete</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-1">Eliminação</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">
+                            Pode solicitar a anonimização, bloqueio ou eliminação de dados desnecessários
+                            ou tratados em desconformidade com a lei.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-primary/5 rounded-xl p-4 flex gap-3">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">move_up</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-1">Portabilidade</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">
+                            Pode solicitar a portabilidade dos seus dados para outro prestador de serviços,
+                            salvo quando estejam em causa segredos comerciais.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-primary/5 rounded-xl p-4 flex gap-3">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">cancel</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-1">Revogação do Consentimento</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">
+                            Pode revogar o seu consentimento a qualquer momento, de forma gratuita e simples.
+                            Os tratamentos anteriores mantêm-se válidos.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-primary/5 rounded-xl p-4 flex gap-3">
+                    <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">info</span>
+                    <div>
+                        <p class="text-sm font-bold text-on-surface mb-1">Informação sobre partilha</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">
+                            Pode solicitar informações detalhadas sobre como os seus dados são partilhados
+                            com terceiros.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mx-6 mb-6 bg-primary/5 border border-primary/10 rounded-xl flex items-start gap-3 p-4">
+                <span class="material-symbols-outlined text-primary text-xl icon-filled flex-shrink-0 mt-0.5">mail</span>
+                <p class="text-xs text-on-surface-variant leading-relaxed">
+                    Para exercer qualquer um destes direitos, contacte-nos através do nosso
+                    canal de atendimento em <strong class="text-on-surface">zonal.co.mz</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- ── 6. CONTROLO ── -->
+        <section id="controlo"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">tune</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 6</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Controlo dos Seus Dados</h2>
+                </div>
+            </div>
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">a</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Tem liberdade para escolher quais informações fornece à Zonal, sendo que
+                        algumas são essenciais para a prestação dos serviços.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">b</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Pode aceder, corrigir ou eliminar os seus dados a partir da secção
+                        <strong class="text-on-surface">"A minha conta"</strong> ou enviando um pedido
+                        para o nosso canal de atendimento.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">c</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Qualquer informação tornada pública nos anúncios ou perfil é da sua
+                        responsabilidade. Evite partilhar dados sensíveis como morada exacta ou
+                        informações financeiras directamente nos anúncios.
+                    </p>
+                </li>
+
+            </ul>
+        </section>
+
+        <!-- ── 7. CRIANÇAS ── -->
+        <section id="criancas"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">child_care</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 7</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Crianças e Adolescentes</h2>
+                </div>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-on-surface-variant leading-relaxed">
+                    A Zonal <strong class="text-on-surface">não recolhe nem armazena</strong> intencionalmente
+                    dados pessoais de menores de <strong class="text-on-surface">18 anos</strong>. Caso
+                    detectemos ou sejamos notificados de que dados de menores foram recolhidos
+                    inadvertidamente, empreenderemos todos os esforços para os eliminar de imediato.
+                </p>
+            </div>
+        </section>
+
+        <!-- ── 8. RETENÇÃO ── -->
+        <section id="retencao"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">hourglass_top</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 8</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Retenção e Eliminação</h2>
+                </div>
+            </div>
+            <ul class="divide-y divide-surface-container-low">
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">a</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Os seus dados são conservados pelo tempo exigido por lei, pelo tempo necessário
+                        à prestação dos serviços, ou enquanto for necessário para preservar o interesse
+                        legítimo da Zonal.
+                    </p>
+                </li>
+
+                <li class="flex gap-4 p-6">
+                    <span class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center
+                                 text-[11px] font-black text-primary flex-shrink-0 mt-0.5">b</span>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        O tratamento termina quando: a finalidade para a qual os dados foram recolhidos
+                        for atingida; o utilizador solicitar a eliminação dos dados; ou existir
+                        determinação legal nesse sentido. Após o término, os dados serão eliminados,
+                        salvo obrigação legal de conservação.
+                    </p>
+                </li>
+
+            </ul>
+        </section>
+
+        <!-- ── 9. ALTERAÇÕES ── -->
+        <section id="alteracoes"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">update</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 9</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Alterações à Política</h2>
+                </div>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-on-surface-variant leading-relaxed">
+                    A Zonal reserva-se o direito de actualizar esta Política de Privacidade a qualquer
+                    momento, mediante publicação da versão actualizada em
+                    <strong class="text-on-surface">zonal.co.mz</strong>. Em caso de alterações materiais
+                    ao tratamento dos dados pessoais, os utilizadores serão notificados previamente e
+                    terão a oportunidade de rever a política antes de continuar a utilizar os serviços.
+                </p>
+            </div>
+        </section>
+
+        <!-- ── 10. CONTACTO ── -->
+        <section id="contacto"
+                 class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">contact_support</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Secção 10</span>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Contacto e Encarregado de Dados</h2>
+                </div>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-on-surface-variant leading-relaxed">
+                    Para questões específicas sobre os seus dados pessoais ou sobre esta Política de
+                    Privacidade, contacte directamente o nosso Encarregado de Protecção de Dados
+                    através do canal dedicado disponível em
+                    <strong class="text-on-surface">zonal.co.mz</strong>.
+                </p>
+                <p class="text-sm text-on-surface-variant leading-relaxed">
+                    Para questões gerais de suporte ou utilização da plataforma, utilize o
+                    canal de atendimento geral, para que o seu contacto seja encaminhado à equipa
+                    responsável.
+                </p>
+            </div>
+        </section>
+
+        <!-- ═══════════ BANNER FINAL ═══════════ -->
+        <div class="bg-primary/5 rounded-2xl p-8 border border-primary/10 text-center">
+            <span class="material-symbols-outlined text-4xl text-primary icon-filled mb-4 block">verified_user</span>
+            <h3 class="text-xl font-black tracking-tight mb-2 text-on-surface">
+                Os seus dados estão seguros connosco
+            </h3>
+            <p class="text-sm text-on-surface-variant mb-6 max-w-md mx-auto leading-relaxed">
+                Na Zonal levamos a sua privacidade a sério. Se tiver dúvidas ou quiser
+                exercer os seus direitos, estamos disponíveis para ajudar.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="{% url 'home' %}"
+                   class="bg-primary text-on-primary px-8 py-3.5 rounded-full font-bold text-sm
+                          hover:bg-primary/90 transition-all shadow-md inline-flex items-center gap-2 justify-center">
+                    <span class="material-symbols-outlined text-base">home</span>
+                    Voltar ao início
+                </a>
+                <a href="#"
+                   class="border-2 border-primary text-primary px-8 py-3.5 rounded-full font-bold text-sm
+                          hover:bg-primary hover:text-on-primary transition-all inline-flex items-center gap-2 justify-center">
+                    <span class="material-symbols-outlined text-base">mail</span>
+                    Contactar suporte
+                </a>
+            </div>
+        </div>
+
+    </div><!-- /content -->
+
+</main>
+{% endblock %}

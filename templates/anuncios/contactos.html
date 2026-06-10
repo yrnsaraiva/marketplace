@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Contactos — Zonal{% endblock %}
+{% block meta_description %}Fale connosco. Encontre o canal certo para a sua questão em zonal.co.mz.{% endblock %}
+
+{% block content %}
+<main class="pt-19 pb-32">
+
+    <!-- ═══════════ HERO ═══════════ -->
+    <section class="px-4 py-14 md:py-20 bg-gradient-to-b from-primary/10 to-transparent">
+        <div class="max-w-2xl mx-auto text-center pt-6">
+            <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full
+                        text-xs font-bold uppercase tracking-widest mb-6">
+                <span class="material-symbols-outlined text-sm icon-filled">headset_mic</span>
+                Linha do Cliente
+            </div>
+            <h1 class="font-headline text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-on-surface">
+                Estamos aqui para ajudar
+            </h1>
+            <p class="text-on-surface-variant text-base leading-relaxed">
+                Escolha o canal mais conveniente. Respondemos o mais brevemente possível
+                durante o horário de atendimento.
+            </p>
+        </div>
+    </section>
+
+    <!-- ═══════════ HORÁRIO ═══════════ -->
+    <section class="px-4 my-10 max-w-4xl mx-auto">
+        <div class="bg-surface-container-lowest border border-surface-container-low rounded-2xl p-6
+                    flex flex-col sm:flex-row items-center gap-6">
+            <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-primary text-3xl icon-filled">schedule</span>
+            </div>
+            <div class="text-center sm:text-left flex-1">
+                <p class="text-xs font-bold uppercase tracking-widest text-primary/60 mb-1">Horário de Atendimento</p>
+                <p class="text-xl font-black text-on-surface tracking-tight">Segunda a Sexta - 08h00 às 17h30</p>
+                <p class="text-sm text-on-surface-variant mt-1">Sábados, 08h00 às 13h00 &nbsp;·&nbsp; Domingos e feriados, encerrado</p>
+            </div>
+            <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full
+                        text-xs font-bold flex-shrink-0">
+                <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                Online agora
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════ CANAIS DE CONTACTO ═══════════ -->
+    <section class="px-4 max-w-4xl mx-auto mb-6">
+        <p class="text-xs font-bold uppercase tracking-widest text-primary mb-4">Canais disponíveis</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            <!-- WhatsApp -->
+            <a href="https://wa.me/258XXXXXXXXX" target="_blank" rel="noopener"
+               class="bg-surface-container-lowest border border-surface-container-low rounded-2xl p-6
+                      flex flex-col gap-4 hover:border-primary/30 hover:shadow-md transition-all group">
+                <div class="w-12 h-12 bg-[#25D366]/10 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-black text-on-surface text-sm mb-1">WhatsApp</p>
+                    <p class="text-xs text-on-surface-variant leading-relaxed">Resposta rápida por mensagem. Canal preferencial para dúvidas gerais.</p>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs font-bold text-[#25D366] mt-auto">
+                    <span>+258 XX XXX XXXX</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </div>
+            </a>
+
+            <!-- Email -->
+            <a href="mailto:suporte@zonal.co.mz"
+               class="bg-surface-container-lowest border border-surface-container-low rounded-2xl p-6
+                      flex flex-col gap-4 hover:border-primary/30 hover:shadow-md transition-all group">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">mail</span>
+                </div>
+                <div>
+                    <p class="font-black text-on-surface text-sm mb-1">E-mail</p>
+                    <p class="text-xs text-on-surface-variant leading-relaxed">Para questões detalhadas, reclamações formais ou pedidos de informação.</p>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs font-bold text-primary mt-auto">
+                    <span>suporte@zonal.co.mz</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </div>
+            </a>
+
+            <!-- Telefone -->
+            <a href="tel:+258XXXXXXXXX"
+               class="bg-surface-container-lowest border border-surface-container-low rounded-2xl p-6
+                      flex flex-col gap-4 hover:border-primary/30 hover:shadow-md transition-all group">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">call</span>
+                </div>
+                <div>
+                    <p class="font-black text-on-surface text-sm mb-1">Telefone</p>
+                    <p class="text-xs text-on-surface-variant leading-relaxed">Fale directamente com a nossa equipa durante o horário de atendimento.</p>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs font-bold text-primary mt-auto">
+                    <span>+258 XX XXX XXXX</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </div>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- ═══════════ FORMULÁRIO DE CONTACTO ═══════════ -->
+    <section class="px-4 max-w-4xl mx-auto mb-6">
+        <div class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">edit_note</span>
+                </div>
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Mensagem directa</p>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Envie-nos uma mensagem</h2>
+                </div>
+            </div>
+
+            <form method="post" action="#" class="p-6 space-y-5">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <!-- Nome -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Nome</label>
+                        <input type="text" name="nome" placeholder="O seu nome completo" required
+                               class="bg-surface-container-low border border-surface-container rounded-xl px-4 py-3
+                                      text-sm text-on-surface placeholder:text-on-surface-variant/40
+                                      focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary
+                                      transition-all">
+                    </div>
+                    <!-- Email -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">E-mail</label>
+                        <input type="email" name="email" placeholder="email@exemplo.com" required
+                               class="bg-surface-container-low border border-surface-container rounded-xl px-4 py-3
+                                      text-sm text-on-surface placeholder:text-on-surface-variant/40
+                                      focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary
+                                      transition-all">
+                    </div>
+                </div>
+
+                <!-- Assunto -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Assunto</label>
+                    <select name="assunto"
+                            class="bg-surface-container-low border border-surface-container rounded-xl px-4 py-3
+                                   text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30
+                                   focus:border-primary transition-all appearance-none">
+                        <option value="">Seleccione o assunto</option>
+                        <option value="anuncio">Problema com anúncio</option>
+                        <option value="conta">Questão sobre a conta</option>
+                        <option value="pagamento">Pagamento ou plano</option>
+                        <option value="verificacao">Verificação de identidade</option>
+                        <option value="denuncia">Denúncia de anúncio</option>
+                        <option value="outro">Outro assunto</option>
+                    </select>
+                </div>
+
+                <!-- Mensagem -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Mensagem</label>
+                    <textarea name="mensagem" rows="5" placeholder="Descreva a sua questão em detalhe…" required
+                              class="bg-surface-container-low border border-surface-container rounded-xl px-4 py-3
+                                     text-sm text-on-surface placeholder:text-on-surface-variant/40
+                                     focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary
+                                     transition-all resize-none"></textarea>
+                </div>
+
+                <button type="submit"
+                        class="w-full sm:w-auto bg-primary text-on-primary px-8 py-3.5 rounded-full font-bold
+                               text-sm hover:bg-primary/90 transition-all shadow-md inline-flex items-center
+                               gap-2 justify-center">
+                    <span class="material-symbols-outlined text-base">send</span>
+                    Enviar mensagem
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- ═══════════ REDES SOCIAIS ═══════════ -->
+    <section class="px-4 max-w-4xl mx-auto mb-6">
+        <div class="bg-surface-container-lowest border border-surface-container-low rounded-2xl p-6">
+            <p class="text-xs font-bold uppercase tracking-widest text-primary mb-5">Siga-nos nas redes sociais</p>
+            <div class="flex flex-wrap gap-3">
+
+                <a href="#" target="_blank" rel="noopener"
+                   class="flex items-center gap-3 px-4 py-3 bg-surface-container rounded-xl
+                          hover:bg-primary/5 hover:text-primary transition-all text-on-surface-variant group">
+                    <svg class="w-5 h-5 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    <span class="text-sm font-semibold">Facebook</span>
+                </a>
+
+                <a href="#" target="_blank" rel="noopener"
+                   class="flex items-center gap-3 px-4 py-3 bg-surface-container rounded-xl
+                          hover:bg-primary/5 hover:text-primary transition-all text-on-surface-variant group">
+                    <svg class="w-5 h-5 text-[#E1306C]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                    <span class="text-sm font-semibold">Instagram</span>
+                </a>
+
+                <a href="#" target="_blank" rel="noopener"
+                   class="flex items-center gap-3 px-4 py-3 bg-surface-container rounded-xl
+                          hover:bg-primary/5 hover:text-primary transition-all text-on-surface-variant group">
+                    <svg class="w-5 h-5 text-[#1DA1F2]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                    </svg>
+                    <span class="text-sm font-semibold">Twitter / X</span>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════ MAPA / ENDEREÇO (opcional) ═══════════ -->
+    <section class="px-4 max-w-4xl mx-auto mb-6">
+        <div class="bg-surface-container-lowest border border-surface-container-low rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-4 p-6 border-b border-surface-container-low">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl icon-filled">location_on</span>
+                </div>
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-primary/60 block">Endereço</p>
+                    <h2 class="text-xl font-black tracking-tight text-on-surface">Sede da Zonal</h2>
+                </div>
+            </div>
+            <div class="p-6 flex flex-col sm:flex-row gap-6 items-start">
+                <div class="flex-1 space-y-2">
+                    <p class="text-sm font-bold text-on-surface">Zonal, Lda.</p>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">
+                        Av. [Nome da Avenida], N.º XX<br>
+                        [Bairro], Maputo<br>
+                        Moçambique
+                    </p>
+                    <a href="https://maps.google.com/?q=Maputo,Mozambique" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-1.5 text-xs font-bold text-primary mt-3
+                              hover:underline">
+                        <span class="material-symbols-outlined text-sm">open_in_new</span>
+                        Ver no Google Maps
+                    </a>
+                </div>
+                <!-- Placeholder do mapa — substitua pelo iframe real -->
+                <div class="w-full sm:w-64 h-36 bg-surface-container rounded-xl flex items-center justify-center
+                            border border-surface-container-low flex-shrink-0">
+                    <span class="material-symbols-outlined text-on-surface-variant/30 text-5xl">map</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════ FAQ RÁPIDO ═══════════ -->
+    <section class="px-4 max-w-4xl mx-auto">
+        <div class="bg-primary/5 rounded-2xl p-8 border border-primary/10 text-center">
+            <span class="material-symbols-outlined text-4xl text-primary icon-filled mb-4 block">help</span>
+            <h3 class="text-xl font-black tracking-tight mb-2 text-on-surface">
+                Antes de contactar, consulte as Instruções
+            </h3>
+            <p class="text-sm text-on-surface-variant mb-6 max-w-md mx-auto leading-relaxed">
+                A maioria das dúvidas é respondida nas nossas instruções e guias de utilização.
+                Poupe tempo e encontre a resposta de imediato.
+            </p>
+            <a href="{% url 'instrucoes' %}"
+               class="bg-primary text-on-primary px-8 py-3.5 rounded-full font-bold text-sm
+                      hover:bg-primary/90 transition-all shadow-md inline-flex items-center gap-2 justify-center">
+                <span class="material-symbols-outlined text-base">menu_book</span>
+                Ver Instruções
+            </a>
+        </div>
+    </section>
+
+</main>
+{% endblock %}
