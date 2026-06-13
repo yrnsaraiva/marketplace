@@ -1,9 +1,52 @@
 {% extends "base.html" %}
 {% block title %}Criar Conta{% endblock %}
 
+{% block extra_head %}
+<style>
+/* ── Captcha widget ────────────────────────────────────────────────
+   O widget gera exactamente:
+     <img class="captcha" src="..."/>
+     <input type="text" name="captcha_1" .../>
+   Estilizamos esses dois elementos directamente.
+──────────────────────────────────────────────────────────────────── */
+.captcha-field img.captcha {
+    display: block;
+    width: 100%;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #bccac2;
+    margin-bottom: 8px;
+}
+.captcha-field input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #bccac2;
+    font-family: monospace;
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: white;
+}
+.captcha-field input[type="text"]:focus {
+    border-color: #006b53;
+    box-shadow: 0 0 0 3px rgba(0,107,83,0.15);
+}
+.captcha-field.has-error img.captcha,
+.captcha-field.has-error input[type="text"] {
+    border-color: #ba1a1a;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <main class="pt-28 pb-20 px-4 flex items-center justify-center min-h-[80vh]">
     <div class="w-full max-w-md">
+
         <div class="text-center mb-8">
             <a href="{% url 'home' %}" class="text-2xl font-black text-primary">MozClassificados</a>
             <h1 class="text-2xl font-extrabold text-on-surface mt-4 mb-1">Criar conta</h1>
@@ -12,35 +55,44 @@
 
         <div class="bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-surface-container-low">
 
-            <div id="msg-erro" class="hidden mb-5 flex items-start gap-3 p-3 bg-error-container rounded-xl text-sm text-error">
+            {% if serializer_errors %}
+            <div class="mb-5 flex items-start gap-3 p-3 bg-error-container rounded-xl text-sm text-error">
                 <span class="material-symbols-outlined text-base flex-shrink-0 mt-0.5">error</span>
-                <span id="msg-erro-texto"></span>
+                <ul class="space-y-0.5">
+                    {% for campo, erro in serializer_errors.items %}
+                    <li>{{ erro }}</li>
+                    {% endfor %}
+                </ul>
             </div>
+            {% endif %}
 
-            <div id="msg-sucesso" class="hidden mb-5 flex items-center gap-3 p-3 bg-primary/10 rounded-xl text-sm text-primary">
-                <span class="material-symbols-outlined text-base flex-shrink-0">check_circle</span>
-                <span>Conta criada! A redirecionar...</span>
-            </div>
-
-            {# Campos alinhados com RegistoSerializer: username, email, password, password2, telefone, provincia, cidade #}
-            <form id="form-registo" novalidate>
+            <form method="POST" novalidate>
                 {% csrf_token %}
+
                 <div class="space-y-4">
+
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-on-surface mb-1.5">
                                 Utilizador <span class="text-error">*</span>
                             </label>
                             <input type="text" name="username" required autocomplete="username"
-                                   class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                   value="{{ form.username.value|default:'' }}"
+                                   class="w-full px-4 py-3 rounded-xl border transition-all
+                                          {% if form.username.errors %}border-error{% else %}border-outline-variant{% endif %}
+                                          focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                                    placeholder="joao123"/>
+                            {% if form.username.errors %}
+                            <p class="text-xs text-error mt-1">{{ form.username.errors.0 }}</p>
+                            {% endif %}
                         </div>
+
                         <div>
-                            <label class="block text-sm font-medium text-on-surface mb-1.5">
-                                Telefone
-                            </label>
+                            <label class="block text-sm font-medium text-on-surface mb-1.5">Telefone</label>
                             <input type="tel" name="telefone" autocomplete="tel"
-                                   class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                   value="{{ form.telefone.value|default:'' }}"
+                                   class="w-full px-4 py-3 rounded-xl border border-outline-variant
+                                          focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                                    placeholder="84 123 4567"/>
                         </div>
                     </div>
@@ -50,30 +102,91 @@
                             Email <span class="text-error">*</span>
                         </label>
                         <input type="email" name="email" required autocomplete="email"
-                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                               value="{{ form.email.value|default:'' }}"
+                               class="w-full px-4 py-3 rounded-xl border transition-all
+                                      {% if form.email.errors %}border-error{% else %}border-outline-variant{% endif %}
+                                      focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                                placeholder="exemplo@email.com"/>
+                        {% if form.email.errors %}
+                        <p class="text-xs text-error mt-1">{{ form.email.errors.0 }}</p>
+                        {% endif %}
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-on-surface mb-1.5">
                             Password <span class="text-error">*</span>
                         </label>
-                        <input type="password" name="password" id="pw1" required
-                               autocomplete="new-password"
-                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                               placeholder="Mínimo 8 caracteres"/>
+                        <div class="relative">
+                            <input type="password" name="password" id="pw1" required
+                                   autocomplete="new-password"
+                                   class="w-full px-4 py-3 pr-12 rounded-xl border transition-all
+                                          {% if form.password.errors %}border-error{% else %}border-outline-variant{% endif %}
+                                          focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                   placeholder="Mínimo 8 caracteres"/>
+                            <button type="button" onclick="togglePw('pw1', this)"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors">
+                                <span class="material-symbols-outlined text-xl">visibility</span>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                        <p class="text-xs text-error mt-1">{{ form.password.errors.0 }}</p>
+                        {% else %}
                         <p class="text-xs text-on-surface-variant mt-1">Use letras, números e símbolos.</p>
+                        {% endif %}
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-on-surface mb-1.5">
                             Confirmar Password <span class="text-error">*</span>
                         </label>
-                        <input type="password" name="password2" id="pw2" required
-                               autocomplete="new-password"
-                               class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                               placeholder="Repita a password"/>
+                        <div class="relative">
+                            <input type="password" name="password2" id="pw2" required
+                                   autocomplete="new-password"
+                                   class="w-full px-4 py-3 pr-12 rounded-xl border transition-all
+                                          {% if form.password2.errors %}border-error{% else %}border-outline-variant{% endif %}
+                                          focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                   placeholder="Repita a password"/>
+                            <button type="button" onclick="togglePw('pw2', this)"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors">
+                                <span class="material-symbols-outlined text-xl">visibility</span>
+                            </button>
+                        </div>
+                        {% if form.password2.errors %}
+                        <p class="text-xs text-error mt-1">{{ form.password2.errors.0 }}</p>
+                        {% endif %}
                     </div>
+
+                    <!-- ── CAPTCHA ─────────────────────────────────────── -->
+                    <div>
+                        <label class="block text-sm font-medium text-on-surface mb-2">
+                            Verificação de segurança <span class="text-error">*</span>
+                        </label>
+
+                        <div class="captcha-field {% if form.captcha.errors %}has-error{% endif %}">
+                            {{ form.captcha }}
+                        </div>
+
+                        <div class="flex items-center justify-between mt-2">
+                            {% if form.captcha.errors %}
+                            <p class="text-xs text-error flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">error</span>
+                                {{ form.captcha.errors.0 }}
+                            </p>
+                            {% else %}
+                            <p class="text-xs text-on-surface-variant">
+                                Não é sensível a maiúsculas.
+                            </p>
+                            {% endif %}
+
+                            <button type="button" onclick="recarregarCaptcha()"
+                                    id="btn-reload-captcha"
+                                    class="flex items-center gap-1 text-xs text-primary hover:underline flex-shrink-0 ml-3">
+                                <span class="material-symbols-outlined text-sm" id="icon-reload">refresh</span>
+                                Novo código
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
 
                 <button type="submit" id="btn-registo"
@@ -100,59 +213,52 @@
 
 {% block extra_scripts %}
 <script>
-document.getElementById('form-registo').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const btn  = document.getElementById('btn-registo');
-    const errDiv  = document.getElementById('msg-erro');
-    const errText = document.getElementById('msg-erro-texto');
-    const sucDiv  = document.getElementById('msg-sucesso');
+function togglePw(id, btn) {
+    const input = document.getElementById(id);
+    const icon  = btn.querySelector('.material-symbols-outlined');
+    const hidden = input.type === 'password';
+    input.type   = hidden ? 'text' : 'password';
+    icon.textContent = hidden ? 'visibility_off' : 'visibility';
+}
 
-    errDiv.classList.add('hidden');
-    sucDiv.classList.add('hidden');
-
-    const pw1 = document.getElementById('pw1').value;
-    const pw2 = document.getElementById('pw2').value;
-    if (pw1 !== pw2) {
-        errText.textContent = 'As passwords não coincidem.';
-        errDiv.classList.remove('hidden');
-        return;
-    }
-
+async function recarregarCaptcha() {
+    const btn  = document.getElementById('btn-reload-captcha');
+    const icon = document.getElementById('icon-reload');
+    icon.classList.add('animate-spin');
     btn.disabled = true;
-    btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> A criar conta...';
-
-    const data = Object.fromEntries(new FormData(form));
 
     try {
-        const resp = await fetch('/api/v1/auth/registo/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
-            body: JSON.stringify(data),
+        const resp = await fetch('/captcha/refresh/', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
         });
-
-        const json = await resp.json();
-
-        if (resp.ok) {
-            Auth.save(json.tokens);
-            sucDiv.classList.remove('hidden');
-            setTimeout(() => window.location.href = '/', 1200);
-        } else {
-            // Formatar erros do DRF
-            const msgs = Object.entries(json)
-                .flatMap(([k, v]) => Array.isArray(v) ? v : [v])
-                .join(' ');
-            errText.textContent = msgs || 'Erro ao criar conta.';
-            errDiv.classList.remove('hidden');
-            btn.disabled = false;
-            btn.innerHTML = '<span class="material-symbols-outlined text-base">person_add</span> Criar conta';
-        }
+        const data = await resp.json();
+        // Actualizar a chave hidden e a imagem gerados pelo widget
+        document.querySelector('.captcha-field input[name="captcha_0"]').value = data.key;
+        document.querySelector('.captcha-field img.captcha').src = data.image_url;
+        // Limpar o input de texto
+        document.querySelector('.captcha-field input[name="captcha_1"]').value = '';
+        document.querySelector('.captcha-field input[name="captcha_1"]').focus();
     } catch {
-        errText.textContent = 'Erro de ligação. Tente novamente.';
-        errDiv.classList.remove('hidden');
+        // silencioso
+    } finally {
+        icon.classList.remove('animate-spin');
         btn.disabled = false;
-        btn.innerHTML = '<span class="material-symbols-outlined text-base">person_add</span> Criar conta';
     }
+}
+
+document.querySelector('form[method="POST"]').addEventListener('submit', function () {
+    const btn = document.getElementById('btn-registo');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> A criar conta...';
 });
+
+{% if request.session.jwt_access %}
+if (typeof Auth !== 'undefined') {
+    Auth.save({
+        access:  '{{ request.session.jwt_access }}',
+        refresh: '{{ request.session.jwt_refresh }}',
+    });
+}
+{% endif %}
 </script>
 {% endblock %}

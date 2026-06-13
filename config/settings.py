@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'django_filters',
+    'captcha',
 
     # Apps do projecto
     "apps.users.apps.UsersConfig",
@@ -263,3 +264,10 @@ PAYSUITE_CALLBACK_URL = config(
     'PAYSUITE_CALLBACK_URL',
     default='https://zonal.up.railway.app/api/pagamentos/webhook/paysuite/'
 )
+
+# Opcional - personalizar o captcha
+CAPTCHA_LENGTH = 5          # número de caracteres (default: 4)
+CAPTCHA_FONT_SIZE = 36
+CAPTCHA_IMAGE_SIZE = (180, 56)
+CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_arcs', 'captcha.helpers.noise_dots')
+CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'

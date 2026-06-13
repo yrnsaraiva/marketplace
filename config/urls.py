@@ -15,6 +15,9 @@ urlpatterns = [
     # Templates (frontend)
     path('', include('apps.anuncios.frontend_urls')),
     path('conta/', include('apps.users.frontend_urls')),
+
+    # Terceiros
+    path('captcha/', include('captcha.urls')),
 ]
 
 if settings.DEBUG:
