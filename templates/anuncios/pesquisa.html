@@ -4,10 +4,17 @@
 {% block title %}Pesquisa{% endblock %}
 
 {% block content %}
-<main class="pt-24 pb-20 px-6 max-w-screen-2xl mx-auto flex flex-col md:flex-row gap-10">
+<main class="pt-24 pb-20 px-4 sm:px-6 max-w-screen-2xl mx-auto flex flex-col md:flex-row gap-6 md:gap-10">
+
+    <!-- 🔄 MOBILE: Botão para mostrar/ocultar filtros -->
+    <button id="toggle-filters" type="button"
+            class="md:hidden w-full py-3 bg-primary text-on-primary rounded-full font-bold text-sm flex items-center justify-center gap-2 mb-2 shadow-md hover:opacity-90 transition-all">
+        <span class="material-symbols-outlined text-lg">tune</span> Filtros
+    </button>
 
     <!-- Sidebar Filtros -->
-    <aside class="w-full md:w-72 flex-shrink-0">
+    <!-- 🔄 MOBILE: hidden por padrão em mobile, visível em md+ -->
+    <aside id="filters-sidebar" class="w-full md:w-72 flex-shrink-0 hidden md:block">
         <div class="sticky top-28 space-y-10">
             <form method="GET" action="{% url 'anuncio-pesquisa' %}" id="filtros-form">
                 <div>
@@ -65,12 +72,16 @@
                     </div>
 
                     <input type="hidden" name="search" value="{{ request.GET.search }}"/>
-                    <button type="submit" class="w-full py-4 bg-primary text-on-primary rounded-full font-bold text-sm hover:opacity-90 transition-all mb-3">
-                        Aplicar Filtros
-                    </button>
-                    <a href="{% url 'anuncio-pesquisa' %}" class="block w-full py-4 bg-on-surface text-surface-container-lowest rounded-full font-bold text-sm hover:opacity-90 text-center transition-all">
-                        Limpar Filtros
-                    </a>
+                    
+                    <!-- 🔄 MOBILE: Botões fixados no fundo da sidebar -->
+                    <div class="flex flex-col gap-2 sticky bottom-0 bg-surface-container-lowest pt-3 pb-4 -mx-2 px-2">
+                        <button type="submit" class="w-full py-4 bg-primary text-on-primary rounded-full font-bold text-sm hover:opacity-90 transition-all">
+                            Aplicar Filtros
+                        </button>
+                        <a href="{% url 'anuncio-pesquisa' %}" class="block w-full py-4 bg-on-surface text-surface-container-lowest rounded-full font-bold text-sm hover:opacity-90 text-center transition-all">
+                            Limpar Filtros
+                        </a>
+                    </div>
                 </div>
             </form>
         </div>
@@ -78,23 +89,26 @@
 
     <!-- Resultados -->
     <div class="flex-1">
-        <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+        <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 md:mb-10">
             <div>
-                <h1 class="text-3xl font-black text-on-surface tracking-tight mb-2">
+                <!-- 🔄 MOBILE: Tamanho de fonte reduzido -->
+                <h1 class="text-2xl sm:text-3xl font-black text-on-surface tracking-tight mb-2">
                     {% if request.GET.search %}Resultados para "{{ request.GET.search }}"
                     {% elif request.GET.categoria %}{{ request.GET.categoria|title }}
                     {% else %}Todos os anúncios{% endif %}
                 </h1>
-                <p class="text-on-surface-variant opacity-70">{{ page_obj.paginator.count }} resultado{{ page_obj.paginator.count|pluralize:"s" }} encontrado{{ page_obj.paginator.count|pluralize:"s" }}</p>
+                <p class="text-sm sm:text-base text-on-surface-variant opacity-70">{{ page_obj.paginator.count }} resultado{{ page_obj.paginator.count|pluralize:"s" }} encontrado{{ page_obj.paginator.count|pluralize:"s" }}</p>
             </div>
         </header>
 
         <!-- Grid de anúncios -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- 🔄 MOBILE: gap reduzido, padding dos cards ajustado via classes responsivas -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {% for anuncio in page_obj %}
             <a href="{% url 'anuncio-detalhe-view' anuncio.id %}"
                class="bg-surface-container-lowest rounded-xl overflow-hidden group hover:shadow-[0_10px_30px_rgba(0,107,83,0.06)] transition-all duration-300">
-                <div class="relative aspect-[4/3] overflow-hidden">
+                <!-- 🔄 MOBILE: imagem com proporção um pouco maior (3/2) em mobile, mantém 4/3 em sm+ -->
+                <div class="relative aspect-[3/2] sm:aspect-[4/3] overflow-hidden">
                     {% if anuncio.imagem_principal %}
                         <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                              src="{{ anuncio.imagem_principal }}" alt="{{ anuncio.titulo }}"/>
@@ -104,13 +118,14 @@
                         </div>
                     {% endif %}
                     {% if anuncio.destacado %}
-                    <div class="absolute top-4 left-4 bg-highlights text-on-background px-3 py-1 rounded-full text-[10px] font-bold uppercase flex items-center gap-1">
+                    <div class="absolute top-3 left-3 sm:top-4 sm:left-4 bg-highlights text-on-background px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] font-bold uppercase flex items-center gap-1">
                         <span class="material-symbols-outlined text-xs">star</span>
                         Destaque
                     </div>
                     {% endif %}
                 </div>
-                <div class="p-6">
+                <!-- 🔄 MOBILE: padding reduzido -->
+                <div class="p-4 sm:p-6">
                     <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-2">{{ anuncio.categoria_nome }}</p>
                     <h3 class="font-bold text-on-surface leading-snug mb-4 group-hover:text-primary transition-colors line-clamp-2">
                         {{ anuncio.titulo }}
@@ -126,7 +141,7 @@
                 </div>
             </a>
             {% empty %}
-            <div class="col-span-3 text-center py-20 text-on-surface-variant">
+            <div class="col-span-full text-center py-20 text-on-surface-variant">
                 <span class="material-symbols-outlined text-6xl">search_off</span>
                 <p class="mt-4 font-bold text-lg">Nenhum anúncio encontrado</p>
                 <p class="text-sm mt-2">Tente outros termos ou remova alguns filtros.</p>
@@ -137,21 +152,22 @@
 
         <!-- Paginação -->
         {% if page_obj.has_other_pages %}
-        <div class="mt-20 flex justify-center items-center gap-2">
+        <!-- 🔄 MOBILE: mais espaçamento entre números e botões maiores -->
+        <div class="mt-12 md:mt-20 flex justify-center items-center gap-1 sm:gap-2 flex-wrap">
             {% if page_obj.has_previous %}
-            <a href="?{% querystring page=page_obj.previous_page_number %}" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
+            <a href="?{% querystring page=page_obj.previous_page_number %}" class="w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
                 <span class="material-symbols-outlined text-sm">chevron_left</span>
             </a>
             {% endif %}
             {% for num in page_obj.paginator.page_range %}
                 {% if page_obj.number == num %}
-                <span class="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-on-primary font-bold shadow-lg">{{ num }}</span>
+                <span class="w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-primary text-on-primary font-bold shadow-lg">{{ num }}</span>
                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?{% querystring page=num %}" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">{{ num }}</a>
+                <a href="?{% querystring page=num %}" class="w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">{{ num }}</a>
                 {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
-            <a href="?{% querystring page=page_obj.next_page_number %}" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
+            <a href="?{% querystring page=page_obj.next_page_number %}" class="w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
                 <span class="material-symbols-outlined text-sm">chevron_right</span>
             </a>
             {% endif %}
@@ -163,6 +179,12 @@
 
 {% block extra_scripts %}
 <script>
+    // 🔄 MOBILE: Toggle para mostrar/ocultar sidebar de filtros
+    document.getElementById('toggle-filters').addEventListener('click', function() {
+        const sidebar = document.getElementById('filters-sidebar');
+        sidebar.classList.toggle('hidden');
+    });
+
     function toggleCondicao(val, btn) {
         const input = document.getElementById('condicao-input');
         if (input.value === val) {
