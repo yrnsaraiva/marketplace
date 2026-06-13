@@ -20,7 +20,7 @@ env/
 
 # Django
 *.log
-media/
+# media/
 staticfiles/
 
 # =========================
