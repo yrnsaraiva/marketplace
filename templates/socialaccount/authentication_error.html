@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Erro de autenticação{% endblock %}
+{% block content %}
+<main class="pt-28 pb-20 px-4 flex items-center justify-center min-h-[80vh]">
+    <div class="text-center max-w-sm">
+        <span class="material-symbols-outlined text-6xl text-error">error</span>
+        <h1 class="text-xl font-bold text-on-surface mt-4 mb-2">Erro ao autenticar com Google</h1>
+        <p class="text-on-surface-variant text-sm mb-6">
+            Ocorreu um problema ao conectar com a sua conta Google. Por favor tente novamente ou use email e password.
+        </p>
+        <div class="flex flex-col gap-3">
+            <a href="{% url 'google_login' %}"
+               class="py-3 rounded-xl border-2 border-surface-container-low text-on-surface font-semibold
+                      hover:border-primary hover:text-primary transition-all text-sm text-center">
+                Tentar com Google novamente
+            </a>
+            <a href="{% url 'login' %}"
+               class="py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm
+                      hover:bg-primary/90 transition-all text-center">
+                Entrar com email
+            </a>
+        </div>
+    </div>
+</main>
+{% endblock %}

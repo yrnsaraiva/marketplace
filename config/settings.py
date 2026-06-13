@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django.contrib.sites',
 
     # Apps de terceiros
     'rest_framework',
@@ -46,6 +47,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'django_filters',
     'captcha',
+
+    # allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 
     # Apps do projecto
     "apps.users.apps.UsersConfig",
@@ -63,6 +70,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 REST_FRAMEWORK = {
@@ -271,3 +284,42 @@ CAPTCHA_FONT_SIZE = 36
 CAPTCHA_IMAGE_SIZE = (180, 56)
 CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_arcs', 'captcha.helpers.noise_dots')
 CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'
+
+
+SITE_ID = 1
+
+# ── Allauth — configuração geral ─────────────────────────────────────────────
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'       # login por email
+ACCOUNT_EMAIL_VERIFICATION = 'none'        # 'mandatory' em produção
+ACCOUNT_ADAPTER = 'apps.users.adapters.AccountAdapter'
+ACCOUNT_SIGNUP_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+
+# ── Allauth — Google provider ─────────────────────────────────────────────────
+SOCIALACCOUNT_ADAPTER = 'apps.users.adapters.SocialAccountAdapter'
+SOCIALACCOUNT_AUTO_SIGNUP = True          # cria conta automaticamente
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_LOGIN_ON_GET = True         # segurança: exige POST para login
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id':     '321264124646-pkuesp2n5l1h3i85ff2ddlo6allul6m4.apps.googleusercontent.com',     # ← substituir pela variável de ambiente
+            'secret':        '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', # ← substituir pela variável de ambiente
+            'key':           '',
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'FETCH_USERINFO': True,
+    }
+}

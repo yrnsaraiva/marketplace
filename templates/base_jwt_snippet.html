@@ -1,0 +1,33 @@
+{#
+  Adicionar este bloco ao base.html, DENTRO do <script> principal,
+  logo após a definição do objecto Auth.
+
+  Isto garante que após qualquer login (email OU Google), o JS
+  tem sempre os tokens JWT disponíveis no localStorage.
+#}
+
+{# ── Sincronizar JWT da sessão Django com o localStorage ────────────────────
+   O signal on_user_logged_in guarda os tokens na sessão após qualquer login.
+   Aqui o JS lê-os e guarda-os no localStorage para uso nas chamadas API.
+   Só faz isto uma vez (quando os tokens ainda não estão no localStorage
+   ou quando há novos tokens na sessão).
+────────────────────────────────────────────────────────────────────────────── #}
+{% if request.session.jwt_access %}
+<script>
+(function() {
+    const sessionAccess = '{{ request.session.jwt_access }}';
+    if (typeof Auth !== 'undefined' && sessionAccess) {
+        // Guardar sempre (pode ser um token novo do Google)
+        Auth.save({
+            access:  sessionAccess,
+            refresh: '{{ request.session.jwt_refresh }}',
+        });
+        // Limpar da sessão após guardar (segurança)
+        fetch('/api/v1/auth/clear-session-tokens/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF_TOKEN },
+        }).catch(() => {});
+    }
+})();
+</script>
+{% endif %}

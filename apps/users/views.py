@@ -1,11 +1,10 @@
 """
-apps/users/views.py
-
-Contém as views de autenticação API e as views de template.
+apps/users/views.py — versão com allauth Google
 """
 import logging
 
 from django.contrib.auth import authenticate, login
+from django.dispatch import receiver
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from rest_framework import generics, status
@@ -14,11 +13,32 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from allauth.socialaccount.signals import social_account_added, pre_social_login
+from allauth.account.signals import user_logged_in
+
 from .forms import RegistoCaptchaForm
 from .models import User
 from .serializers import AlterarPasswordSerializer, PerfilSerializer, RegistoSerializer
 
 logger = logging.getLogger(__name__)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Signal: guardar tokens JWT na sessão após qualquer login (local ou Google)
+# Isto garante que o JS tem sempre tokens disponíveis após login.
+# ─────────────────────────────────────────────────────────────────────────────
+@receiver(user_logged_in)
+def on_user_logged_in(sender, request, user, **kwargs):
+    """
+    Disparado após qualquer login (email/password OU Google).
+    Gera tokens JWT e guarda-os na sessão para o JS os ler.
+    """
+    try:
+        refresh = RefreshToken.for_user(user)
+        request.session['jwt_access']  = str(refresh.access_token)
+        request.session['jwt_refresh'] = str(refresh)
+    except Exception as e:
+        logger.warning(f'Não foi possível gerar JWT após login: {e}')
 
 
 # ---------------------------------------------------------------------------
@@ -33,7 +53,6 @@ class RegistoView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-
         refresh = RefreshToken.for_user(user)
         return Response({
             'mensagem': 'Conta criada com sucesso.',
@@ -61,17 +80,11 @@ class LoginView(APIView):
         try:
             user_obj = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
-            return Response(
-                {'erro': 'Credenciais inválidas.'},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+            return Response({'erro': 'Credenciais inválidas.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         user = authenticate(request, username=user_obj.username, password=password)
         if not user:
-            return Response(
-                {'erro': 'Credenciais inválidas.'},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+            return Response({'erro': 'Credenciais inválidas.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         if user.bloqueado:
             return Response(
@@ -122,10 +135,7 @@ class AlterarPasswordView(APIView):
 
         user = request.user
         if not user.check_password(serializer.validated_data['password_actual']):
-            return Response(
-                {'erro': 'Password actual incorrecta.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({'erro': 'Password actual incorrecta.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user.set_password(serializer.validated_data['password_nova'])
         user.save()
@@ -149,24 +159,13 @@ def login_template_view(request):
 
 def signup_template_view(request):
     """
-    Registo com captcha validado no servidor.
-
-    Fluxo:
-      GET  → renderiza o form com captcha fresco
-      POST → valida captcha + dados → cria utilizador via RegistoSerializer
-             → faz login com sessão Django → guarda tokens JWT na sessão
-             → redireciona para home
-
-    O captcha é gerado pelo django-simple-captcha e verificado aqui,
-    antes de qualquer lógica de negócio. Se falhar, o form é re-renderizado
-    com um captcha novo e a mensagem de erro.
+    Registo local com captcha. O login Google é tratado inteiramente
+    pelo allauth em /accounts/google/login/.
     """
     if request.method == 'POST':
         form = RegistoCaptchaForm(request.POST)
 
         if form.is_valid():
-            # Captcha correcto — criar utilizador via serializer
-            # (reutiliza toda a validação já existente: email único, etc.)
             data = {
                 'username':  form.cleaned_data['username'],
                 'email':     form.cleaned_data['email'],
@@ -178,20 +177,10 @@ def signup_template_view(request):
 
             if serializer.is_valid():
                 user = serializer.save()
-
-                # Login com sessão Django (resolve token_not_valid nas API calls)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-
-                # Guardar tokens JWT na sessão para o JS os usar se precisar
-                refresh = RefreshToken.for_user(user)
-                request.session['jwt_access']  = str(refresh.access_token)
-                request.session['jwt_refresh'] = str(refresh)
-
+                # O signal on_user_logged_in já guarda os tokens na sessão
                 return redirect(request.GET.get('next', '/'))
-
             else:
-                # Erros do serializer (ex: email duplicado)
-                # Passar ao template para mostrar inline
                 serializer_errors = {
                     k: v[0] if isinstance(v, list) else v
                     for k, v in serializer.errors.items()
@@ -201,9 +190,6 @@ def signup_template_view(request):
                     'serializer_errors': serializer_errors,
                 })
 
-        # Captcha inválido ou outros erros de form — re-renderizar com erros
         return render(request, 'users/signup.html', {'form': form})
 
-    # GET
-    form = RegistoCaptchaForm()
-    return render(request, 'users/signup.html', {'form': form})
+    return render(request, 'users/signup.html', {'form': RegistoCaptchaForm()})
