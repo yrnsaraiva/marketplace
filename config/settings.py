@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-gx)%vh+q9h(4^r5y(fmqc1@1owc_5+y80^_=sr!43vbeigy3m)'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -309,9 +309,9 @@ SOCIALACCOUNT_LOGIN_ON_GET = True         # segurança: exige POST para login
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id':     '321264124646-pkuesp2n5l1h3i85ff2ddlo6allul6m4.apps.googleusercontent.com',     # ← substituir pela variável de ambiente
-            'secret':        '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', # ← substituir pela variável de ambiente
-            'key':           '',
+            'client_id': config('GOOGLE_CLIENT_ID'),     # ← substituir pela variável de ambiente
+            'secret': config('GOOGLE_CLIENT_SECRET'),  # ← substituir pela variável de ambiente
+            'key': '',
         },
         'SCOPE': [
             'profile',
