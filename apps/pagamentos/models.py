@@ -82,6 +82,10 @@ class PlanoPublicacao(models.Model):
         return f'{self.nome} — {self.preco} MZN'
 
     @property
+    def gratuito(self):
+        return self.preco == 0
+
+    @property
     def ilimitado(self):
         return self.max_anuncios is None
 
@@ -229,6 +233,7 @@ class Pagamento(models.Model):
         ('emola', 'e-Mola'),
         ('transferencia', 'Transferência Bancária'),
         ('manual', 'Confirmação Manual'),
+        ('gratuito', 'Gratuito'),
     ]
 
     ESTADO_CHOICES = [
@@ -277,8 +282,8 @@ class Pagamento(models.Model):
 
     def __str__(self):
         return (
-            f'Pagamento #{self.pk} — {self.subscricao.utilizador.username} '
-            f'— {self.valor} MZN ({self.estado})'
+            f'Pagamento #{self.pk} - {self.subscricao.utilizador.username} '
+            f'- {self.valor} MZN ({self.estado})'
         )
 
     def confirmar(self, confirmado_por=None):
@@ -389,5 +394,5 @@ class DestaqueAnuncio(models.Model):
         return timezone.now() > self.fim_em
 
     def __str__(self):
-        return f'{self.anuncio} — destaque até {self.fim_em}'
+        return f'{self.anuncio} - destaque até {self.fim_em}'
 

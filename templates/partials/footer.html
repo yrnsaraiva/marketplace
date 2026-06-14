@@ -1,14 +1,15 @@
 {% load static %}
+{% load static %}
 {% now "Y" as current_year %}
 <footer class="bg-surface-container-low border-t border-outline-variant/20 mt-auto">
     <div class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
 
         <!-- Marca -->
         <div>
-            <a href="{% url 'home' %}" class="text-lg font-black text-on-surface block mb-3 hover:text-primary transition-colors">
-                MozClassificados
+            <a href="{% url 'home' %}">
+                <img src="{% static 'img/zonal_logo.png' %}" alt="" width="150">
             </a>
-            <p class="text-sm text-on-surface-variant leading-7">
+            <p class="text-sm text-on-surface-variant leading-7 pt-5">
                 A montra líder de compra e venda em Moçambique. Seguro, rápido e gratuito para começar.
             </p>
             <!-- Redes sociais (placeholders — adicionar URLs reais) -->
@@ -65,7 +66,7 @@
     <!-- Rodapé inferior -->
     <div class="border-t border-outline-variant/10 px-6 py-4">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-on-surface-variant/60">
-            <p>&copy; {{ current_year }} MozClassificados. Todos os direitos reservados.</p>
+            <p>&copy; {{ current_year }} zonal marketplace. Todos os direitos reservados.</p>
             <div class="flex items-center gap-1">
                 <span class="material-symbols-outlined text-sm text-primary">payments</span>
                 <span>Pagamentos via M-Pesa e e-Mola</span>

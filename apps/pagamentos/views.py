@@ -66,7 +66,16 @@ class IniciarCompraView(APIView):
             return Response({'erro': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         data = PagamentoSerializer(pagamento).data
-        data['checkout_url'] = getattr(pagamento, 'checkout_url', None)
+
+        # Plano gratuito: activado directamente, sem checkout_url
+        checkout_url = getattr(pagamento, 'checkout_url', None)
+        if checkout_url:
+            data['checkout_url'] = checkout_url
+            data['gratuito'] = False
+        else:
+            data['checkout_url'] = None
+            data['gratuito'] = (pagamento.metodo == 'gratuito')
+
         return Response(data, status=status.HTTP_201_CREATED)
 
 

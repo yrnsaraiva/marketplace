@@ -74,11 +74,62 @@ class PublicacaoService:
     @transaction.atomic
     def iniciar_compra(self, plano_id):
         """
-        Cria Subscrição + Pagamento pendentes e obtém o checkout_url da PaySuite.
-        O utilizador é redirecionado para esse URL onde escolhe M-Pesa/e-Mola/Cartão.
-        """
-        plano = PlanoPublicacao.objects.get(pk=plano_id, activo=True)
+        Inicia a compra de um plano.
 
+        PLANO GRATUITO (preco == 0):
+          → Cancela subscrição gratuita anterior se existir.
+          → Cria Subscrição com estado='activa' imediatamente.
+          → Cria Pagamento com metodo='gratuito', estado='confirmado', valor=0.
+          → NÃO chama a PaySuite (que rejeita amount=0).
+          → Devolve o pagamento com checkout_url=None.
+
+        PLANO PAGO (preco > 0):
+          → Cria Subscrição (pendente) + Pagamento (pendente).
+          → Chama PaySuite para obter checkout_url.
+          → O utilizador é redirecionado para o checkout PaySuite.
+        """
+        from datetime import timedelta
+
+        try:
+            plano = PlanoPublicacao.objects.get(pk=plano_id, activo=True)
+        except PlanoPublicacao.DoesNotExist:
+            raise ValueError('Plano não encontrado ou inactivo.')
+
+        # ── PLANO GRATUITO ────────────────────────────────────────────────────
+        if plano.gratuito:
+            logger.info("Plano gratuito — activar directamente sem PaySuite: %s", plano.nome)
+
+            # Cancelar subscrição gratuita anterior para evitar duplicados
+            SubscricaoUtilizador.objects.filter(
+                utilizador=self.utilizador,
+                plano__preco=0,
+                estado='activa',
+            ).update(estado='cancelada')
+
+            subscricao = SubscricaoUtilizador.objects.create(
+                utilizador=self.utilizador,
+                plano=plano,
+                estado='activa',
+                creditos_totais=plano.max_anuncios,
+                creditos_usados=0,
+                preco_pago=0,
+                inicio_em=timezone.now(),
+                expira_em=timezone.now() + timedelta(days=plano.duracao_subscricao_dias),
+            )
+
+            pagamento = Pagamento.objects.create(
+                subscricao=subscricao,
+                metodo='gratuito',
+                estado='confirmado',
+                valor=0,
+                confirmado_em=timezone.now(),
+            )
+
+            # Compatibilidade com IniciarCompraView (espera checkout_url)
+            pagamento.checkout_url = None
+            return pagamento
+
+        # ── PLANO PAGO ────────────────────────────────────────────────────────
         subscricao = SubscricaoUtilizador.objects.create(
             utilizador=self.utilizador,
             plano=plano,
@@ -88,23 +139,21 @@ class PublicacaoService:
             preco_pago=plano.preco,
         )
 
-        # Criar registo de pagamento sem método definido ainda (escolhido no checkout)
         pagamento = Pagamento.objects.create(
             subscricao=subscricao,
-            metodo='manual',  # actualizado pelo webhook após pagamento
+            metodo='manual',
             estado='pendente',
             valor=plano.preco,
         )
 
-        # Chamar PaySuite para obter o checkout_url
         referencia = _gerar_referencia(pagamento.pk)
         from django.conf import settings
-        base_return = getattr(settings, 'PAYSUITE_RETURN_URL', '').rstrip('/')
-        return_url = f"{base_return}/{pagamento.pk}/" if base_return else None
+        base_return  = getattr(settings, 'PAYSUITE_RETURN_URL', '').rstrip('/')
+        return_url   = f"{base_return}/{pagamento.pk}/" if base_return else None
         callback_url = getattr(settings, 'PAYSUITE_CALLBACK_URL', '') or None
 
         try:
-            client = PaySuiteClient()
+            client    = PaySuiteClient()
             resultado = client.criar_pagamento(
                 amount=float(plano.preco),
                 reference=referencia,
@@ -120,7 +169,7 @@ class PublicacaoService:
             raise
 
         pagamento.referencia_externa = resultado.get("id", "")
-        pagamento.resposta_gateway = resultado
+        pagamento.resposta_gateway   = resultado
         pagamento.save(update_fields=['referencia_externa', 'resposta_gateway', 'actualizado_em'])
 
         pagamento.checkout_url = resultado.get("checkout_url", "")
