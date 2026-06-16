@@ -73,6 +73,11 @@ class Anuncio(models.Model):
         self.visualizacoes += 1
         self.save(update_fields=['visualizacoes'])
 
+    def registar_contacto(self):
+        """Incrementa o contador de contactos recebidos."""
+        self.contactos_recebidos += 1
+        self.save(update_fields=['contactos_recebidos'])
+
     def activar(self, duracao_dias=30):
         """
         Activa o anúncio após pagamento confirmado.
@@ -81,7 +86,7 @@ class Anuncio(models.Model):
         self.estado = 'activo'
         self.publicado_em = timezone.now()
         self.expira_em = self.publicado_em + timedelta(days=duracao_dias)
-        self.save(update_fields=['estado', 'publicado_em', 'expira_em', 'actualizado_em'])
+        self.save(update_fields=['estado', 'publicado_em', 'expira_em', 'subscricao_id', 'actualizado_em'])
 
     @property
     def max_imagens_permitidas(self):
@@ -89,6 +94,13 @@ class Anuncio(models.Model):
         if self.subscricao and self.subscricao.plano:
             return self.subscricao.plano.max_imagens
         return 6  # fallback seguro
+
+    @property
+    def destacado(self):
+        """True se o anúncio tem um destaque activo e não expirado."""
+        return self.destaques.filter(activo=True).filter(
+            models.Q(fim_em__isnull=True) | models.Q(fim_em__gt=timezone.now())
+        ).exists()
 
 
 # ---------------------------------------------------------------------------

@@ -14,13 +14,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '*'
-]
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='localhost,127.0.0.1',
+    cast=lambda v: [h.strip() for h in v.split(',')]
+)
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.railway.app',
@@ -261,8 +261,8 @@ LOGGING = {
 
 
 # PaySuite — Gateway de Pagamentos (https://paysuite.tech)
-PAYSUITE_API_KEY = config('PAYSUITE_API_KEY', default='2059|OzpGtJH8LR5GY9TxenDdoexZHrWy1sF2cKR5G9ew8bd00523')
-PAYSUITE_WEBHOOK_SECRET = config('PAYSUITE_WEBHOOK_SECRET', default='whsec_e9627dfb7ef4fd9fa3233e734abaa6ebe10cd95c3bc7b765')
+PAYSUITE_API_KEY = config('PAYSUITE_API_KEY')
+PAYSUITE_WEBHOOK_SECRET = config('PAYSUITE_WEBHOOK_SECRET')
 
 # URL para onde o utilizador é redirecionado após o checkout PaySuite.
 # Use o endpoint PaySuiteRetornoView — o <pk> é preenchido dinamicamente na view.
@@ -290,9 +290,15 @@ SITE_ID = 1
 
 # ── Allauth — configuração geral ─────────────────────────────────────────────
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = 'email'       # login por email
+ACCOUNT_LOGIN_METHODS = {'email'}
+
+ACCOUNT_SIGNUP_FIELDS = [
+    'email*',
+    'username*',
+    'password1*',
+    'password2*'
+]       # login por email
+
 ACCOUNT_EMAIL_VERIFICATION = 'none'        # 'mandatory' em produção
 ACCOUNT_ADAPTER = 'apps.users.adapters.AccountAdapter'
 ACCOUNT_SIGNUP_REDIRECT_URL = '/'
@@ -309,8 +315,8 @@ SOCIALACCOUNT_LOGIN_ON_GET = True         # segurança: exige POST para login
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id': config('GOOGLE_CLIENT_ID'),     # ← substituir pela variável de ambiente
-            'secret': config('GOOGLE_CLIENT_SECRET'),  # ← substituir pela variável de ambiente
+            'client_id': config('GOOGLE_CLIENT_ID', default=''),     # ← substituir pela variável de ambiente
+            'secret': config('GOOGLE_CLIENT_SECRET', default=''),  # ← substituir pela variável de ambiente
             'key': '',
         },
         'SCOPE': [

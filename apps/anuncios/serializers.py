@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from django.core.validators import MinLengthValidator
+
 from .models import Anuncio, ImagemAnuncio, AtributoAnuncio, Favorito
 from apps.categorias.models import AtributoCategoria
 from apps.categorias.serializers import CategoriaSimpleSerializer
@@ -38,22 +40,27 @@ class AnuncioListSerializer(serializers.ModelSerializer):
     imagem_principal = serializers.SerializerMethodField()
     categoria_nome = serializers.CharField(source='categoria.nome', read_only=True)
     utilizador_nome = serializers.CharField(source='utilizador.username', read_only=True)
+    destacado = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Anuncio
         fields = ['id', 'titulo', 'preco', 'preco_negociavel', 'condicao',
                   'provincia', 'cidade', 'estado', 'visualizacoes',
                   'categoria_nome', 'utilizador_nome',
-                  'imagem_principal', 'publicado_em']
+                  'imagem_principal', 'publicado_em', 'destacado']
 
     def get_imagem_principal(self, obj):
         request = self.context.get('request')
-        imagem = obj.imagens.filter(principal=True).first()
+        imgs = list(obj.imagens.all())
+        imagem = next(
+            (i for i in imgs if i.principal),
+            imgs[0] if imgs else None
+        )
         if not imagem:
-            imagem = obj.imagens.first()
-        if imagem and request:
+            return None
+        if request:
             return request.build_absolute_uri(imagem.imagem.url)
-        return None
+        return imagem.imagem.url
 
 
 class AnuncioDetalheSerializer(serializers.ModelSerializer):
@@ -71,8 +78,30 @@ class AnuncioDetalheSerializer(serializers.ModelSerializer):
                   'criado_em', 'expira_em']
 
 
+def _validar_atributos_obrigatorios(categoria, atributos_input):
+    """
+    Reutilizável: valida que todos os atributos obrigatórios da categoria
+    foram fornecidos. Lança ValidationError se faltar algum.
+    """
+    if not categoria:
+        return
+    obrigatorios = AtributoCategoria.objects.filter(
+        categoria=categoria, obrigatorio=True
+    ).values_list('id', flat=True)
+    ids_recebidos = {a['atributo_id'] for a in atributos_input}
+    em_falta = set(obrigatorios) - ids_recebidos
+    if em_falta:
+        nomes = list(
+            AtributoCategoria.objects.filter(id__in=em_falta)
+            .values_list('nome', flat=True)
+        )
+        raise serializers.ValidationError({
+            'atributos': f'Campos obrigatórios em falta: {", ".join(nomes)}'
+        })
+
+
 class AnuncioCriarSerializer(serializers.ModelSerializer):
-    # Atributos dinâmicos — lista de {atributo_id, valor}
+    # Atributos dinâmicos - lista de {atributo_id, valor}
     atributos = AtributoInputSerializer(many=True, required=False, write_only=True)
     # ID do PlanoDestaque opcional (compra avulsa no momento de publicar)
     plano_destaque = serializers.IntegerField(required=False, allow_null=True, write_only=True)
@@ -80,12 +109,18 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Anuncio
         fields = [
+            'id',
             'titulo', 'descricao', 'preco', 'preco_negociavel',
             'condicao', 'categoria', 'provincia', 'cidade',
             'bairro', 'auto_renovar',
-            'atributos',     # novo
-            'plano_destaque', # novo
+            'atributos',
+            'plano_destaque',
         ]
+
+    def validate_titulo(self, value):
+        if len(value.strip()) < 10:
+            raise serializers.ValidationError('O título deve ter pelo menos 10 caracteres.')
+        return value
 
     def validate_categoria(self, value):
         if not value.activa:
@@ -93,25 +128,10 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        categoria = attrs.get('categoria')
-        atributos_input = attrs.get('atributos', [])
-
-        if categoria:
-            atribs_obrigatorios = AtributoCategoria.objects.filter(
-                categoria=categoria, obrigatorio=True
-            ).values_list('id', flat=True)
-
-            ids_recebidos = {a['atributo_id'] for a in atributos_input}
-            em_falta = set(atribs_obrigatorios) - ids_recebidos
-            if em_falta:
-                nomes = list(
-                    AtributoCategoria.objects.filter(id__in=em_falta)
-                    .values_list('nome', flat=True)
-                )
-                raise serializers.ValidationError({
-                    'atributos': f'Campos obrigatórios em falta: {", ".join(nomes)}'
-                })
-
+        _validar_atributos_obrigatorios(
+            attrs.get('categoria'),
+            attrs.get('atributos', [])
+        )
         return attrs
 
     def create(self, validated_data):
@@ -163,21 +183,84 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
                     plano_destaque = PlanoDestaque.objects.get(
                         pk=plano_destaque_id, activo=True
                     )
+                    destaque_existente = anuncio.destaques.filter(activo=True).first()
+                    if destaque_existente:
+                        # Substituir o destaque automático pelo comprado
+                        destaque_existente.activo = False
+                        destaque_existente.save(update_fields=['activo'])
                     DestaqueAnuncio.objects.create(
                         anuncio=anuncio,
                         plano_destaque=plano_destaque,
                         origem='compra_avulsa',
                     )
                 except PlanoDestaque.DoesNotExist:
-                    pass  # ignora silenciosamente — destaque é opcional
+                    pass
 
-            # Actualizar contador no utilizador
             user.total_anuncios = Anuncio.objects.filter(
                 utilizador=user
             ).exclude(estado='eliminado').count()
             user.save(update_fields=['total_anuncios'])
 
         return anuncio
+
+
+class AnuncioEditarSerializer(serializers.ModelSerializer):
+    atributos = AtributoInputSerializer(many=True, required=False, write_only=True)
+
+    class Meta:
+        model = Anuncio
+        fields = [
+            'titulo', 'descricao', 'preco', 'preco_negociavel',
+            'condicao', 'categoria', 'provincia', 'cidade',
+            'bairro', 'auto_renovar', 'atributos',
+        ]
+        extra_kwargs = {
+            'auto_renovar': {'required': False},
+        }
+
+    def validate_titulo(self, value):
+        if len(value.strip()) < 10:
+            raise serializers.ValidationError('O título deve ter pelo menos 10 caracteres.')
+        return value
+
+    def validate_categoria(self, value):
+        if not value.activa:
+            raise serializers.ValidationError('Esta categoria não está disponível.')
+        return value
+
+    def validate(self, attrs):
+        # Usa a categoria do payload ou, se não veio, a actual da instância
+        categoria = attrs.get('categoria', self.instance.categoria if self.instance else None)
+        atributos_input = attrs.get('atributos')
+        # Só valida atributos se foram enviados
+        if atributos_input is not None:
+            _validar_atributos_obrigatorios(categoria, atributos_input)
+        return attrs
+
+    def update(self, instance, validated_data):
+        atributos = validated_data.pop('atributos', None)
+
+        for campo, valor in validated_data.items():
+            setattr(instance, campo, valor)
+        instance.save()
+
+        if atributos is not None:
+            instance.atributos.all().delete()
+            atribs = {
+                a.id: a
+                for a in AtributoCategoria.objects.filter(
+                    id__in=[x['atributo_id'] for x in atributos],
+                    categoria=instance.categoria,
+                )
+            }
+            for item in atributos:
+                atrib = atribs.get(item['atributo_id'])
+                if atrib:
+                    AtributoAnuncio.objects.create(
+                        anuncio=instance, atributo=atrib, valor=item['valor'],
+                    )
+
+        return instance
 
 
 class UploadImagensSerializer(serializers.Serializer):
@@ -189,7 +272,7 @@ class UploadImagensSerializer(serializers.Serializer):
     def validate_anuncio_id(self, value):
         user = self.context['request'].user
         try:
-            anuncio = Anuncio.objects.get(pk=value, utilizador=user)
+            Anuncio.objects.get(pk=value, utilizador=user)
         except Anuncio.DoesNotExist:
             raise serializers.ValidationError(
                 'Anúncio não encontrado ou não pertence a este utilizador.'

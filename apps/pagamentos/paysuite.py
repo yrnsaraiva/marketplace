@@ -8,7 +8,6 @@ Trata criação de pagamentos, consulta de estado e verificação de webhooks.
 import hashlib
 import hmac
 import logging
-import uuid
 
 import requests
 from django.conf import settings
@@ -181,8 +180,8 @@ class PaySuiteClient:
         Devolve True se válido, False caso contrário.
         """
         if not self.webhook_secret:
-            logger.warning("PAYSUITE_WEBHOOK_SECRET não configurado — a ignorar verificação")
-            return True  # permissivo em dev; em prod DEVE estar configurado
+            logger.warning("PAYSUITE_WEBHOOK_SECRET não configurado - recusando verificação")
+            return False  # permissivo em dev; em prod DEVE estar configurado
 
         expected = hmac.new(
             self.webhook_secret.encode(),
