@@ -18,7 +18,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS',
-    default='localhost,127.0.0.1',
+    default='localhost,127.0.0.1,192.168.1.100,zonal.up.railway.app',
     cast=lambda v: [h.strip() for h in v.split(',')]
 )
 
