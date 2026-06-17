@@ -4,450 +4,518 @@
 {% block title %}Pesquisa{% endblock %}
 
 {% block content %}
-<main class="pt-24 pb-20 px-4 sm:px-6 max-w-screen-2xl mx-auto flex flex-col md:flex-row gap-6 md:gap-8">
+    <main class="pt-24 pb-20 px-4 sm:px-6 max-w-screen-2xl mx-auto flex flex-col md:flex-row gap-6 md:gap-8">
 
-    <!-- Botão mobile filtros -->
-    <button id="toggle-filters" type="button"
-            class="md:hidden w-full py-3 bg-primary text-on-primary rounded-xl font-medium text-sm flex items-center justify-center gap-2 mb-2 shadow-sm hover:opacity-90 transition-all">
-        <span class="material-symbols-outlined text-lg">tune</span>
-        Filtros
-        {% if filtros_ativos %}
-        <span class="bg-on-primary text-primary rounded-full text-xs font-bold w-5 h-5 flex items-center justify-center">{{ filtros_ativos }}</span>
-        {% endif %}
-    </button>
+        <!-- Botão mobile filtros -->
+        <button id="toggle-filters" type="button"
+                class="md:hidden w-full py-3 bg-primary text-on-primary rounded-xl font-medium text-sm flex items-center justify-center gap-2 mb-2 shadow-sm hover:opacity-90 transition-all">
+            <span class="material-symbols-outlined text-lg">tune</span>
+            Filtros
+            {% if filtros_ativos %}
+                <span class="bg-on-primary text-primary rounded-full text-xs font-bold w-5 h-5 flex items-center justify-center">{{ filtros_ativos }}</span>
+            {% endif %}
+        </button>
 
-    <!-- Sidebar -->
-    <aside id="filters-sidebar" class="w-full md:w-56 flex-shrink-0 hidden md:block">
-        <div class="sticky top-28">
-            <form method="GET" action="{% url 'anuncio-pesquisa' %}" id="filtros-form">
+        <!-- Sidebar -->
+        <aside id="filters-sidebar" class="w-full md:w-56 flex-shrink-0 hidden md:block">
+            <div class="sticky top-28">
+                <form method="GET" action="{% url 'anuncio-pesquisa' %}" id="filtros-form">
 
-                <div class="flex items-center justify-between mb-5">
-                    <h3 class="text-on-surface font-medium text-base tracking-tight">Filtros</h3>
-                    {% if request.GET %}
-                    <a href="{% url 'anuncio-pesquisa' %}" class="text-xs text-primary hover:underline">Limpar tudo</a>
-                    {% endif %}
-                </div>
+                    <div class="flex items-center justify-between mb-5">
+                        <h3 class="text-on-surface font-medium text-base tracking-tight">Filtros</h3>
+                        {% if request.GET %}
+                            <a href="{% url 'anuncio-pesquisa' %}" class="text-xs text-primary hover:underline">Limpar
+                                tudo</a>
+                        {% endif %}
+                    </div>
 
-                <!-- Categorias -->
-                <div class="mb-5">
-                    <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Categoria</p>
-                    <div class="space-y-0.5" id="categorias-list">
-                        {% for cat in categorias %}
-                        <div>
-                            <button type="button"
-                                    onclick="toggleCategoriaPai('{{ cat.slug }}', this)"
-                                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all
-                                           {% if categoria_slug == cat.slug %}bg-primary/10 text-primary font-medium{% else %}text-on-surface hover:bg-surface-container-low{% endif %}">
-                                <span>{{ cat.nome }}</span>
-                                <span class="flex items-center gap-1.5">
-                                    {% if cat.total_anuncios %}
-                                    <span class="text-[11px] px-1.5 py-0.5 rounded-full
-                                                 {% if categoria_slug == cat.slug %}bg-primary/15 text-primary{% else %}bg-surface-container-low text-on-surface-variant{% endif %}">
-                                        {{ cat.total_anuncios }}
-                                    </span>
-                                    {% endif %}
+                    <!-- Categorias -->
+                    <div class="mb-5">
+                        <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Categoria</p>
+                        <div class="space-y-0.5" id="categorias-list">
+                            {% for cat in categorias %}
+                                <div>
+                                    <div class="flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all
+                {% if categoria_slug == cat.slug %}bg-primary/10 text-primary font-medium{% else %}text-on-surface hover:bg-surface-container-low{% endif %}">
+                                        <button type="button"
+                                                onclick="selecionarCategoria('{{ cat.slug }}')"
+                                                class="flex-1 text-left flex items-center gap-1.5">
+                                            <span>{{ cat.nome }}</span>
+                                            {% if cat.total_anuncios %}
+                                                <span class="text-[11px] px-1.5 py-0.5 rounded-full
+                         {% if categoria_slug == cat.slug %}bg-primary/15 text-primary{% else %}bg-surface-container-low text-on-surface-variant{% endif %}">
+                {{ cat.total_anuncios }}
+            </span>
+                                            {% endif %}
+                                        </button>
+                                        {% if cat.subcategorias.all %}
+                                            <button type="button"
+                                                    onclick="toggleSubcategorias('{{ cat.slug }}', this)"
+                                                    class="ml-1 p-1 rounded hover:bg-surface-container-low transition-all"
+                                                    aria-label="Expandir subcategorias">
+            <span class="material-symbols-outlined text-[16px] text-outline transition-transform duration-200"
+                  id="chevron-{{ cat.slug }}">expand_more</span>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+
                                     {% if cat.subcategorias.all %}
-                                    <span class="material-symbols-outlined text-[16px] text-outline transition-transform duration-200"
-                                          id="chevron-{{ cat.slug }}">expand_more</span>
+                                        <div id="sub-{{ cat.slug }}"
+                                             class="pl-3 mt-0.5 space-y-0.5 overflow-hidden transition-all duration-200 hidden">
+                                            {% for sub in cat.subcategorias.all %}
+                                                <button type="button"
+                                                        data-slug="{{ sub.slug }}"
+                                                        onclick="selecionarCategoria('{{ sub.slug }}')"
+                                                        class="w-full text-left px-3 py-1.5 rounded-md text-sm transition-all
+                       {% if categoria_slug == sub.slug %}text-primary font-medium bg-primary/8{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low{% endif %}">
+                                                    {{ sub.nome }}
+                                                </button>
+                                            {% endfor %}
+                                        </div>
                                     {% endif %}
-                                </span>
-                            </button>
-
-                            {% if cat.subcategorias.all %}
-                            <div id="sub-{{ cat.slug }}"
-                                 class="pl-3 mt-0.5 space-y-0.5 overflow-hidden transition-all duration-200 hidden">
-                                {% for sub in cat.subcategorias.all %}
-                                <button type="button"
-                                        data-slug="{{ sub.slug }}"
-                                        onclick="selecionarCategoria('{{ sub.slug }}')"
-                                        class="w-full text-left px-3 py-1.5 rounded-md text-sm transition-all
-                                               {% if categoria_slug == sub.slug %}text-primary font-medium bg-primary/8{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low{% endif %}">
-                                    {{ sub.nome }}
-                                </button>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% if categoria_slug %}
-                    <button type="button" onclick="selecionarCategoria('')"
-                            class="mt-2 text-xs text-primary hover:underline flex items-center gap-1">
-                        <span class="material-symbols-outlined text-sm">close</span>
-                        Ver todas
-                    </button>
-                    {% endif %}
-                    <input type="hidden" name="categoria" id="categoria-input" value="{{ categoria_slug }}"/>
-                </div>
-
-                <div class="h-px bg-outline-variant/20 my-4"></div>
-
-                <!-- Preço -->
-                <div class="mb-5">
-                    <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Faixa de preço (MT)</p>
-                    <div class="flex items-center gap-2">
-                        <input type="number" name="preco_min" placeholder="Mín"
-                               value="{{ request.GET.preco_min }}"
-                               class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-primary focus:outline-none"/>
-                        <span class="text-on-surface-variant text-sm flex-shrink-0">-</span>
-                        <input type="number" name="preco_max" placeholder="Máx"
-                               value="{{ request.GET.preco_max }}"
-                               class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-primary focus:outline-none"/>
-                    </div>
-                </div>
-
-                <div class="h-px bg-outline-variant/20 my-4"></div>
-
-                <!-- Localização -->
-                <div class="mb-5">
-                    <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Localização</p>
-                    <div class="relative">
-                        <select name="provincia"
-                                class="w-full appearance-none bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 pl-3 pr-8 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
-                            <option value="">Todas as províncias</option>
-                            {% for prov in provincias %}
-                            <option value="{{ prov }}" {% if request.GET.provincia == prov %}selected{% endif %}>{{ prov }}</option>
+                                </div>
                             {% endfor %}
+                        </div>
+                        {% if categoria_slug %}
+                            <button type="button" onclick="selecionarCategoria('')"
+                                    class="mt-2 text-xs text-primary hover:underline flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">close</span>
+                                Ver todas
+                            </button>
+                        {% endif %}
+                        <input type="hidden" name="categoria" id="categoria-input" value="{{ categoria_slug }}"/>
+                    </div>
+
+                    <div class="h-px bg-outline-variant/20 my-4"></div>
+
+                    <!-- Preço -->
+                    <div class="mb-5">
+                        <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Faixa de preço
+                            (MT)</p>
+                        <div class="flex items-center gap-2">
+                            <input type="number" name="preco_min" placeholder="Mín"
+                                   value="{{ request.GET.preco_min }}"
+                                   class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-primary focus:outline-none"/>
+                            <span class="text-on-surface-variant text-sm flex-shrink-0">-</span>
+                            <input type="number" name="preco_max" placeholder="Máx"
+                                   value="{{ request.GET.preco_max }}"
+                                   class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-primary focus:outline-none"/>
+                        </div>
+                    </div>
+
+                    <div class="h-px bg-outline-variant/20 my-4"></div>
+
+                    <!-- Localização -->
+                    <div class="mb-5">
+                        <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Localização</p>
+                        <div class="relative">
+                            <select name="provincia"
+                                    class="w-full appearance-none bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 pl-3 pr-8 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
+                                <option value="">Todas as províncias</option>
+                                {% for prov in provincias %}
+                                    <option value="{{ prov }}"
+                                            {% if request.GET.provincia == prov %}selected{% endif %}>{{ prov }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="material-symbols-outlined text-[16px] text-outline absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
+                        </div>
+                    </div>
+
+                    <div class="h-px bg-outline-variant/20 my-4"></div>
+
+                    <!-- Condição -->
+                    <div class="mb-5">
+                        <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Condição</p>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="toggleCondicao('novo', this)"
+                                    class="flex-1 py-2 rounded-lg text-sm font-medium transition-all
+                                       {% if request.GET.condicao == 'novo' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low{% endif %}">
+                                Novo
+                            </button>
+                            <button type="button" onclick="toggleCondicao('usado', this)"
+                                    class="flex-1 py-2 rounded-lg text-sm font-medium transition-all
+                                       {% if request.GET.condicao == 'usado' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low{% endif %}">
+                                Usado
+                            </button>
+                            <input type="hidden" name="condicao" id="condicao-input"
+                                   value="{{ request.GET.condicao }}"/>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="search" value="{{ request.GET.search }}"/>
+                    <input type="hidden" name="ordering" id="ordering-input" value="{{ request.GET.ordering }}"/>
+
+                    <button type="submit"
+                            class="w-full py-2.5 bg-primary text-on-primary rounded-xl font-medium text-sm hover:opacity-90 transition-all mt-2">
+                        Aplicar filtros
+                    </button>
+
+                </form>
+            </div>
+        </aside>
+
+        <!-- Resultados -->
+        <div class="flex-1 min-w-0">
+
+            <!-- Cabeçalho de resultados -->
+            <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold text-on-surface tracking-tight">
+                        {% if request.GET.search %}Resultados para "{{ request.GET.search }}"
+                            {% elif request.GET.categoria %}{{ request.GET.categoria|title }}
+                        {% else %}Todos os anúncios{% endif %}
+                    </h1>
+                    <p class="text-sm text-on-surface-variant mt-0.5">
+                        {{ page_obj.paginator.count }} resultado{{ page_obj.paginator.count|pluralize:"s" }}
+                        encontrado{{ page_obj.paginator.count|pluralize:"s" }}
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- Toggle vista -->
+                    <div class="flex gap-1 bg-surface-container-low rounded-lg p-1">
+                        <button id="btn-grid" onclick="setVista('grid')"
+                                title="Vista grelha"
+                                class="w-8 h-8 flex items-center justify-center rounded-md transition-all bg-surface-container-lowest shadow-sm text-on-surface">
+                            <span class="material-symbols-outlined text-[18px]">grid_view</span>
+                        </button>
+                        <button id="btn-list" onclick="setVista('list')"
+                                title="Vista lista"
+                                class="w-8 h-8 flex items-center justify-center rounded-md transition-all text-on-surface-variant">
+                            <span class="material-symbols-outlined text-[18px]">view_list</span>
+                        </button>
+                    </div>
+
+                    <!-- Ordenação -->
+                    <div class="relative">
+                        <select id="ordering-select"
+                                onchange="aplicarOrdenacao(this.value)"
+                                class="appearance-none bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 pl-3 pr-8 text-sm focus:ring-2 focus:ring-primary focus:outline-none cursor-pointer">
+                            <option value="-publicado_em"
+                                    {% if request.GET.ordering == '-publicado_em' or not request.GET.ordering %}selected{% endif %}>
+                                Mais recentes
+                            </option>
+                            <option value="preco" {% if request.GET.ordering == 'preco' %}selected{% endif %}>Menor
+                                preço
+                            </option>
+                            <option value="-preco" {% if request.GET.ordering == '-preco' %}selected{% endif %}>Maior
+                                preço
+                            </option>
+                            <option value="-visualizacoes"
+                                    {% if request.GET.ordering == '-visualizacoes' %}selected{% endif %}>Mais vistos
+                            </option>
                         </select>
                         <span class="material-symbols-outlined text-[16px] text-outline absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
                     </div>
                 </div>
+            </header>
 
-                <div class="h-px bg-outline-variant/20 my-4"></div>
-
-                <!-- Condição -->
-                <div class="mb-5">
-                    <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Condição</p>
-                    <div class="flex gap-2">
-                        <button type="button" onclick="toggleCondicao('novo', this)"
-                                class="flex-1 py-2 rounded-lg text-sm font-medium transition-all
-                                       {% if request.GET.condicao == 'novo' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low{% endif %}">
-                            Novo
-                        </button>
-                        <button type="button" onclick="toggleCondicao('usado', this)"
-                                class="flex-1 py-2 rounded-lg text-sm font-medium transition-all
-                                       {% if request.GET.condicao == 'usado' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low{% endif %}">
-                            Usado
-                        </button>
-                        <input type="hidden" name="condicao" id="condicao-input" value="{{ request.GET.condicao }}"/>
-                    </div>
-                </div>
-
-                <input type="hidden" name="search" value="{{ request.GET.search }}"/>
-                <input type="hidden" name="ordering" id="ordering-input" value="{{ request.GET.ordering }}"/>
-
-                <button type="submit"
-                        class="w-full py-2.5 bg-primary text-on-primary rounded-xl font-medium text-sm hover:opacity-90 transition-all mt-2">
-                    Aplicar filtros
-                </button>
-
-            </form>
-        </div>
-    </aside>
-
-    <!-- Resultados -->
-    <div class="flex-1 min-w-0">
-
-        <!-- Cabeçalho de resultados -->
-        <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <div>
-                <h1 class="text-xl sm:text-2xl font-bold text-on-surface tracking-tight">
-                    {% if request.GET.search %}Resultados para "{{ request.GET.search }}"
-                    {% elif request.GET.categoria %}{{ request.GET.categoria|title }}
-                    {% else %}Todos os anúncios{% endif %}
-                </h1>
-                <p class="text-sm text-on-surface-variant mt-0.5">
-                    {{ page_obj.paginator.count }} resultado{{ page_obj.paginator.count|pluralize:"s" }} encontrado{{ page_obj.paginator.count|pluralize:"s" }}
-                </p>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <!-- Toggle vista -->
-                <div class="flex gap-1 bg-surface-container-low rounded-lg p-1">
-                    <button id="btn-grid" onclick="setVista('grid')"
-                            title="Vista grelha"
-                            class="w-8 h-8 flex items-center justify-center rounded-md transition-all bg-surface-container-lowest shadow-sm text-on-surface">
-                        <span class="material-symbols-outlined text-[18px]">grid_view</span>
-                    </button>
-                    <button id="btn-list" onclick="setVista('list')"
-                            title="Vista lista"
-                            class="w-8 h-8 flex items-center justify-center rounded-md transition-all text-on-surface-variant">
-                        <span class="material-symbols-outlined text-[18px]">view_list</span>
-                    </button>
-                </div>
-
-                <!-- Ordenação -->
-                <div class="relative">
-                    <select id="ordering-select"
-                            onchange="aplicarOrdenacao(this.value)"
-                            class="appearance-none bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 pl-3 pr-8 text-sm focus:ring-2 focus:ring-primary focus:outline-none cursor-pointer">
-                        <option value="-publicado_em" {% if request.GET.ordering == '-publicado_em' or not request.GET.ordering %}selected{% endif %}>Mais recentes</option>
-                        <option value="preco" {% if request.GET.ordering == 'preco' %}selected{% endif %}>Menor preço</option>
-                        <option value="-preco" {% if request.GET.ordering == '-preco' %}selected{% endif %}>Maior preço</option>
-                        <option value="-visualizacoes" {% if request.GET.ordering == '-visualizacoes' %}selected{% endif %}>Mais vistos</option>
-                    </select>
-                    <span class="material-symbols-outlined text-[16px] text-outline absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- Chips de filtros activos -->
-        {% if request.GET.search or categoria_slug or request.GET.provincia or request.GET.condicao or request.GET.preco_min or request.GET.preco_max %}
-        <div class="flex flex-wrap gap-2 mb-5">
-            {% if request.GET.search %}
-            <a href="?{% querystring search='' %}"
-               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
-                "{{ request.GET.search }}"
-                <span class="material-symbols-outlined text-[14px] text-outline">close</span>
-            </a>
-            {% endif %}
-            {% if categoria_slug %}
-            <a href="?{% querystring categoria='' %}"
-               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
-                {{ categoria_slug|title }}
-                <span class="material-symbols-outlined text-[14px] text-outline">close</span>
-            </a>
-            {% endif %}
-            {% if request.GET.provincia %}
-            <a href="?{% querystring provincia='' %}"
-               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
-                {{ request.GET.provincia }}
-                <span class="material-symbols-outlined text-[14px] text-outline">close</span>
-            </a>
-            {% endif %}
-            {% if request.GET.condicao %}
-            <a href="?{% querystring condicao='' %}"
-               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
-                {{ request.GET.condicao|capfirst }}
-                <span class="material-symbols-outlined text-[14px] text-outline">close</span>
-            </a>
-            {% endif %}
-            {% if request.GET.preco_min or request.GET.preco_max %}
-            <a href="?{% querystring preco_min='' preco_max='' %}"
-               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
-                {% if request.GET.preco_min %}{{ request.GET.preco_min }} MT{% endif %}
-                {% if request.GET.preco_min and request.GET.preco_max %} — {% endif %}
-                {% if request.GET.preco_max %}{{ request.GET.preco_max }} MT{% endif %}
-                <span class="material-symbols-outlined text-[14px] text-outline">close</span>
-            </a>
-            {% endif %}
-        </div>
-        {% endif %}
-
-        <!-- Grid de anúncios -->
-        <div id="resultados-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {% for anuncio in page_obj %}
-            <a href="{% url 'anuncio-detalhe-view' anuncio.id %}"
-               class="bg-surface-container-lowest border border-outline-variant/20 rounded-xl overflow-hidden group hover:border-outline-variant/50 hover:shadow-lg hover:shadow-black/5 transition-all duration-200">
-                <div class="relative aspect-[4/3] overflow-hidden bg-surface-container-low">
-                    {% if anuncio.imagem_principal %}
-                    <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                         src="{{ anuncio.imagem_principal }}" alt="{{ anuncio.titulo }}" loading="lazy"/>
-                    {% else %}
-                    <div class="w-full h-full flex items-center justify-center">
-                        <span class="material-symbols-outlined text-4xl text-outline">image</span>
-                    </div>
+            <!-- Chips de filtros activos -->
+            {% if request.GET.search or categoria_slug or request.GET.provincia or request.GET.condicao or request.GET.preco_min or request.GET.preco_max %}
+                <div class="flex flex-wrap gap-2 mb-5">
+                    {% if request.GET.search %}
+                        <a href="?{% querystring search='' %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
+                            "{{ request.GET.search }}"
+                            <span class="material-symbols-outlined text-[14px] text-outline">close</span>
+                        </a>
                     {% endif %}
-
-                    {% if anuncio.destacado %}
-                    <div class="absolute top-3 left-3 bg-highlights text-on-background px-2.5 py-1 rounded-full text-[10px] font-bold uppercase flex items-center gap-1">
-                        <span class="material-symbols-outlined text-xs">star</span>
-                        Destaque
-                    </div>
+                    {% if categoria_slug %}
+                        <a href="?{% querystring categoria='' %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
+                            {{ categoria_slug|title }}
+                            <span class="material-symbols-outlined text-[14px] text-outline">close</span>
+                        </a>
                     {% endif %}
+                    {% if request.GET.provincia %}
+                        <a href="?{% querystring provincia='' %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
+                            {{ request.GET.provincia }}
+                            <span class="material-symbols-outlined text-[14px] text-outline">close</span>
+                        </a>
+                    {% endif %}
+                    {% if request.GET.condicao %}
+                        <a href="?{% querystring condicao='' %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
+                            {{ request.GET.condicao|capfirst }}
+                            <span class="material-symbols-outlined text-[14px] text-outline">close</span>
+                        </a>
+                    {% endif %}
+                    {% if request.GET.preco_min or request.GET.preco_max %}
+                        <a href="?{% querystring preco_min='' preco_max='' %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
+                            {% if request.GET.preco_min %}{{ request.GET.preco_min }} MT{% endif %}
+                            {% if request.GET.preco_min and request.GET.preco_max %} — {% endif %}
+                            {% if request.GET.preco_max %}{{ request.GET.preco_max }} MT{% endif %}
+                            <span class="material-symbols-outlined text-[14px] text-outline">close</span>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
 
-                    {% if anuncio.condicao %}
-                    <div class="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-medium
+            <!-- Grid de anúncios -->
+            <div id="resultados-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for anuncio in page_obj %}
+                    <a href="{% url 'anuncio-detalhe-view' anuncio.id %}"
+                       class="bg-surface-container-lowest border border-outline-variant/20 rounded-xl overflow-hidden group hover:border-outline-variant/50 hover:shadow-lg hover:shadow-black/5 transition-all duration-200">
+                        <div class="relative aspect-[4/3] overflow-hidden bg-surface-container-low">
+                            {% if anuncio.imagem_principal %}
+                                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                     src="{{ anuncio.imagem_principal }}" alt="{{ anuncio.titulo }}" loading="lazy"/>
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-4xl text-outline">image</span>
+                                </div>
+                            {% endif %}
+
+                            {% if anuncio.destacado %}
+                                <div class="absolute top-3 left-3 bg-highlights text-on-background px-2.5 py-1 rounded-full text-[10px] font-bold uppercase flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-xs">star</span>
+                                    Destaque
+                                </div>
+                            {% endif %}
+
+                            {% if anuncio.condicao %}
+                                <div class="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-medium
                                 {% if anuncio.condicao == 'novo' %}bg-green-100 text-green-800{% else %}bg-surface-container-low text-on-surface-variant{% endif %}">
-                        {{ anuncio.condicao|capfirst }}
+                                    {{ anuncio.condicao|capfirst }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="p-4">
+                            <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">{{ anuncio.categoria_nome }}</p>
+                            <h3 class="text-sm font-medium text-on-surface leading-snug mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                                {{ anuncio.titulo }}
+                            </h3>
+                            <div class="flex items-center gap-1.5 text-on-surface-variant text-xs mb-3">
+                                <span class="material-symbols-outlined text-[14px]">location_on</span>
+                                <span>{{ anuncio.cidade }}, {{ anuncio.provincia }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-on-surface text-sm">{{ anuncio.preco|floatformat:0 }} MT</span>
+                                <span class="text-xs text-on-surface-variant">{{ anuncio.publicado_em|timesince }} atrás</span>
+                            </div>
+                        </div>
+                    </a>
+                {% empty %}
+                    <div class="col-span-full text-center py-16 text-on-surface-variant">
+                        <span class="material-symbols-outlined text-5xl mb-4 block text-outline">search_off</span>
+                        <p class="font-medium text-base text-on-surface mb-1">Nenhum anúncio encontrado</p>
+                        <p class="text-sm mb-4">Tente outros termos ou remova alguns filtros.</p>
+                        <a href="{% url 'anuncio-pesquisa' %}"
+                           class="inline-flex items-center gap-1 text-sm text-primary font-medium hover:underline">
+                            <span class="material-symbols-outlined text-sm">refresh</span>
+                            Ver todos os anúncios
+                        </a>
                     </div>
+                {% endfor %}
+            </div>
+
+            <!-- Paginação -->
+            {% if page_obj.has_other_pages %}
+                <div class="mt-10 flex justify-center items-center gap-1.5 flex-wrap">
+                    {% if page_obj.has_previous %}
+                        <a href="?{% querystring page=page_obj.previous_page_number %}"
+                           class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
+                            <span class="material-symbols-outlined text-sm">chevron_left</span>
+                        </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary font-bold text-sm shadow-sm">{{ num }}</span>
+                        {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                            <a href="?{% querystring page=num %}"
+                               class="w-10 h-10 flex items-center justify-center rounded-lg text-sm bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">{{ num }}</a>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?{% querystring page=num %}"
+                               class="w-10 h-10 flex items-center justify-center rounded-lg text-sm bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">{{ num }}</a>
+                        {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                            <span class="w-10 h-10 flex items-center justify-center text-on-surface-variant text-sm">…</span>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?{% querystring page=page_obj.next_page_number %}"
+                           class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
+                            <span class="material-symbols-outlined text-sm">chevron_right</span>
+                        </a>
                     {% endif %}
                 </div>
-
-                <div class="p-4">
-                    <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">{{ anuncio.categoria_nome }}</p>
-                    <h3 class="text-sm font-medium text-on-surface leading-snug mb-3 group-hover:text-primary transition-colors line-clamp-2">
-                        {{ anuncio.titulo }}
-                    </h3>
-                    <div class="flex items-center gap-1.5 text-on-surface-variant text-xs mb-3">
-                        <span class="material-symbols-outlined text-[14px]">location_on</span>
-                        <span>{{ anuncio.cidade }}, {{ anuncio.provincia }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold text-on-surface text-sm">{{ anuncio.preco|floatformat:0 }} MT</span>
-                        <span class="text-xs text-on-surface-variant">{{ anuncio.publicado_em|timesince }} atrás</span>
-                    </div>
-                </div>
-            </a>
-            {% empty %}
-            <div class="col-span-full text-center py-16 text-on-surface-variant">
-                <span class="material-symbols-outlined text-5xl mb-4 block text-outline">search_off</span>
-                <p class="font-medium text-base text-on-surface mb-1">Nenhum anúncio encontrado</p>
-                <p class="text-sm mb-4">Tente outros termos ou remova alguns filtros.</p>
-                <a href="{% url 'anuncio-pesquisa' %}"
-                   class="inline-flex items-center gap-1 text-sm text-primary font-medium hover:underline">
-                    <span class="material-symbols-outlined text-sm">refresh</span>
-                    Ver todos os anúncios
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- Paginação -->
-        {% if page_obj.has_other_pages %}
-        <div class="mt-10 flex justify-center items-center gap-1.5 flex-wrap">
-            {% if page_obj.has_previous %}
-            <a href="?{% querystring page=page_obj.previous_page_number %}"
-               class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
-                <span class="material-symbols-outlined text-sm">chevron_left</span>
-            </a>
             {% endif %}
 
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                <span class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary font-bold text-sm shadow-sm">{{ num }}</span>
-                {% elif num == 1 or num == page_obj.paginator.num_pages %}
-                <a href="?{% querystring page=num %}"
-                   class="w-10 h-10 flex items-center justify-center rounded-lg text-sm bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">{{ num }}</a>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?{% querystring page=num %}"
-                   class="w-10 h-10 flex items-center justify-center rounded-lg text-sm bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">{{ num }}</a>
-                {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
-                <span class="w-10 h-10 flex items-center justify-center text-on-surface-variant text-sm">…</span>
-                {% endif %}
-            {% endfor %}
-
-            {% if page_obj.has_next %}
-            <a href="?{% querystring page=page_obj.next_page_number %}"
-               class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
-                <span class="material-symbols-outlined text-sm">chevron_right</span>
-            </a>
-            {% endif %}
         </div>
-        {% endif %}
-
-    </div>
-</main>
+    </main>
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-// ── Categorias ──────────────────────────────────────────────────────────────
+    <script>
+        // ── Categorias ──────────────────────────────────────────────────────────────
 
-function toggleCategoriaPai(slug, btn) {
-    const subList = document.getElementById('sub-' + slug);
-    const chevron = document.getElementById('chevron-' + slug);
+        function toggleSubcategorias(slug, btn) {
+            const subList = document.getElementById('sub-' + slug);
+            const chevron = document.getElementById('chevron-' + slug);
+            if (!subList) return;
 
-    if (!subList) {
-        selecionarCategoria(slug);
-        return;
-    }
+            // Fecha outras subcategorias abertas
+            document.querySelectorAll('[id^="sub-"]').forEach(el => {
+                if (el.id !== 'sub-' + slug) el.classList.add('hidden');
+            });
+            document.querySelectorAll('[id^="chevron-"]').forEach(el => {
+                if (el.id !== 'chevron-' + slug) el.classList.remove('rotate-180');
+            });
 
-    const isOpen = !subList.classList.contains('hidden');
-
-    document.querySelectorAll('[id^="sub-"]').forEach(el => {
-        if (el.id !== 'sub-' + slug) el.classList.add('hidden');
-    });
-    document.querySelectorAll('[id^="chevron-"]').forEach(el => {
-        if (el.id !== 'chevron-' + slug) el.classList.remove('rotate-180');
-    });
-
-    if (isOpen) {
-        subList.classList.add('hidden');
-        if (chevron) chevron.classList.remove('rotate-180');
-    } else {
-        subList.classList.remove('hidden');
-        if (chevron) chevron.classList.add('rotate-180');
-    }
-}
-
-function selecionarCategoria(slug) {
-    document.getElementById('categoria-input').value = slug;
-    document.getElementById('filtros-form').submit();
-}
-
-(function initCategoriasState() {
-    const selected = document.getElementById('categoria-input').value;
-    if (!selected) return;
-
-    document.querySelectorAll('[id^="sub-"]').forEach(function(list) {
-        const slugPai = list.id.replace('sub-', '');
-        if (selected === slugPai) {
-            list.classList.remove('hidden');
-            const chevron = document.getElementById('chevron-' + slugPai);
-            if (chevron) chevron.classList.add('rotate-180');
-            return;
+            const isOpen = !subList.classList.contains('hidden');
+            if (isOpen) {
+                subList.classList.add('hidden');
+                if (chevron) chevron.classList.remove('rotate-180');
+            } else {
+                subList.classList.remove('hidden');
+                if (chevron) chevron.classList.add('rotate-180');
+            }
         }
-        const subBtns = list.querySelectorAll('button[data-slug]');
-        const match = Array.from(subBtns).some(b => b.dataset.slug === selected);
-        if (match) {
-            list.classList.remove('hidden');
-            const chevron = document.getElementById('chevron-' + slugPai);
-            if (chevron) chevron.classList.add('rotate-180');
+
+        function selecionarCategoria(slug) {
+            document.getElementById('categoria-input').value = slug;
+            document.getElementById('filtros-form').submit();
         }
-    });
-})();
 
-// ── Mobile: toggle sidebar ───────────────────────────────────────────────────
+        (function initCategoriasState() {
+            const selected = document.getElementById('categoria-input').value;
+            if (!selected) return;
 
-document.getElementById('toggle-filters').addEventListener('click', function() {
-    const sidebar = document.getElementById('filters-sidebar');
-    sidebar.classList.toggle('hidden');
-    sidebar.classList.toggle('block');
-});
+            document.querySelectorAll('[id^="sub-"]').forEach(function (list) {
+                const slugPai = list.id.replace('sub-', '');
+                if (selected === slugPai) {
+                    list.classList.remove('hidden');
+                    const chevron = document.getElementById('chevron-' + slugPai);
+                    if (chevron) chevron.classList.add('rotate-180');
+                    return;
+                }
+                const subBtns = list.querySelectorAll('button[data-slug]');
+                const match = Array.from(subBtns).some(b => b.dataset.slug === selected);
+                if (match) {
+                    list.classList.remove('hidden');
+                    const chevron = document.getElementById('chevron-' + slugPai);
+                    if (chevron) chevron.classList.add('rotate-180');
+                }
+            });
+        })();
 
-// ── Condição ─────────────────────────────────────────────────────────────────
+        // ── Mobile: toggle sidebar ───────────────────────────────────────────────────
 
-function toggleCondicao(val, btn) {
-    const input = document.getElementById('condicao-input');
-    const btns = document.querySelectorAll('[onclick^="toggleCondicao"]');
+        document.getElementById('toggle-filters').addEventListener('click', function () {
+            const sidebar = document.getElementById('filters-sidebar');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('block');
+        });
 
-    const inactiveClass = 'flex-1 py-2 rounded-lg text-sm font-medium bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low transition-all';
-    const activeClass   = 'flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-on-primary transition-all';
+        // ── Condição ─────────────────────────────────────────────────────────────────
 
-    if (input.value === val) {
-        input.value = '';
-        btn.className = inactiveClass;
-    } else {
-        input.value = val;
-        btns.forEach(b => b.className = inactiveClass);
-        btn.className = activeClass;
-    }
-}
+        function toggleCondicao(val, btn) {
+            const input = document.getElementById('condicao-input');
+            const btns = document.querySelectorAll('[onclick^="toggleCondicao"]');
 
-// ── Ordenação (dispara submit automaticamente) ────────────────────────────────
+            const inactiveClass = 'flex-1 py-2 rounded-lg text-sm font-medium bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low transition-all';
+            const activeClass = 'flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-on-primary transition-all';
 
-function aplicarOrdenacao(val) {
-    document.getElementById('ordering-input').value = val;
-    document.getElementById('filtros-form').submit();
-}
+            if (input.value === val) {
+                input.value = '';
+                btn.className = inactiveClass;
+            } else {
+                input.value = val;
+                btns.forEach(b => b.className = inactiveClass);
+                btn.className = activeClass;
+            }
+        }
 
-// ── Vista grelha / lista ─────────────────────────────────────────────────────
+        // ── Ordenação (dispara submit automaticamente) ────────────────────────────────
 
-function setVista(tipo) {
-    const grid = document.getElementById('resultados-grid');
-    const btnGrid = document.getElementById('btn-grid');
-    const btnList = document.getElementById('btn-list');
+        function aplicarOrdenacao(val) {
+            document.getElementById('ordering-input').value = val;
+            document.getElementById('filtros-form').submit();
+        }
 
-    const activeClass   = 'w-8 h-8 flex items-center justify-center rounded-md transition-all bg-surface-container-lowest shadow-sm text-on-surface';
-    const inactiveClass = 'w-8 h-8 flex items-center justify-center rounded-md transition-all text-on-surface-variant';
+        // ── Vista grelha / lista ─────────────────────────────────────────────────────
 
-    if (tipo === 'grid') {
-        grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
-        btnGrid.className = activeClass;
-        btnList.className = inactiveClass;
-    } else {
-        grid.className = 'grid grid-cols-1 gap-3';
-        btnGrid.className = inactiveClass;
-        btnList.className = activeClass;
-    }
+        function setVista(tipo) {
+            const grid = document.getElementById('resultados-grid');
+            const btnGrid = document.getElementById('btn-grid');
+            const btnList = document.getElementById('btn-list');
 
-    localStorage.setItem('pesquisa_vista', tipo);
-}
+            const activeClass = 'w-8 h-8 flex items-center justify-center rounded-md transition-all bg-surface-container-lowest shadow-sm text-on-surface';
+            const inactiveClass = 'w-8 h-8 flex items-center justify-center rounded-md transition-all text-on-surface-variant';
 
-(function initVista() {
-    const saved = localStorage.getItem('pesquisa_vista');
-    if (saved === 'list') setVista('list');
-})();
-</script>
+            // Remove classes anteriores
+            grid.classList.remove('view-grid', 'view-list');
+
+            if (tipo === 'grid') {
+                grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 view-grid';
+                btnGrid.className = activeClass;
+                btnList.className = inactiveClass;
+            } else {
+                grid.className = 'grid grid-cols-1 gap-3 view-list';
+                btnGrid.className = inactiveClass;
+                btnList.className = activeClass;
+            }
+
+            localStorage.setItem('pesquisa_vista', tipo);
+        }
+
+        (function initVista() {
+            const saved = localStorage.getItem('pesquisa_vista');
+            if (saved === 'list') setVista('list');
+        })();
+    </script>
+{% endblock %}
+
+{% block extra_head %}
+    <style>
+        /* Estilo para os cards em modo lista */
+        .view-list .group {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: stretch !important;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .view-list .group .relative {
+            width: 15% !important; /* Largura da imagem */
+            aspect-ratio: 1 / 1 !important; /* Ou 4/3, como preferir */
+            flex-shrink: 0 !important;
+        }
+
+        .view-list .group .p-4 {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            padding: 1rem 1.25rem !important;
+        }
+
+        /* Ajusta o título para não cortar com line-clamp-2 */
+        .view-list .group .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Opcional: esconde categoria e localização? Pode manter */
+        .view-list .group .text-\[10px\] {
+            font-size: 0.7rem;
+        }
+
+        .view-list .group .flex.items-center.gap-1\.5 {
+            font-size: 0.75rem;
+        }
+
+        /* Alinha preço e data na mesma linha */
+        .view-list .group .flex.items-center.justify-between {
+            margin-top: auto;
+        }
+    </style>
 {% endblock %}
