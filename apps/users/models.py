@@ -10,6 +10,7 @@ class User(AbstractUser):
     ]
 
     telefone = models.CharField(max_length=20, blank=True)
+    data_nascimento = models.DateField(null=True, blank=True)
     foto_perfil = models.ImageField(upload_to='avatars/', blank=True, null=True)
     telefone_verificado = models.BooleanField(default=False)
     email_verificado = models.BooleanField(default=False)

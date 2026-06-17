@@ -1,6 +1,22 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
+from django.utils import timezone
 from .models import User
+
+IDADE_MINIMA = 18
+
+
+def validar_idade_minima(data_nascimento):
+    """Levanta ValidationError se o utilizador tiver menos de 18 anos."""
+    hoje = timezone.localdate()
+    aniversario_este_ano = data_nascimento.replace(year=hoje.year)
+    idade = hoje.year - data_nascimento.year
+    if aniversario_este_ano > hoje:
+        idade -= 1
+    if idade < IDADE_MINIMA:
+        raise serializers.ValidationError(
+            f'É necessário ter pelo menos {IDADE_MINIMA} anos para se registar.'
+        )
 
 
 class RegistoSerializer(serializers.ModelSerializer):
@@ -12,7 +28,13 @@ class RegistoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'password2',
-                  'telefone', 'provincia', 'cidade']
+                  'telefone', 'data_nascimento', 'provincia', 'cidade']
+
+    def validate_data_nascimento(self, value):
+        if value is None:
+            raise serializers.ValidationError('A data de nascimento é obrigatória.')
+        validar_idade_minima(value)
+        return value
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -36,7 +58,7 @@ class PerfilSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'telefone', 'foto_perfil',
-                  'provincia', 'cidade', 'papel', 'total_anuncios',
+                  'data_nascimento', 'provincia', 'cidade', 'papel', 'total_anuncios',
                   'avaliacao_media', 'date_joined']
         read_only_fields = ['id', 'email', 'papel', 'total_anuncios',
                             'avaliacao_media', 'date_joined']
