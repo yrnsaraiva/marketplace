@@ -4,315 +4,450 @@
 {% block title %}Pesquisa{% endblock %}
 
 {% block content %}
-<main class="pt-24 pb-20 px-4 sm:px-6 max-w-screen-2xl mx-auto flex flex-col md:flex-row gap-6 md:gap-10">
+<main class="pt-24 pb-20 px-4 sm:px-6 max-w-screen-2xl mx-auto flex flex-col md:flex-row gap-6 md:gap-8">
 
-    <!-- 🔄 MOBILE: Botão para mostrar/ocultar filtros -->
+    <!-- Botão mobile filtros -->
     <button id="toggle-filters" type="button"
-            class="md:hidden w-full py-3 bg-primary text-on-primary rounded-full font-bold text-sm flex items-center justify-center gap-2 mb-2 shadow-md hover:opacity-90 transition-all">
-        <span class="material-symbols-outlined text-lg">tune</span> Filtros
+            class="md:hidden w-full py-3 bg-primary text-on-primary rounded-xl font-medium text-sm flex items-center justify-center gap-2 mb-2 shadow-sm hover:opacity-90 transition-all">
+        <span class="material-symbols-outlined text-lg">tune</span>
+        Filtros
+        {% if filtros_ativos %}
+        <span class="bg-on-primary text-primary rounded-full text-xs font-bold w-5 h-5 flex items-center justify-center">{{ filtros_ativos }}</span>
+        {% endif %}
     </button>
 
-    <!-- Sidebar Filtros -->
-    <!-- 🔄 MOBILE: hidden por padrão em mobile, visível em md+ -->
-    <aside id="filters-sidebar" class="w-full md:w-72 flex-shrink-0 hidden md:block">
-        <div class="sticky top-28 space-y-10">
+    <!-- Sidebar -->
+    <aside id="filters-sidebar" class="w-full md:w-56 flex-shrink-0 hidden md:block">
+        <div class="sticky top-28">
             <form method="GET" action="{% url 'anuncio-pesquisa' %}" id="filtros-form">
-                <div>
-                    <h3 class="text-on-surface font-bold text-lg mb-6 tracking-tight">Filtros</h3>
-                
-                    <!-- Categoria & Subcategoria -->
-                    <div class="mb-8" id="categoria-filter-block">
-                        <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-4">Categoria</p>
 
-                        <!-- Categorias pai -->
-                        <div class="space-y-1" id="categorias-list">
-                            {% for cat in categorias %}
-                            <div>
-                                <button type="button"
-                                        onclick="toggleCategoriaPai('{{ cat.slug }}', this)"
-                                        class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all
-                                               {% if categoria_slug == cat.slug %}bg-primary text-on-primary{% else %}bg-surface-container-lowest text-on-surface hover:bg-surface-container-low border border-outline-variant/20{% endif %}">
-                                    <span>{{ cat.nome }}</span>
-                                    {% if cat.subcategorias.all %}
-                                    <span class="material-symbols-outlined text-base transition-transform duration-200"
-                                          id="chevron-{{ cat.slug }}">
-                                        expand_more
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="text-on-surface font-medium text-base tracking-tight">Filtros</h3>
+                    {% if request.GET %}
+                    <a href="{% url 'anuncio-pesquisa' %}" class="text-xs text-primary hover:underline">Limpar tudo</a>
+                    {% endif %}
+                </div>
+
+                <!-- Categorias -->
+                <div class="mb-5">
+                    <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Categoria</p>
+                    <div class="space-y-0.5" id="categorias-list">
+                        {% for cat in categorias %}
+                        <div>
+                            <button type="button"
+                                    onclick="toggleCategoriaPai('{{ cat.slug }}', this)"
+                                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all
+                                           {% if categoria_slug == cat.slug %}bg-primary/10 text-primary font-medium{% else %}text-on-surface hover:bg-surface-container-low{% endif %}">
+                                <span>{{ cat.nome }}</span>
+                                <span class="flex items-center gap-1.5">
+                                    {% if cat.total_anuncios %}
+                                    <span class="text-[11px] px-1.5 py-0.5 rounded-full
+                                                 {% if categoria_slug == cat.slug %}bg-primary/15 text-primary{% else %}bg-surface-container-low text-on-surface-variant{% endif %}">
+                                        {{ cat.total_anuncios }}
                                     </span>
                                     {% endif %}
+                                    {% if cat.subcategorias.all %}
+                                    <span class="material-symbols-outlined text-[16px] text-outline transition-transform duration-200"
+                                          id="chevron-{{ cat.slug }}">expand_more</span>
+                                    {% endif %}
+                                </span>
+                            </button>
+
+                            {% if cat.subcategorias.all %}
+                            <div id="sub-{{ cat.slug }}"
+                                 class="pl-3 mt-0.5 space-y-0.5 overflow-hidden transition-all duration-200 hidden">
+                                {% for sub in cat.subcategorias.all %}
+                                <button type="button"
+                                        data-slug="{{ sub.slug }}"
+                                        onclick="selecionarCategoria('{{ sub.slug }}')"
+                                        class="w-full text-left px-3 py-1.5 rounded-md text-sm transition-all
+                                               {% if categoria_slug == sub.slug %}text-primary font-medium bg-primary/8{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low{% endif %}">
+                                    {{ sub.nome }}
                                 </button>
-
-                                <!-- Subcategorias (colapsáveis) -->
-                                {% if cat.subcategorias.all %}
-                                <div id="sub-{{ cat.slug }}"
-                                     class="pl-3 mt-1 space-y-1 overflow-hidden transition-all duration-300 hidden">
-                                    {% for sub in cat.subcategorias.all %}
-                                    <button type="button"
-                                            data-slug="{{ sub.slug }}"
-                                            onclick="selecionarCategoria('{{ sub.slug }}')"
-                                            class="w-full text-left px-3 py-1.5 rounded-lg text-sm transition-all
-                                                   {% if categoria_slug == sub.slug %}text-primary font-semibold bg-primary/10{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low{% endif %}">
-                                        {{ sub.nome }}
-                                    </button>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
+                                {% endfor %}
                             </div>
-                            {% endfor %}
+                            {% endif %}
                         </div>
-
-                        <!-- Limpar categoria -->
-                        {% if categoria_slug %}
-                        <button type="button" onclick="selecionarCategoria('')"
-                                class="mt-3 text-xs text-primary hover:underline flex items-center gap-1">
-                            <span class="material-symbols-outlined text-sm">close</span>
-                            Ver todas as categorias
-                        </button>
-                        {% endif %}
-
-                        <input type="hidden" name="categoria" id="categoria-input" value="{{ categoria_slug }}"/>
+                        {% endfor %}
                     </div>
+                    {% if categoria_slug %}
+                    <button type="button" onclick="selecionarCategoria('')"
+                            class="mt-2 text-xs text-primary hover:underline flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">close</span>
+                        Ver todas
+                    </button>
+                    {% endif %}
+                    <input type="hidden" name="categoria" id="categoria-input" value="{{ categoria_slug }}"/>
+                </div>
 
-                    <!-- Preço -->
-                    <div class="mb-8">
-                        <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-4">Faixa de Preço (MT)</p>
-                        <div class="space-y-3">
-                            <input type="number" name="preco_min" placeholder="Mínimo"
-                                   value="{{ request.GET.preco_min }}"
-                                   class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl py-2 px-3 text-sm focus:ring-2 focus:ring-primary"/>
-                            <input type="number" name="preco_max" placeholder="Máximo"
-                                   value="{{ request.GET.preco_max }}"
-                                   class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl py-2 px-3 text-sm focus:ring-2 focus:ring-primary"/>
-                        </div>
+                <div class="h-px bg-outline-variant/20 my-4"></div>
+
+                <!-- Preço -->
+                <div class="mb-5">
+                    <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Faixa de preço (MT)</p>
+                    <div class="flex items-center gap-2">
+                        <input type="number" name="preco_min" placeholder="Mín"
+                               value="{{ request.GET.preco_min }}"
+                               class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-primary focus:outline-none"/>
+                        <span class="text-on-surface-variant text-sm flex-shrink-0">-</span>
+                        <input type="number" name="preco_max" placeholder="Máx"
+                               value="{{ request.GET.preco_max }}"
+                               class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-primary focus:outline-none"/>
                     </div>
+                </div>
 
-                    <!-- Localização -->
-                    <div class="mb-8">
-                        <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-4">Localização</p>
-                        <select name="provincia" class="w-full bg-surface-container-lowest border-none rounded-xl py-3 px-4 text-sm shadow-sm ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary transition-all">
-                            <option value="">Todas as Províncias</option>
+                <div class="h-px bg-outline-variant/20 my-4"></div>
+
+                <!-- Localização -->
+                <div class="mb-5">
+                    <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Localização</p>
+                    <div class="relative">
+                        <select name="provincia"
+                                class="w-full appearance-none bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 pl-3 pr-8 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
+                            <option value="">Todas as províncias</option>
                             {% for prov in provincias %}
                             <option value="{{ prov }}" {% if request.GET.provincia == prov %}selected{% endif %}>{{ prov }}</option>
                             {% endfor %}
                         </select>
-                    </div>
-
-                    <!-- Condição -->
-                    <div class="mb-8">
-                        <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-4">Condição</p>
-                        <div class="flex gap-2">
-                            <button type="button" onclick="toggleCondicao('novo', this)"
-                                    class="flex-1 py-2 rounded-lg text-sm font-medium {% if request.GET.condicao == 'novo' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30{% endif %}">
-                                Novo
-                            </button>
-                            <button type="button" onclick="toggleCondicao('usado', this)"
-                                    class="flex-1 py-2 rounded-lg text-sm font-medium {% if request.GET.condicao == 'usado' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30{% endif %}">
-                                Usado
-                            </button>
-                            <input type="hidden" name="condicao" id="condicao-input" value="{{ request.GET.condicao }}"/>
-                        </div>
-                    </div>
-
-                    <!-- Ordenação -->
-                    <div class="mb-8">
-                        <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-4">Ordenar por</p>
-                        <select name="ordering" class="w-full bg-surface-container-lowest border-none rounded-xl py-3 px-4 text-sm shadow-sm ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary">
-                            <option value="-publicado_em" {% if request.GET.ordering == '-publicado_em' %}selected{% endif %}>Mais recentes</option>
-                            <option value="preco" {% if request.GET.ordering == 'preco' %}selected{% endif %}>Preço: menor ao maior</option>
-                            <option value="-preco" {% if request.GET.ordering == '-preco' %}selected{% endif %}>Preço: maior ao menor</option>
-                            <option value="-visualizacoes" {% if request.GET.ordering == '-visualizacoes' %}selected{% endif %}>Mais vistos</option>
-                        </select>
-                    </div>
-
-                    <input type="hidden" name="search" value="{{ request.GET.search }}"/>
-                    
-                    <!-- 🔄 MOBILE: Botões fixados no fundo da sidebar -->
-                    <div class="flex flex-col gap-2 sticky bottom-0 bg-surface-container-lowest pt-3 pb-4 -mx-2 px-2">
-                        <button type="submit" class="w-full py-4 bg-primary text-on-primary rounded-full font-bold text-sm hover:opacity-90 transition-all">
-                            Aplicar Filtros
-                        </button>
-                        <a href="{% url 'anuncio-pesquisa' %}" class="block w-full py-4 bg-on-surface text-surface-container-lowest rounded-full font-bold text-sm hover:opacity-90 text-center transition-all">
-                            Limpar Filtros
-                        </a>
+                        <span class="material-symbols-outlined text-[16px] text-outline absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
                     </div>
                 </div>
+
+                <div class="h-px bg-outline-variant/20 my-4"></div>
+
+                <!-- Condição -->
+                <div class="mb-5">
+                    <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Condição</p>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="toggleCondicao('novo', this)"
+                                class="flex-1 py-2 rounded-lg text-sm font-medium transition-all
+                                       {% if request.GET.condicao == 'novo' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low{% endif %}">
+                            Novo
+                        </button>
+                        <button type="button" onclick="toggleCondicao('usado', this)"
+                                class="flex-1 py-2 rounded-lg text-sm font-medium transition-all
+                                       {% if request.GET.condicao == 'usado' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low{% endif %}">
+                            Usado
+                        </button>
+                        <input type="hidden" name="condicao" id="condicao-input" value="{{ request.GET.condicao }}"/>
+                    </div>
+                </div>
+
+                <input type="hidden" name="search" value="{{ request.GET.search }}"/>
+                <input type="hidden" name="ordering" id="ordering-input" value="{{ request.GET.ordering }}"/>
+
+                <button type="submit"
+                        class="w-full py-2.5 bg-primary text-on-primary rounded-xl font-medium text-sm hover:opacity-90 transition-all mt-2">
+                    Aplicar filtros
+                </button>
+
             </form>
         </div>
     </aside>
 
     <!-- Resultados -->
-    <div class="flex-1">
-        <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 md:mb-10">
+    <div class="flex-1 min-w-0">
+
+        <!-- Cabeçalho de resultados -->
+        <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
-                <!-- 🔄 MOBILE: Tamanho de fonte reduzido -->
-                <h1 class="text-2xl sm:text-3xl font-black text-on-surface tracking-tight mb-2">
+                <h1 class="text-xl sm:text-2xl font-bold text-on-surface tracking-tight">
                     {% if request.GET.search %}Resultados para "{{ request.GET.search }}"
                     {% elif request.GET.categoria %}{{ request.GET.categoria|title }}
                     {% else %}Todos os anúncios{% endif %}
                 </h1>
-                <p class="text-sm sm:text-base text-on-surface-variant opacity-70">{{ page_obj.paginator.count }} resultado{{ page_obj.paginator.count|pluralize:"s" }} encontrado{{ page_obj.paginator.count|pluralize:"s" }}</p>
+                <p class="text-sm text-on-surface-variant mt-0.5">
+                    {{ page_obj.paginator.count }} resultado{{ page_obj.paginator.count|pluralize:"s" }} encontrado{{ page_obj.paginator.count|pluralize:"s" }}
+                </p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Toggle vista -->
+                <div class="flex gap-1 bg-surface-container-low rounded-lg p-1">
+                    <button id="btn-grid" onclick="setVista('grid')"
+                            title="Vista grelha"
+                            class="w-8 h-8 flex items-center justify-center rounded-md transition-all bg-surface-container-lowest shadow-sm text-on-surface">
+                        <span class="material-symbols-outlined text-[18px]">grid_view</span>
+                    </button>
+                    <button id="btn-list" onclick="setVista('list')"
+                            title="Vista lista"
+                            class="w-8 h-8 flex items-center justify-center rounded-md transition-all text-on-surface-variant">
+                        <span class="material-symbols-outlined text-[18px]">view_list</span>
+                    </button>
+                </div>
+
+                <!-- Ordenação -->
+                <div class="relative">
+                    <select id="ordering-select"
+                            onchange="aplicarOrdenacao(this.value)"
+                            class="appearance-none bg-surface-container-lowest border border-outline-variant/30 rounded-lg py-2 pl-3 pr-8 text-sm focus:ring-2 focus:ring-primary focus:outline-none cursor-pointer">
+                        <option value="-publicado_em" {% if request.GET.ordering == '-publicado_em' or not request.GET.ordering %}selected{% endif %}>Mais recentes</option>
+                        <option value="preco" {% if request.GET.ordering == 'preco' %}selected{% endif %}>Menor preço</option>
+                        <option value="-preco" {% if request.GET.ordering == '-preco' %}selected{% endif %}>Maior preço</option>
+                        <option value="-visualizacoes" {% if request.GET.ordering == '-visualizacoes' %}selected{% endif %}>Mais vistos</option>
+                    </select>
+                    <span class="material-symbols-outlined text-[16px] text-outline absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
+                </div>
             </div>
         </header>
 
+        <!-- Chips de filtros activos -->
+        {% if request.GET.search or categoria_slug or request.GET.provincia or request.GET.condicao or request.GET.preco_min or request.GET.preco_max %}
+        <div class="flex flex-wrap gap-2 mb-5">
+            {% if request.GET.search %}
+            <a href="?{% querystring search='' %}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
+                "{{ request.GET.search }}"
+                <span class="material-symbols-outlined text-[14px] text-outline">close</span>
+            </a>
+            {% endif %}
+            {% if categoria_slug %}
+            <a href="?{% querystring categoria='' %}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
+                {{ categoria_slug|title }}
+                <span class="material-symbols-outlined text-[14px] text-outline">close</span>
+            </a>
+            {% endif %}
+            {% if request.GET.provincia %}
+            <a href="?{% querystring provincia='' %}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
+                {{ request.GET.provincia }}
+                <span class="material-symbols-outlined text-[14px] text-outline">close</span>
+            </a>
+            {% endif %}
+            {% if request.GET.condicao %}
+            <a href="?{% querystring condicao='' %}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
+                {{ request.GET.condicao|capfirst }}
+                <span class="material-symbols-outlined text-[14px] text-outline">close</span>
+            </a>
+            {% endif %}
+            {% if request.GET.preco_min or request.GET.preco_max %}
+            <a href="?{% querystring preco_min='' preco_max='' %}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
+                {% if request.GET.preco_min %}{{ request.GET.preco_min }} MT{% endif %}
+                {% if request.GET.preco_min and request.GET.preco_max %} — {% endif %}
+                {% if request.GET.preco_max %}{{ request.GET.preco_max }} MT{% endif %}
+                <span class="material-symbols-outlined text-[14px] text-outline">close</span>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <!-- Grid de anúncios -->
-        <!-- 🔄 MOBILE: gap reduzido, padding dos cards ajustado via classes responsivas -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div id="resultados-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {% for anuncio in page_obj %}
             <a href="{% url 'anuncio-detalhe-view' anuncio.id %}"
-               class="bg-surface-container-lowest rounded-xl overflow-hidden group hover:shadow-[0_10px_30px_rgba(0,107,83,0.06)] transition-all duration-300">
-                <!-- 🔄 MOBILE: imagem com proporção um pouco maior (3/2) em mobile, mantém 4/3 em sm+ -->
-                <div class="relative aspect-[3/2] sm:aspect-[4/3] overflow-hidden">
+               class="bg-surface-container-lowest border border-outline-variant/20 rounded-xl overflow-hidden group hover:border-outline-variant/50 hover:shadow-lg hover:shadow-black/5 transition-all duration-200">
+                <div class="relative aspect-[4/3] overflow-hidden bg-surface-container-low">
                     {% if anuncio.imagem_principal %}
-                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                             src="{{ anuncio.imagem_principal }}" alt="{{ anuncio.titulo }}"/>
+                    <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                         src="{{ anuncio.imagem_principal }}" alt="{{ anuncio.titulo }}" loading="lazy"/>
                     {% else %}
-                        <div class="w-full h-full bg-surface-container-low flex items-center justify-center">
-                            <span class="material-symbols-outlined text-5xl text-outline">image</span>
-                        </div>
+                    <div class="w-full h-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-4xl text-outline">image</span>
+                    </div>
                     {% endif %}
+
                     {% if anuncio.destacado %}
-                    <div class="absolute top-3 left-3 sm:top-4 sm:left-4 bg-highlights text-on-background px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] font-bold uppercase flex items-center gap-1">
+                    <div class="absolute top-3 left-3 bg-highlights text-on-background px-2.5 py-1 rounded-full text-[10px] font-bold uppercase flex items-center gap-1">
                         <span class="material-symbols-outlined text-xs">star</span>
                         Destaque
                     </div>
                     {% endif %}
+
+                    {% if anuncio.condicao %}
+                    <div class="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-medium
+                                {% if anuncio.condicao == 'novo' %}bg-green-100 text-green-800{% else %}bg-surface-container-low text-on-surface-variant{% endif %}">
+                        {{ anuncio.condicao|capfirst }}
+                    </div>
+                    {% endif %}
                 </div>
-                <!-- 🔄 MOBILE: padding reduzido -->
-                <div class="p-4 sm:p-6">
-                    <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-2">{{ anuncio.categoria_nome }}</p>
-                    <h3 class="font-bold text-on-surface leading-snug mb-4 group-hover:text-primary transition-colors line-clamp-2">
+
+                <div class="p-4">
+                    <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">{{ anuncio.categoria_nome }}</p>
+                    <h3 class="text-sm font-medium text-on-surface leading-snug mb-3 group-hover:text-primary transition-colors line-clamp-2">
                         {{ anuncio.titulo }}
                     </h3>
-                    <div class="flex items-center gap-2 text-on-surface-variant opacity-70 text-xs mb-4">
-                        <span class="material-symbols-outlined text-[16px]">location_on</span>
+                    <div class="flex items-center gap-1.5 text-on-surface-variant text-xs mb-3">
+                        <span class="material-symbols-outlined text-[14px]">location_on</span>
                         <span>{{ anuncio.cidade }}, {{ anuncio.provincia }}</span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="font-black text-on-surface">{{ anuncio.preco|floatformat:0 }} MT</span>
+                        <span class="font-bold text-on-surface text-sm">{{ anuncio.preco|floatformat:0 }} MT</span>
                         <span class="text-xs text-on-surface-variant">{{ anuncio.publicado_em|timesince }} atrás</span>
                     </div>
                 </div>
             </a>
             {% empty %}
-            <div class="col-span-full text-center py-20 text-on-surface-variant">
-                <span class="material-symbols-outlined text-6xl">search_off</span>
-                <p class="mt-4 font-bold text-lg">Nenhum anúncio encontrado</p>
-                <p class="text-sm mt-2">Tente outros termos ou remova alguns filtros.</p>
-                <a href="{% url 'anuncio-pesquisa' %}" class="mt-4 inline-block text-primary font-semibold hover:underline">Ver todos os anúncios</a>
+            <div class="col-span-full text-center py-16 text-on-surface-variant">
+                <span class="material-symbols-outlined text-5xl mb-4 block text-outline">search_off</span>
+                <p class="font-medium text-base text-on-surface mb-1">Nenhum anúncio encontrado</p>
+                <p class="text-sm mb-4">Tente outros termos ou remova alguns filtros.</p>
+                <a href="{% url 'anuncio-pesquisa' %}"
+                   class="inline-flex items-center gap-1 text-sm text-primary font-medium hover:underline">
+                    <span class="material-symbols-outlined text-sm">refresh</span>
+                    Ver todos os anúncios
+                </a>
             </div>
             {% endfor %}
         </div>
 
         <!-- Paginação -->
         {% if page_obj.has_other_pages %}
-        <!-- 🔄 MOBILE: mais espaçamento entre números e botões maiores -->
-        <div class="mt-12 md:mt-20 flex justify-center items-center gap-1 sm:gap-2 flex-wrap">
+        <div class="mt-10 flex justify-center items-center gap-1.5 flex-wrap">
             {% if page_obj.has_previous %}
-            <a href="?{% querystring page=page_obj.previous_page_number %}" class="w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
+            <a href="?{% querystring page=page_obj.previous_page_number %}"
+               class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
                 <span class="material-symbols-outlined text-sm">chevron_left</span>
             </a>
             {% endif %}
+
             {% for num in page_obj.paginator.page_range %}
                 {% if page_obj.number == num %}
-                <span class="w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-primary text-on-primary font-bold shadow-lg">{{ num }}</span>
+                <span class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary font-bold text-sm shadow-sm">{{ num }}</span>
+                {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                <a href="?{% querystring page=num %}"
+                   class="w-10 h-10 flex items-center justify-center rounded-lg text-sm bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">{{ num }}</a>
                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?{% querystring page=num %}" class="w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">{{ num }}</a>
+                <a href="?{% querystring page=num %}"
+                   class="w-10 h-10 flex items-center justify-center rounded-lg text-sm bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">{{ num }}</a>
+                {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                <span class="w-10 h-10 flex items-center justify-center text-on-surface-variant text-sm">…</span>
                 {% endif %}
             {% endfor %}
+
             {% if page_obj.has_next %}
-            <a href="?{% querystring page=page_obj.next_page_number %}" class="w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
+            <a href="?{% querystring page=page_obj.next_page_number %}"
+               class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all">
                 <span class="material-symbols-outlined text-sm">chevron_right</span>
             </a>
             {% endif %}
         </div>
         {% endif %}
+
     </div>
 </main>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-    // ── Categorias & Subcategorias ──────────────────────────────────────────
+// ── Categorias ──────────────────────────────────────────────────────────────
 
-    // Expande/colapsa o submenu — NÃO faz submit, só mostra/oculta
-    function toggleCategoriaPai(slug, btn) {
-        const subList = document.getElementById('sub-' + slug);
-        const chevron = document.getElementById('chevron-' + slug);
+function toggleCategoriaPai(slug, btn) {
+    const subList = document.getElementById('sub-' + slug);
+    const chevron = document.getElementById('chevron-' + slug);
 
-        if (!subList) {
-            // Categoria sem subcategorias: submete directamente
-            selecionarCategoria(slug);
-            return;
-        }
-
-        const isOpen = !subList.classList.contains('hidden');
-
-        // Fecha todos os outros submenus primeiro
-        document.querySelectorAll('[id^="sub-"]').forEach(el => {
-            if (el.id !== 'sub-' + slug) el.classList.add('hidden');
-        });
-        document.querySelectorAll('[id^="chevron-"]').forEach(el => {
-            if (el.id !== 'chevron-' + slug) el.classList.remove('rotate-180');
-        });
-
-        // Alterna este submenu
-        if (isOpen) {
-            subList.classList.add('hidden');
-            if (chevron) chevron.classList.remove('rotate-180');
-        } else {
-            subList.classList.remove('hidden');
-            if (chevron) chevron.classList.add('rotate-180');
-        }
+    if (!subList) {
+        selecionarCategoria(slug);
+        return;
     }
 
-    // Submete o form com a categoria escolhida
-    function selecionarCategoria(slug) {
-        document.getElementById('categoria-input').value = slug;
-        document.getElementById('filtros-form').submit();
-    }
+    const isOpen = !subList.classList.contains('hidden');
 
-    // Ao carregar a página: abre o submenu da categoria activa
-    (function initCategoriasState() {
-        const selected = document.getElementById('categoria-input').value;
-        if (!selected) return;
-
-        document.querySelectorAll('[id^="sub-"]').forEach(function(list) {
-            const slugPai = list.id.replace('sub-', '');
-            // Está seleccionada a categoria pai?
-            if (selected === slugPai) {
-                list.classList.remove('hidden');
-                const chevron = document.getElementById('chevron-' + slugPai);
-                if (chevron) chevron.classList.add('rotate-180');
-                return;
-            }
-            // Está seleccionada uma subcategoria dentro deste menu?
-            const subBtns = list.querySelectorAll('button[data-slug]');
-            const match = Array.from(subBtns).some(b => b.dataset.slug === selected);
-            if (match) {
-                list.classList.remove('hidden');
-                const chevron = document.getElementById('chevron-' + slugPai);
-                if (chevron) chevron.classList.add('rotate-180');
-            }
-        });
-    })();
-
-    // 🔄 MOBILE: Toggle para mostrar/ocultar sidebar de filtros
-    document.getElementById('toggle-filters').addEventListener('click', function() {
-        const sidebar = document.getElementById('filters-sidebar');
-        sidebar.classList.toggle('hidden');
+    document.querySelectorAll('[id^="sub-"]').forEach(el => {
+        if (el.id !== 'sub-' + slug) el.classList.add('hidden');
+    });
+    document.querySelectorAll('[id^="chevron-"]').forEach(el => {
+        if (el.id !== 'chevron-' + slug) el.classList.remove('rotate-180');
     });
 
-    function toggleCondicao(val, btn) {
-        const input = document.getElementById('condicao-input');
-        if (input.value === val) {
-            input.value = '';
-            btn.className = 'flex-1 py-2 rounded-lg text-sm font-medium bg-surface-container-lowest text-on-surface border border-outline-variant/30';
-        } else {
-            input.value = val;
-            document.querySelectorAll('[onclick^="toggleCondicao"]').forEach(b => {
-                b.className = 'flex-1 py-2 rounded-lg text-sm font-medium bg-surface-container-lowest text-on-surface border border-outline-variant/30';
-            });
-            btn.className = 'flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-on-primary shadow-md';
-        }
+    if (isOpen) {
+        subList.classList.add('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+    } else {
+        subList.classList.remove('hidden');
+        if (chevron) chevron.classList.add('rotate-180');
     }
+}
+
+function selecionarCategoria(slug) {
+    document.getElementById('categoria-input').value = slug;
+    document.getElementById('filtros-form').submit();
+}
+
+(function initCategoriasState() {
+    const selected = document.getElementById('categoria-input').value;
+    if (!selected) return;
+
+    document.querySelectorAll('[id^="sub-"]').forEach(function(list) {
+        const slugPai = list.id.replace('sub-', '');
+        if (selected === slugPai) {
+            list.classList.remove('hidden');
+            const chevron = document.getElementById('chevron-' + slugPai);
+            if (chevron) chevron.classList.add('rotate-180');
+            return;
+        }
+        const subBtns = list.querySelectorAll('button[data-slug]');
+        const match = Array.from(subBtns).some(b => b.dataset.slug === selected);
+        if (match) {
+            list.classList.remove('hidden');
+            const chevron = document.getElementById('chevron-' + slugPai);
+            if (chevron) chevron.classList.add('rotate-180');
+        }
+    });
+})();
+
+// ── Mobile: toggle sidebar ───────────────────────────────────────────────────
+
+document.getElementById('toggle-filters').addEventListener('click', function() {
+    const sidebar = document.getElementById('filters-sidebar');
+    sidebar.classList.toggle('hidden');
+    sidebar.classList.toggle('block');
+});
+
+// ── Condição ─────────────────────────────────────────────────────────────────
+
+function toggleCondicao(val, btn) {
+    const input = document.getElementById('condicao-input');
+    const btns = document.querySelectorAll('[onclick^="toggleCondicao"]');
+
+    const inactiveClass = 'flex-1 py-2 rounded-lg text-sm font-medium bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low transition-all';
+    const activeClass   = 'flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-on-primary transition-all';
+
+    if (input.value === val) {
+        input.value = '';
+        btn.className = inactiveClass;
+    } else {
+        input.value = val;
+        btns.forEach(b => b.className = inactiveClass);
+        btn.className = activeClass;
+    }
+}
+
+// ── Ordenação (dispara submit automaticamente) ────────────────────────────────
+
+function aplicarOrdenacao(val) {
+    document.getElementById('ordering-input').value = val;
+    document.getElementById('filtros-form').submit();
+}
+
+// ── Vista grelha / lista ─────────────────────────────────────────────────────
+
+function setVista(tipo) {
+    const grid = document.getElementById('resultados-grid');
+    const btnGrid = document.getElementById('btn-grid');
+    const btnList = document.getElementById('btn-list');
+
+    const activeClass   = 'w-8 h-8 flex items-center justify-center rounded-md transition-all bg-surface-container-lowest shadow-sm text-on-surface';
+    const inactiveClass = 'w-8 h-8 flex items-center justify-center rounded-md transition-all text-on-surface-variant';
+
+    if (tipo === 'grid') {
+        grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+        btnGrid.className = activeClass;
+        btnList.className = inactiveClass;
+    } else {
+        grid.className = 'grid grid-cols-1 gap-3';
+        btnGrid.className = inactiveClass;
+        btnList.className = activeClass;
+    }
+
+    localStorage.setItem('pesquisa_vista', tipo);
+}
+
+(function initVista() {
+    const saved = localStorage.getItem('pesquisa_vista');
+    if (saved === 'list') setVista('list');
+})();
 </script>
 {% endblock %}
