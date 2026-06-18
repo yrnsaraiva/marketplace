@@ -1,111 +1,215 @@
 {% load static %}
-<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md shadow-sm">
-    <div class="max-w-screen-2xl mx-auto flex justify-between items-center px-6 py-3 gap-4">
+
+<nav class="fixed top-0 w-full z-50 bg-surface/85 backdrop-blur-md border-b border-outline-variant/10 shadow-sm">
+    <div class="max-w-screen-2xl mx-auto flex items-center gap-4 px-4 md:px-6 py-2.5">
 
         <!-- Logo -->
-        <div class="flex items-center gap-6 flex-shrink-0">
-            <a href="{% url 'home' %}" class="text-xl font-black text-on-surface tracking-tighter hover:text-primary transition-colors">
-                <img src="{% static 'img/zonal_logo.png' %}" alt="" width="150">
-            </a>
-        </div>
+        <a href="{% url 'home' %}"
+           class="flex-shrink-0 hover:opacity-80 transition-opacity"
+           aria-label="Zonal — Página inicial">
+            <img src="{% static 'img/zonal_logo.png' %}" alt="Zonal" width="120" height="36" class="h-9 w-auto">
+        </a>
+
+        <!-- Pesquisa central -->
+        <form action="{% url 'anuncio-pesquisa' %}" method="GET"
+              class="flex-1 min-w-0 max-w-xl mx-auto"
+              role="search">
+            <div class="relative flex items-center">
+                <span class="material-symbols-outlined absolute left-3.5 text-outline text-xl pointer-events-none"
+                      aria-hidden="true">search</span>
+                <input type="text"
+                       name="search"
+                       value="{{ request.GET.search }}"
+                       placeholder="Pesquisar anúncios…"
+                       autocomplete="off"
+                       class="w-full bg-surface-container-low border border-outline-variant/20 rounded-full
+                              pl-10 pr-4 py-2.5 text-sm text-on-surface placeholder-outline
+                              focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50
+                              transition-all"
+                       aria-label="Pesquisar anúncios"/>
+            </div>
+        </form>
 
         <!-- Acções -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 flex-shrink-0">
 
             {% if user.is_authenticated %}
 
-                <!-- Botão publicar -->
-                <a href="{% url 'anuncio-publicar' %}"
-                   class="hidden md:flex items-center gap-1.5 bg-primary text-on-primary px-4 py-2 rounded-full text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm">
-                    <span class="material-symbols-outlined text-base">add</span>
-                    Publicar
-                </a>
+            <!-- Publicar -->
+            <a href="{% url 'anuncio-publicar' %}"
+               class="hidden sm:flex items-center gap-1.5 bg-primary text-on-primary
+                      px-4 py-2 rounded-full text-sm font-semibold
+                      hover:opacity-90 transition-all shadow-sm
+                      focus:outline-none focus:ring-2 focus:ring-primary/50">
+                <span class="material-symbols-outlined text-base" aria-hidden="true">add</span>
+                Publicar
+            </a>
 
-                <!-- Dropdown utilizador — abre com click para acessibilidade mobile -->
-                <div class="relative" id="user-menu">
-                    <button onclick="toggleMenu()"
-                            class="flex items-center gap-2 p-1.5 rounded-full hover:bg-surface-container-high transition-colors"
-                            aria-haspopup="true" aria-expanded="false" id="user-menu-btn">
-                        {% if user.foto_perfil %}
-                            <img src="{{ user.foto_perfil.url }}"
-                                 class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20"
-                                 alt="{{ user.get_full_name|default:user.username }}"/>
-                        {% else %}
-                            <span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                <span class="material-symbols-outlined text-primary text-lg">person</span>
-                            </span>
-                        {% endif %}
-                        <span class="hidden md:block text-sm font-medium max-w-[120px] truncate">
+            <!-- Publicar mobile (ícone) -->
+            <a href="{% url 'anuncio-publicar' %}"
+               class="sm:hidden w-9 h-9 flex items-center justify-center rounded-full
+                      bg-primary text-on-primary shadow-sm hover:opacity-90 transition-all
+                      focus:outline-none focus:ring-2 focus:ring-primary/50"
+               aria-label="Publicar anúncio">
+                <span class="material-symbols-outlined text-xl" aria-hidden="true">add</span>
+            </a>
+
+            <!-- Avatar + dropdown -->
+            <div class="relative" id="user-menu">
+                <button id="user-menu-btn"
+                        onclick="toggleMenu()"
+                        class="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full
+                               hover:bg-surface-container-high transition-colors
+                               focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="user-dropdown">
+                    {% if user.foto_perfil %}
+                    <img src="{{ user.foto_perfil.url }}"
+                         class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20"
+                         alt="{{ user.get_full_name|default:user.username }}"/>
+                    {% else %}
+                    <span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-primary text-lg" aria-hidden="true">person</span>
+                    </span>
+                    {% endif %}
+                    <span class="hidden md:block text-sm font-medium max-w-[100px] truncate">
+                        {{ user.get_full_name|default:user.username }}
+                    </span>
+                    <span class="material-symbols-outlined text-outline text-base hidden md:block transition-transform duration-200"
+                          id="chevron-menu" aria-hidden="true">expand_more</span>
+                </button>
+
+                <!-- Dropdown -->
+                <div id="user-dropdown"
+                     class="hidden absolute right-0 top-[calc(100%+8px)] w-56
+                            bg-surface-container-lowest rounded-2xl shadow-xl
+                            border border-outline-variant/15 py-1.5 z-50
+                            origin-top-right transition-all"
+                     role="menu"
+                     aria-labelledby="user-menu-btn">
+
+                    <!-- Info utilizador -->
+                    <div class="px-4 py-2.5 border-b border-outline-variant/10 mb-1">
+                        <p class="text-sm font-semibold text-on-surface truncate">
                             {{ user.get_full_name|default:user.username }}
-                        </span>
-                        <span class="material-symbols-outlined text-outline text-sm hidden md:block">expand_more</span>
-                    </button>
-
-                    <div id="user-dropdown"
-                         class="hidden absolute right-0 top-full mt-2 w-52 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-low py-2 z-50"
-                         role="menu">
-                        <div class="px-4 py-2 border-b border-surface-container-low mb-1">
-                            <p class="text-sm font-semibold text-on-surface truncate">{{ user.get_full_name|default:user.username }}</p>
-                            <p class="text-xs text-on-surface-variant truncate">{{ user.email }}</p>
-                        </div>
-                        <a href="{% url 'dashboard' %}" role="menuitem"
-                           class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-surface-container-low transition-colors">
-                            <span class="material-symbols-outlined text-base text-primary">dashboard</span> Painel
-                        </a>
-                        <a href="{% url 'meus-anuncios' %}" role="menuitem"
-                           class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-surface-container-low transition-colors">
-                            <span class="material-symbols-outlined text-base text-primary">inventory_2</span> Meus anúncios
-                        </a>
-                        <a href="{% url 'favoritos' %}" role="menuitem"
-                           class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-surface-container-low transition-colors">
-                            <span class="material-symbols-outlined text-base text-primary">favorite</span> Favoritos
-                        </a>
-                        <a href="{% url 'perfil' %}" role="menuitem"
-                           class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-surface-container-low transition-colors">
-                            <span class="material-symbols-outlined text-base text-primary">manage_accounts</span> Perfil
-                        </a>
-                        <hr class="my-1 border-surface-container-low"/>
-                        <form method="POST" action="{% url 'logout' %}">
-                            {% csrf_token %}
-                            <button type="submit" role="menuitem"
-                                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-error-container/30 transition-colors">
-                                <span class="material-symbols-outlined text-base">logout</span> Sair
-                            </button>
-                        </form>
+                        </p>
+                        <p class="text-xs text-on-surface-variant truncate mt-0.5">{{ user.email }}</p>
                     </div>
+
+                    <a href="{% url 'dashboard' %}" role="menuitem"
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface
+                              hover:bg-surface-container-low transition-colors rounded-lg mx-1">
+                        <span class="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">dashboard</span>
+                        Painel
+                    </a>
+                    <a href="{% url 'meus-anuncios' %}" role="menuitem"
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface
+                              hover:bg-surface-container-low transition-colors rounded-lg mx-1">
+                        <span class="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">inventory_2</span>
+                        Meus anúncios
+                    </a>
+                    <a href="{% url 'favoritos' %}" role="menuitem"
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface
+                              hover:bg-surface-container-low transition-colors rounded-lg mx-1">
+                        <span class="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">favorite</span>
+                        Favoritos
+                    </a>
+                    <a href="{% url 'perfil' %}" role="menuitem"
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface
+                              hover:bg-surface-container-low transition-colors rounded-lg mx-1">
+                        <span class="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">manage_accounts</span>
+                        Perfil
+                    </a>
+
+                    <div class="my-1 border-t border-outline-variant/10"></div>
+
+                    <form method="POST" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" role="menuitem"
+                                class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-error
+                                       hover:bg-error/5 transition-colors rounded-lg mx-1"
+                                style="width: calc(100% - 8px)">
+                            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">logout</span>
+                            Sair
+                        </button>
+                    </form>
                 </div>
+            </div>
 
             {% else %}
 
-                <a href="{% url 'login' %}"
-                   class="text-sm font-medium text-on-surface hover:text-primary transition-colors">
-                    Entrar
-                </a>
-                <a href="{% url 'anuncio-publicar' %}"
-                   class="hidden lg:flex items-center gap-1.5 border-2 border-primary text-primary px-4 py-2 rounded-full text-sm font-semibold hover:bg-primary hover:text-on-primary transition-all">
-                    <span class="material-symbols-outlined text-base">add</span>
-                    Publicar
-                </a>
+            <!-- Não autenticado -->
+            <a href="{% url 'login' %}"
+               class="text-sm font-medium text-on-surface hover:text-primary transition-colors
+                      focus:outline-none focus:underline px-2 py-1">
+                Entrar
+            </a>
+            <a href="{% url 'register' %}"
+               class="hidden sm:block text-sm font-medium text-on-surface-variant hover:text-primary
+                      transition-colors focus:outline-none focus:underline px-2 py-1">
+                Criar conta
+            </a>
+            <a href="{% url 'anuncio-publicar' %}"
+               class="flex items-center gap-1.5 bg-primary text-on-primary
+                      px-4 py-2 rounded-full text-sm font-semibold
+                      hover:opacity-90 transition-all shadow-sm
+                      focus:outline-none focus:ring-2 focus:ring-primary/50">
+                <span class="material-symbols-outlined text-base" aria-hidden="true">add</span>
+                <span class="hidden sm:inline">Publicar</span>
+            </a>
 
             {% endif %}
         </div>
     </div>
-
 </nav>
 
 <script>
-    function toggleMenu() {
-        const dd = document.getElementById('user-dropdown');
-        const btn = document.getElementById('user-menu-btn');
-        const hidden = dd.classList.toggle('hidden');
-        btn.setAttribute('aria-expanded', !hidden);
+(function () {
+    const btn = () => document.getElementById('user-menu-btn');
+    const dd  = () => document.getElementById('user-dropdown');
+    const chv = () => document.getElementById('chevron-menu');
+
+    function open() {
+        dd().classList.remove('hidden');
+        btn().setAttribute('aria-expanded', 'true');
+        if (chv()) chv().style.transform = 'rotate(180deg)';
+        // Focar o primeiro item do menu
+        const first = dd().querySelector('[role="menuitem"]');
+        if (first) setTimeout(() => first.focus(), 50);
     }
+
+    function close() {
+        dd().classList.add('hidden');
+        btn().setAttribute('aria-expanded', 'false');
+        if (chv()) chv().style.transform = 'rotate(0deg)';
+    }
+
+    window.toggleMenu = function () {
+        dd().classList.contains('hidden') ? open() : close();
+    };
+
     // Fechar ao clicar fora
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', e => {
         const menu = document.getElementById('user-menu');
-        if (menu && !menu.contains(e.target)) {
-            document.getElementById('user-dropdown')?.classList.add('hidden');
-            document.getElementById('user-menu-btn')?.setAttribute('aria-expanded', 'false');
+        if (menu && !menu.contains(e.target)) close();
+    });
+
+    // Fechar ao pressionar Escape
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            close();
+            btn()?.focus();
         }
     });
+
+    // Navegação por teclado dentro do dropdown (↑ ↓)
+    document.addEventListener('keydown', e => {
+        if (!dd() || dd().classList.contains('hidden')) return;
+        const items = [...dd().querySelectorAll('[role="menuitem"]')];
+        const idx   = items.indexOf(document.activeElement);
+        if (e.key === 'ArrowDown') { e.preventDefault(); items[(idx + 1) % items.length]?.focus(); }
+        if (e.key === 'ArrowUp')   { e.preventDefault(); items[(idx - 1 + items.length) % items.length]?.focus(); }
+    });
+})();
 </script>
