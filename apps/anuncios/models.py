@@ -98,9 +98,7 @@ class Anuncio(models.Model):
     @property
     def destacado(self):
         """True se o anúncio tem um destaque activo e não expirado."""
-        return self.destaques.filter(activo=True).filter(
-            models.Q(fim_em__isnull=True) | models.Q(fim_em__gt=timezone.now())
-        ).exists()
+        return self.destaques.filter(activo=True, fim_em__gt=timezone.now()).exists()
 
 
 # ---------------------------------------------------------------------------

@@ -154,7 +154,7 @@ async function eliminarAnuncio(id, btn) {
     btn.disabled = true;
     btn.querySelector('.material-symbols-outlined').textContent = 'progress_activity';
 
-    const resp = await fetch(`/api/v1/anuncios/${id}/editar/`, {
+    const resp = await fetch(`/api/v1/anuncios/${id}/`, {
         method: 'DELETE',
         headers: authHeaders(),
     });

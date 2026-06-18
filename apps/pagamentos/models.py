@@ -301,67 +301,29 @@ class Pagamento(models.Model):
 
 
 # ---------------------------------------------------------------------------
-# 4. PLANOS DE DESTAQUE (mantido e melhorado)
+# 4. DESTAQUE DE ANÚNCIO
 # ---------------------------------------------------------------------------
-
-class PlanoDestaque(models.Model):
-    """
-    Planos para destacar anúncios já publicados (add-on separado).
-    """
-
-    TIPO_CHOICES = [
-        ('destaque', 'Destaque'),
-        ('patrocinado', 'Patrocinado'),
-        ('urgente', 'Urgente'),
-        ('topo_pagina', 'Topo da Página'),
-    ]
-
-    nome = models.CharField(max_length=100)
-    descricao = models.TextField(blank=True)
-    duracao_dias = models.PositiveIntegerField(default=7)
-    preco = models.DecimalField(max_digits=10, decimal_places=2)
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
-    boost_visualizacoes = models.PositiveIntegerField(default=0)
-    activo = models.BooleanField(default=True)
-    ordem = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        verbose_name = 'Plano de destaque'
-        verbose_name_plural = 'Planos de destaque'
-        ordering = ['ordem', 'nome']
-
-    def __str__(self):
-        return self.nome
-
 
 class DestaqueAnuncio(models.Model):
     """
-    Associa um destaque pago a um anúncio específico.
-    Pode ser originado por um PlanoDestaque comprado separadamente
-    ou pelos dias de destaque incluídos no PlanoPublicacao.
+    Activa o destaque de um anúncio com base nos dias incluídos
+    no PlanoPublicacao da subscrição do utilizador.
+    Não existe compra avulsa de destaque.
     """
-
-    ORIGEM_CHOICES = [
-        ('plano_publicacao', 'Incluído no Plano de Publicação'),
-        ('compra_avulsa', 'Compra Avulsa de Destaque'),
-    ]
 
     anuncio = models.ForeignKey(
         'anuncios.Anuncio',
         on_delete=models.CASCADE,
         related_name='destaques'
     )
-    plano_destaque = models.ForeignKey(
-        PlanoDestaque,
+    subscricao = models.ForeignKey(
+        SubscricaoUtilizador,
         on_delete=models.PROTECT,
-        null=True, blank=True,
-        help_text='Preenchido apenas em compras avulsas de destaque'
-    )
-    origem = models.CharField(
-        max_length=30, choices=ORIGEM_CHOICES, default='compra_avulsa'
+        related_name='destaques',
+        help_text='Subscrição que originou este destaque'
     )
     inicio_em = models.DateTimeField(auto_now_add=True)
-    fim_em = models.DateTimeField(blank=True, null=True)
+    fim_em = models.DateTimeField()
     activo = models.BooleanField(default=True)
 
     class Meta:
@@ -379,20 +341,9 @@ class DestaqueAnuncio(models.Model):
             )
         ]
 
-    def save(self, *args, **kwargs):
-        # Define fim_em com base no plano (compra avulsa)
-        if not self.fim_em and self.plano_destaque:
-            self.fim_em = timezone.now() + timedelta(
-                days=self.plano_destaque.duracao_dias
-            )
-        super().save(*args, **kwargs)
-
     @property
     def expirado(self):
-        if not self.fim_em:
-            return False
         return timezone.now() > self.fim_em
 
     def __str__(self):
         return f'{self.anuncio} - destaque até {self.fim_em}'
-

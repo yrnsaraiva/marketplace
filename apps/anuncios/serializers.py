@@ -103,9 +103,6 @@ def _validar_atributos_obrigatorios(categoria, atributos_input):
 class AnuncioCriarSerializer(serializers.ModelSerializer):
     # Atributos dinâmicos - lista de {atributo_id, valor}
     atributos = AtributoInputSerializer(many=True, required=False, write_only=True)
-    # ID do PlanoDestaque opcional (compra avulsa no momento de publicar)
-    plano_destaque = serializers.IntegerField(required=False, allow_null=True, write_only=True)
-
     class Meta:
         model = Anuncio
         fields = [
@@ -114,7 +111,6 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
             'condicao', 'categoria', 'provincia', 'cidade',
             'bairro', 'auto_renovar',
             'atributos',
-            'plano_destaque',
         ]
 
     def validate_titulo(self, value):
@@ -136,11 +132,9 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         from apps.pagamentos.services import PublicacaoService
-        from apps.pagamentos.models import PlanoDestaque, DestaqueAnuncio
         from django.db import transaction
 
         atributos_data = validated_data.pop('atributos', [])
-        plano_destaque_id = validated_data.pop('plano_destaque', None)
 
         request = self.context['request']
         user = request.user
@@ -176,25 +170,6 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
 
             # Publicar (consome crédito e activa anúncio)
             service.publicar(anuncio)
-
-            # Destaque avulso opcional
-            if plano_destaque_id:
-                try:
-                    plano_destaque = PlanoDestaque.objects.get(
-                        pk=plano_destaque_id, activo=True
-                    )
-                    destaque_existente = anuncio.destaques.filter(activo=True).first()
-                    if destaque_existente:
-                        # Substituir o destaque automático pelo comprado
-                        destaque_existente.activo = False
-                        destaque_existente.save(update_fields=['activo'])
-                    DestaqueAnuncio.objects.create(
-                        anuncio=anuncio,
-                        plano_destaque=plano_destaque,
-                        origem='compra_avulsa',
-                    )
-                except PlanoDestaque.DoesNotExist:
-                    pass
 
             user.total_anuncios = Anuncio.objects.filter(
                 utilizador=user

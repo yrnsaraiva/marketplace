@@ -5,7 +5,6 @@ from .models import (
     PlanoPublicacao,
     SubscricaoUtilizador,
     Pagamento,
-    PlanoDestaque,
     DestaqueAnuncio,
 )
 
@@ -124,34 +123,18 @@ class PagamentoAdmin(admin.ModelAdmin):
 
 
 # ---------------------------------------------------------------------------
-# PLANO DE DESTAQUE
-# ---------------------------------------------------------------------------
-
-@admin.register(PlanoDestaque)
-class PlanoDestaqueAdmin(admin.ModelAdmin):
-    list_display = ['nome', 'tipo', 'preco', 'duracao_dias', 'activo', 'ordem']
-    list_editable = ['activo', 'ordem']
-    list_filter = ['tipo', 'activo']
-
-
-# ---------------------------------------------------------------------------
 # DESTAQUE ANÚNCIO
 # ---------------------------------------------------------------------------
 
 @admin.register(DestaqueAnuncio)
 class DestaqueAnuncioAdmin(admin.ModelAdmin):
-    list_display = ['anuncio', 'origem', 'plano_destaque', 'inicio_em', 'fim_em', 'activo', 'expirado_display']
-    list_filter = ['activo', 'origem']
-    search_fields = ['anuncio__titulo']
+    list_display = ['anuncio', 'subscricao', 'inicio_em', 'fim_em', 'activo', 'expirado_display']
+    list_filter = ['activo']
+    search_fields = ['anuncio__titulo', 'subscricao__utilizador__username']
     readonly_fields = ['inicio_em']
 
     def expirado_display(self, obj):
         if obj.expirado:
-            return format_html(
-                '<span style="color:red;">{}</span>',
-                'Expirado'
-            )
-        return format_html(
-            '<span style="color:green;">{}</span>',
-            'Activo'
-        )
+            return format_html('<span style="color:red;">Expirado</span>')
+        return format_html('<span style="color:green;">Activo</span>')
+    expirado_display.short_description = 'Estado'

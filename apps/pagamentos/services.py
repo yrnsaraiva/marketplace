@@ -55,19 +55,18 @@ class PublicacaoService:
         anuncio.activar(duracao_dias=duracao_dias)
 
         if subscricao.plano.dias_destaque_incluidos > 0:
-            self._criar_destaque_automatico(anuncio, subscricao.plano)
+            self._criar_destaque_automatico(anuncio, subscricao)
 
         return anuncio
 
-    def _criar_destaque_automatico(self, anuncio, plano):
+    def _criar_destaque_automatico(self, anuncio, subscricao):
         from apps.pagamentos.models import DestaqueAnuncio
         from datetime import timedelta
 
         DestaqueAnuncio.objects.create(
             anuncio=anuncio,
-            plano_destaque=None,
-            origem='plano_publicacao',
-            fim_em=timezone.now() + timedelta(days=plano.dias_destaque_incluidos),
+            subscricao=subscricao,
+            fim_em=timezone.now() + timedelta(days=subscricao.plano.dias_destaque_incluidos),
             activo=True,
         )
 

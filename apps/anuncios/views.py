@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 
 from .filters import AnuncioFilter
 from .models import Anuncio, Favorito, ImagemAnuncio
-from apps.pagamentos.models import PlanoDestaque, PlanoPublicacao, SubscricaoUtilizador
+from apps.pagamentos.models import PlanoPublicacao, SubscricaoUtilizador
 from .serializers import (
     AnuncioCriarSerializer,
     AnuncioEditarSerializer,
@@ -162,6 +162,12 @@ class AnuncioDetalheView(generics.RetrieveAPIView):
         instance.registar_visualizacao()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    def delete(self, request, pk):
+        anuncio = get_object_or_404(Anuncio, pk=pk, utilizador=request.user)
+        anuncio.estado = 'eliminado'
+        anuncio.save(update_fields=['estado'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AnuncioCriarView(generics.CreateAPIView):
@@ -426,7 +432,6 @@ def anuncio_detalhe_view(request, pk):
 @login_required
 def anuncio_publicar_view(request):
     from apps.categorias.models import Categoria, AtributoCategoria
-    from apps.pagamentos.models import PlanoDestaque
 
     categorias_pai = Categoria.objects.filter(activa=True, nivel=0).order_by('ordem')
     categorias_filho = Categoria.objects.filter(activa=True, nivel=1).order_by('ordem')
@@ -458,7 +463,6 @@ def anuncio_publicar_view(request):
             {'id': c.id, 'nome': c.nome, 'pai_id': c.pai_id}
             for c in categorias_filho
         ]),
-        'planos_destaque': PlanoDestaque.objects.filter(activo=True).order_by('ordem'),
         'subscricao': subscricao,
         'PROVINCIAS': PROVINCIAS,
     })
@@ -624,7 +628,6 @@ FAQ_ESTATICO = [
 
 def planos_page_view(request):
     planos_publicacao = PlanoPublicacao.objects.filter(activo=True).order_by('ordem')
-    planos_destaque = PlanoDestaque.objects.filter(activo=True).order_by('ordem')
 
     subscricao_activa = None
     if request.user.is_authenticated:
@@ -638,7 +641,6 @@ def planos_page_view(request):
 
     return render(request, 'pagamentos/planos.html', {
         'planos_publicacao':  planos_publicacao,
-        'planos_destaque':    planos_destaque,
         'subscricao_activa':  subscricao_activa,
         'metodos_pagamento':  METODOS_PAGAMENTO,
         'faq_estatico':       FAQ_ESTATICO,
