@@ -1,5 +1,5 @@
 """
-apps/users/views.py — versão com allauth Google
+apps/users/views.py
 """
 import logging
 
@@ -16,6 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from allauth.socialaccount.signals import social_account_added, pre_social_login
 from allauth.account.signals import user_logged_in
 
+from .emails import enviar_email_confirmacao, verificar_token_email
 from .forms import RegistoCaptchaForm
 from .models import User
 from .serializers import AlterarPasswordSerializer, PerfilSerializer, RegistoSerializer
@@ -24,25 +25,20 @@ logger = logging.getLogger(__name__)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Signal: guardar tokens JWT na sessão após qualquer login (local ou Google)
-# Isto garante que o JS tem sempre tokens disponíveis após login.
+# Signal: guardar tokens JWT na sessão após qualquer login
 # ─────────────────────────────────────────────────────────────────────────────
 @receiver(user_logged_in)
 def on_user_logged_in(sender, request, user, **kwargs):
-    """
-    Disparado após qualquer login (email/password OU Google).
-    Gera tokens JWT e guarda-os na sessão para o JS os ler.
-    """
     try:
         refresh = RefreshToken.for_user(user)
         request.session['jwt_access']  = str(refresh.access_token)
         request.session['jwt_refresh'] = str(refresh)
     except Exception as e:
-        logger.warning(f'Não foi possível gerar JWT após login: {e}')
+        logger.warning('Não foi possível gerar JWT após login: %s', e)
 
 
 # ---------------------------------------------------------------------------
-# API — Autenticação
+# API — Registo
 # ---------------------------------------------------------------------------
 class RegistoView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -53,9 +49,14 @@ class RegistoView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+
+        # Enviar email de confirmação (falha silenciosa — não bloqueia o registo)
+        enviar_email_confirmacao(user, request=request)
+
         refresh = RefreshToken.for_user(user)
         return Response({
-            'mensagem': 'Conta criada com sucesso.',
+            'mensagem': 'Conta criada com sucesso. Verifique o seu email para activar a conta.',
+            'email_confirmacao_enviado': True,
             'user': PerfilSerializer(user).data,
             'tokens': {
                 'access': str(refresh.access_token),
@@ -64,11 +65,72 @@ class RegistoView(generics.CreateAPIView):
         }, status=status.HTTP_201_CREATED)
 
 
+# ---------------------------------------------------------------------------
+# API — Verificação de email
+# ---------------------------------------------------------------------------
+class VerificarEmailView(APIView):
+    """
+    GET /api/v1/auth/verificar-email/<token>/
+
+    Valida o token e marca email_verificado=True.
+    Usado quando o frontend consome a API directamente.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, token):
+        user, estado = verificar_token_email(token)
+
+        if estado == 'ja_verificado':
+            return Response({'mensagem': 'Email já verificado anteriormente.'})
+
+        if estado != 'ok' or not user:
+            return Response(
+                {'erro': 'Link inválido ou expirado. Solicite um novo email de confirmação.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.email_verificado = True
+        user.save(update_fields=['email_verificado'])
+        logger.info("Email verificado para utilizador #%s (%s)", user.pk, user.email)
+
+        return Response({'mensagem': 'Email confirmado com sucesso. Pode agora iniciar sessão.'})
+
+
+class ReenviarConfirmacaoView(APIView):
+    """
+    POST /api/v1/auth/reenviar-confirmacao/
+
+    Reenvia o email de confirmação para o utilizador autenticado.
+    Útil se o link expirou.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+
+        if user.email_verificado:
+            return Response(
+                {'mensagem': 'O seu email já está verificado.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        enviado = enviar_email_confirmacao(user, request=request)
+        if enviado:
+            return Response({'mensagem': 'Email de confirmação reenviado.'})
+        return Response(
+            {'erro': 'Erro ao enviar email. Tente novamente mais tarde.'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+# ---------------------------------------------------------------------------
+# API — Login
+# ---------------------------------------------------------------------------
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email    = request.data.get('email', '').strip().lower()
+        email = request.data.get('email', '').strip().lower()
         password = request.data.get('password', '')
 
         if not email or not password:
@@ -105,6 +167,9 @@ class LoginView(APIView):
         })
 
 
+# ---------------------------------------------------------------------------
+# API — Logout / Perfil / Password
+# ---------------------------------------------------------------------------
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -135,7 +200,10 @@ class AlterarPasswordView(APIView):
 
         user = request.user
         if not user.check_password(serializer.validated_data['password_actual']):
-            return Response({'erro': 'Password actual incorrecta.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'erro': 'Password actual incorrecta.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         user.set_password(serializer.validated_data['password_nova'])
         user.save()
@@ -151,17 +219,13 @@ class AlterarPasswordView(APIView):
 
 
 # ---------------------------------------------------------------------------
-# Frontend — vistas de template
+# Frontend — templates
 # ---------------------------------------------------------------------------
 def login_template_view(request):
     return render(request, 'users/login.html')
 
 
 def signup_template_view(request):
-    """
-    Registo local com captcha. O login Google é tratado inteiramente
-    pelo allauth em /accounts/google/login/.
-    """
     if request.method == 'POST':
         form = RegistoCaptchaForm(request.POST)
 
@@ -177,8 +241,8 @@ def signup_template_view(request):
 
             if serializer.is_valid():
                 user = serializer.save()
+                enviar_email_confirmacao(user, request=request)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                # O signal on_user_logged_in já guarda os tokens na sessão
                 return redirect(request.GET.get('next', '/'))
             else:
                 serializer_errors = {
@@ -193,3 +257,32 @@ def signup_template_view(request):
         return render(request, 'users/signup.html', {'form': form})
 
     return render(request, 'users/signup.html', {'form': RegistoCaptchaForm()})
+
+
+def verificar_email_view(request, token):
+    """
+    Vista de template para verificação de email.
+    O utilizador chega aqui pelo link no email.
+    """
+    user, estado = verificar_token_email(token)
+
+    if estado == 'ja_verificado':
+        return render(request, 'users/email_verificado.html', {
+            'sucesso': True,
+            'mensagem': 'O seu email já estava verificado.',
+        })
+
+    if estado != 'ok' or not user:
+        return render(request, 'users/email_verificado.html', {
+            'sucesso': False,
+            'mensagem': 'Link inválido ou expirado. Solicite um novo email de confirmação.',
+        })
+
+    user.email_verificado = True
+    user.save(update_fields=['email_verificado'])
+    logger.info("Email verificado (template) para utilizador #%s", user.pk)
+
+    return render(request, 'users/email_verificado.html', {
+        'sucesso': True,
+        'mensagem': 'Email confirmado com sucesso! Já pode usar a sua conta.',
+    })

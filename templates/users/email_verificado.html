@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirme a sua conta Zonal</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+    <tr>
+        <td align="center">
+            <table width="560" cellpadding="0" cellspacing="0"
+                   style="background:#ffffff;border-radius:16px;overflow:hidden;
+                      box-shadow:0 2px 8px rgba(0,0,0,.08);">
+
+                <!-- Header -->
+                <tr>
+                    <td style="background:#1a56db;padding:32px 40px;text-align:center;">
+                        <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">
+                            Zonal
+                        </h1>
+                        <p style="margin:4px 0 0;color:#bfdbfe;font-size:13px;">
+                            O mercado de Moçambique
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td style="padding:40px 40px 32px;">
+                        <p style="margin:0 0 8px;color:#111827;font-size:16px;font-weight:600;">
+                            Olá, {{ user.username }}!
+                        </p>
+                        <p style="margin:0 0 24px;color:#6b7280;font-size:14px;line-height:1.6;">
+                            Obrigado por criar a sua conta no Zonal. Para activar a sua conta
+                            e começar a publicar anúncios, confirme o seu endereço de email:
+                        </p>
+
+                        <!-- Botão -->
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td align="center" style="padding:8px 0 32px;">
+                                    <a href="{{ link }}"
+                                       style="display:inline-block;background:#1a56db;color:#ffffff;
+                              text-decoration:none;font-size:15px;font-weight:600;
+                              padding:14px 32px;border-radius:10px;">
+                                        Confirmar email
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin:0 0 8px;color:#9ca3af;font-size:12px;">
+                            Ou copie e cole este link no seu browser:
+                        </p>
+                        <p style="margin:0 0 24px;word-break:break-all;">
+                            <a href="{{ link }}" style="color:#1a56db;font-size:12px;">{{ link }}</a>
+                        </p>
+
+                        <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.6;">
+                            Este link é válido por <strong>{{ validade_horas }} horas</strong>.
+                            Se não criou esta conta, pode ignorar este email.
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="background:#f9fafb;padding:20px 40px;border-top:1px solid #f3f4f6;
+                       text-align:center;">
+                        <p style="margin:0;color:#9ca3af;font-size:11px;">
+                            © 2025 Zonal · zonal.co.mz
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

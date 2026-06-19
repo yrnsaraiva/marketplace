@@ -18,7 +18,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS',
-    default='localhost,127.0.0.1,192.168.1.100,zonal.up.railway.app',
+    default='localhost,127.0.0.1,192.168.1.100,zonal.up.railway.app,zonal.co.mz',
     cast=lambda v: [h.strip() for h in v.split(',')]
 )
 
@@ -265,7 +265,7 @@ PAYSUITE_API_KEY = config('PAYSUITE_API_KEY')
 PAYSUITE_WEBHOOK_SECRET = config('PAYSUITE_WEBHOOK_SECRET')
 
 # URL para onde o utilizador é redirecionado após o checkout PaySuite.
-# Use o endpoint PaySuiteRetornoView — o <pk> é preenchido dinamicamente na view.
+# Use o endpoint PaySuiteRetornoView - o <pk> é preenchido dinamicamente na view.
 # Exemplo: a view IniciarCompraView passa o URL completo ao criar o pagamento.
 PAYSUITE_RETURN_URL = config(
     'PAYSUITE_RETURN_URL',
@@ -329,3 +329,15 @@ SOCIALACCOUNT_PROVIDERS = {
         'FETCH_USERINFO': True,
     }
 }
+
+# Para desenvolvimento — imprime o email na consola
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.us.appsuite.cloud'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = 'geral@zonal.co.mz'
+EMAIL_HOST_PASSWORD = 'za4798wg5'
+DEFAULT_FROM_EMAIL = 'zonal <no-reply@zonal.co.mz>'
+FRONTEND_URL = 'https://zonal.co.mz'
