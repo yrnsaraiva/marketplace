@@ -1,4 +1,4 @@
-<!--email_verificado.html-->
+{% load static %}<!--email_verificado.html-->
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -7,20 +7,21 @@
     <title>{% if sucesso %}Email confirmado{% else %}Link inválido{% endif %} · Zonal</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:48px 16px;">
     <tr>
         <td align="center">
             <table width="480" cellpadding="0" cellspacing="0"
-                   style="background:#ffffff;border-radius:16px;overflow:hidden;
-                          box-shadow:0 2px 8px rgba(0,0,0,.08);">
+                   style="max-width:480px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;
+                          box-shadow:0 4px 24px rgba(0,0,0,.08);">
 
                 <!-- Header -->
                 <tr>
-                    <td style="background:#1a56db;padding:32px 40px;text-align:center;">
-                        <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">
-                            Zonal
-                        </h1>
-                        <p style="margin:4px 0 0;color:#bfdbfe;font-size:13px;">
+                    <td style="background:linear-gradient(135deg,#006b53,#00a884);padding:36px 40px;text-align:center;">
+                        <img src="{% static 'img/zonal_logo.png' %}"
+                             alt="Zonal"
+                             width="130"
+                             style="display:block;margin:0 auto;height:auto;"/>
+                        <p style="margin:10px 0 0;color:rgba(255,255,255,0.75);font-size:13px;letter-spacing:0.2px;">
                             O mercado de Moçambique
                         </p>
                     </td>
@@ -32,9 +33,10 @@
 
                         {% if sucesso %}
                             <!-- Ícone de sucesso -->
-                            <div style="width:64px;height:64px;background:#dcfce7;border-radius:50%;
-                                        margin:0 auto 24px;display:flex;align-items:center;justify-content:center;">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            <div style="width:68px;height:68px;background:#dcfce7;border-radius:50%;
+                                        margin:0 auto 26px;display:flex;align-items:center;justify-content:center;
+                                        box-shadow:0 0 0 8px rgba(22,163,74,0.06);">
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none"
                                      xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="12" cy="12" r="12" fill="#16a34a"/>
                                     <path d="M7 12.5l3.5 3.5 6.5-7" stroke="#ffffff"
@@ -42,25 +44,35 @@
                                 </svg>
                             </div>
 
-                            <h2 style="margin:0 0 12px;color:#111827;font-size:20px;font-weight:700;">
+                            <h1 style="margin:0 0 12px;color:#111827;font-size:21px;font-weight:700;letter-spacing:-0.3px;">
                                 Tudo certo!
-                            </h2>
-                            <p style="margin:0 0 32px;color:#6b7280;font-size:14px;line-height:1.6;">
+                            </h1>
+                            <p style="margin:0 0 32px;color:#6b7280;font-size:14px;line-height:1.65;
+                                      max-width:340px;margin-left:auto;margin-right:auto;">
                                 {{ mensagem }}
                             </p>
 
-                            <a href="/login/"
-                               style="display:inline-block;background:#1a56db;color:#ffffff;
+                            <a href="{% url 'login' %}"
+                               style="display:inline-block;background:#00a884;color:#ffffff;
                                       text-decoration:none;font-size:15px;font-weight:600;
-                                      padding:14px 32px;border-radius:10px;">
+                                      padding:14px 36px;border-radius:12px;
+                                      box-shadow:0 2px 8px rgba(0,168,132,0.25);">
                                 Iniciar sessão
                             </a>
 
+                            <p style="margin:20px 0 0;">
+                                <a href="{% url 'home' %}"
+                                   style="color:#00a884;font-size:13px;font-weight:500;text-decoration:none;">
+                                    Voltar ao início
+                                </a>
+                            </p>
+
                         {% else %}
                             <!-- Ícone de erro -->
-                            <div style="width:64px;height:64px;background:#fee2e2;border-radius:50%;
-                                        margin:0 auto 24px;display:flex;align-items:center;justify-content:center;">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            <div style="width:68px;height:68px;background:#fee2e2;border-radius:50%;
+                                        margin:0 auto 26px;display:flex;align-items:center;justify-content:center;
+                                        box-shadow:0 0 0 8px rgba(220,38,38,0.06);">
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none"
                                      xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="12" cy="12" r="12" fill="#dc2626"/>
                                     <path d="M8 8l8 8M16 8l-8 8" stroke="#ffffff"
@@ -68,19 +80,28 @@
                                 </svg>
                             </div>
 
-                            <h2 style="margin:0 0 12px;color:#111827;font-size:20px;font-weight:700;">
+                            <h1 style="margin:0 0 12px;color:#111827;font-size:21px;font-weight:700;letter-spacing:-0.3px;">
                                 Link inválido
-                            </h2>
-                            <p style="margin:0 0 32px;color:#6b7280;font-size:14px;line-height:1.6;">
+                            </h1>
+                            <p style="margin:0 0 32px;color:#6b7280;font-size:14px;line-height:1.65;
+                                      max-width:340px;margin-left:auto;margin-right:auto;">
                                 {{ mensagem }}
                             </p>
 
-                            <a href="/registo/"
-                               style="display:inline-block;background:#1a56db;color:#ffffff;
+                            <a href="{% url 'signup' %}"
+                               style="display:inline-block;background:#00a884;color:#ffffff;
                                       text-decoration:none;font-size:15px;font-weight:600;
-                                      padding:14px 32px;border-radius:10px;">
+                                      padding:14px 36px;border-radius:12px;
+                                      box-shadow:0 2px 8px rgba(0,168,132,0.25);">
                                 Criar conta
                             </a>
+
+                            <p style="margin:20px 0 0;">
+                                <a href="{% url 'home' %}"
+                                   style="color:#00a884;font-size:13px;font-weight:500;text-decoration:none;">
+                                    Voltar ao início
+                                </a>
+                            </p>
                         {% endif %}
 
                     </td>
@@ -88,10 +109,10 @@
 
                 <!-- Footer -->
                 <tr>
-                    <td style="background:#f9fafb;padding:20px 40px;border-top:1px solid #f3f4f6;
+                    <td style="background:#f9fafb;padding:22px 40px;border-top:1px solid #f3f4f6;
                                text-align:center;">
-                        <p style="margin:0;color:#9ca3af;font-size:11px;">
-                            © 2025 Zonal · zonal.co.mz
+                        <p style="margin:0;color:#9ca3af;font-size:11px;letter-spacing:0.2px;">
+                            © 2026 Zonal marketplace · zonal.co.mz
                         </p>
                     </td>
                 </tr>
