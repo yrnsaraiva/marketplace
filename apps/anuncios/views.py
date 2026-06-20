@@ -13,6 +13,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.users.permissions import ContaActivaPermission, conta_activa_required
 from .filters import AnuncioFilter
 from .models import Anuncio, Favorito, ImagemAnuncio
 from apps.pagamentos.models import PlanoPublicacao, SubscricaoUtilizador
@@ -174,9 +175,10 @@ class AnuncioCriarView(generics.CreateAPIView):
     """
     Cria um anúncio, valida subscrição activa, grava atributos
     e opcionalmente aplica destaque avulso - tudo num só endpoint.
+    Requer conta com email verificado e idade >= 18 anos.
     """
     serializer_class = AnuncioCriarSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ContaActivaPermission]
 
 
 class AnuncioEditarView(generics.RetrieveUpdateAPIView):
@@ -430,6 +432,7 @@ def anuncio_detalhe_view(request, pk):
 
 
 @login_required
+@conta_activa_required
 def anuncio_publicar_view(request):
     from apps.categorias.models import Categoria, AtributoCategoria
 
