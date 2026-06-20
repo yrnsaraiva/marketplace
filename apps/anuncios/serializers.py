@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from django.core.validators import MinLengthValidator
 
-from .models import Anuncio, ImagemAnuncio, AtributoAnuncio, Favorito
+from .models import Anuncio, ImagemAnuncio, AtributoAnuncio, Favorito, DestaqueAnuncio
 from apps.categorias.models import AtributoCategoria
 from apps.categorias.serializers import CategoriaSimpleSerializer
 from apps.users.serializers import PerfilSerializer
+from django.utils import timezone
+from datetime import timedelta
 
 
 class ImagemAnuncioSerializer(serializers.ModelSerializer):
@@ -103,6 +105,8 @@ def _validar_atributos_obrigatorios(categoria, atributos_input):
 class AnuncioCriarSerializer(serializers.ModelSerializer):
     # Atributos dinâmicos - lista de {atributo_id, valor}
     atributos = AtributoInputSerializer(many=True, required=False, write_only=True)
+    destacar = serializers.BooleanField(write_only=True, required=False, default=False)
+
     class Meta:
         model = Anuncio
         fields = [
@@ -110,7 +114,7 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
             'titulo', 'descricao', 'preco', 'preco_negociavel',
             'condicao', 'categoria', 'provincia', 'cidade',
             'bairro', 'auto_renovar',
-            'atributos',
+            'atributos', 'destacar',
         ]
 
     def validate_titulo(self, value):
@@ -135,6 +139,7 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
         from django.db import transaction
 
         atributos_data = validated_data.pop('atributos', [])
+        destacar = validated_data.pop('destacar', False)
 
         request = self.context['request']
         user = request.user
@@ -149,6 +154,7 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
             # Criar anúncio
             anuncio = Anuncio.objects.create(
                 utilizador=user,
+                subscricao=subscricao,
                 **validated_data,
             )
 
@@ -167,6 +173,19 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
                         atributo=atrib,
                         valor=item['valor'],
                     )
+
+            if destacar:
+                dias_destaque = subscricao.plano.dias_destaque_incluidos
+                if dias_destaque > 0:
+                    DestaqueAnuncio.objects.create(
+                        anuncio=anuncio,
+                        subscricao=subscricao,
+                        fim_em=timezone.now() + timedelta(days=dias_destaque),
+                        activo=True
+                    )
+                else:
+                    # Se o plano não tiver dias de destaque, ignorar ou lançar erro
+                    pass
 
             # Publicar (consome crédito e activa anúncio)
             service.publicar(anuncio)

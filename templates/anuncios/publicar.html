@@ -254,48 +254,23 @@
                         Anúncios destacados aparecem no topo e recebem muito mais contactos.
                     </p>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- Sem destaque -->
-                        <label class="p-4 rounded-xl border-2 border-surface-container-low hover:border-primary
-                              transition-all cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5 flex flex-col gap-1">
-                            <input type="radio" name="plano_destaque" value="" class="sr-only" checked/>
-                            <div class="flex items-center justify-between">
-                                <span class="material-symbols-outlined text-xl text-outline">check_circle</span>
-                                <span class="text-xs text-on-surface-variant bg-surface-container-low rounded-full px-2 py-0.5">Grátis</span>
-                            </div>
-                            <p class="font-bold mt-1 text-sm">Sem destaque</p>
-                            <p class="text-xs text-on-surface-variant">Visibilidade padrão</p>
-                            <p class="text-xs text-on-surface-variant/60 mt-auto pt-1">
-                                {{ subscricao.plano.duracao_anuncio_dias|default:30 }} dias
-                            </p>
-                        </label>
-
-                        {% for plano in planos_destaque %}
-                            <label class="p-4 rounded-xl border-2 transition-all flex flex-col gap-1
-                              {% if subscricao %}border-surface-container-low hover:border-primary cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5
-                              {% else %}border-surface-container-low opacity-50 cursor-not-allowed{% endif %}">
-                                <input type="radio" name="plano_destaque" value="{{ plano.id }}" class="sr-only"
-                                       {% if not subscricao %}disabled{% endif %}/>
-                                <div class="flex items-center justify-between">
-                                    <span class="material-symbols-outlined text-xl text-amber-500">whatshot</span>
-                                    <span class="text-xs font-semibold text-primary bg-primary/10 rounded-full px-2 py-0.5">
-                            +{{ plano.preco|floatformat:0 }} MT
-                        </span>
-                                </div>
-                                <p class="font-bold mt-1 text-sm">{{ plano.nome }}</p>
-                                <p class="text-xs text-on-surface-variant line-clamp-2">{{ plano.descricao }}</p>
-                                <p class="text-xs text-on-surface-variant/60 mt-auto pt-1">
-                                    {{ plano.boost_visualizacoes }}× visibilidade · {{ plano.duracao_dias }} dias
-                                </p>
+                    {% if subscricao and subscricao.plano.dias_destaque_incluidos > 0 %}
+                        <div class="flex items-start gap-4">
+                            <label class="flex items-center gap-3 cursor-pointer select-none">
+                                <input type="checkbox" name="destacar" value="1"
+                                       class="w-5 h-5 rounded text-primary focus:ring-primary">
+                                <span class="font-medium">Activar destaque</span>
                             </label>
-                        {% endfor %}
-                    </div>
-
-                    {% if not subscricao %}
-                        <p class="mt-4 text-xs text-on-surface-variant/70 flex items-center gap-1.5">
+                            <div class="text-xs text-on-surface-variant">
+                                O seu plano inclui <strong>{{ subscricao.plano.dias_destaque_incluidos }}</strong> dias
+                                de destaque gratuito.
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-sm text-on-surface-variant/70 flex items-center gap-2">
                             <span class="material-symbols-outlined text-sm">info</span>
-                            Destaque disponível apenas com subscrição activa.
-                            <a href="#" class="text-primary underline">Ver planos</a>
+                            Para destacar um anúncio, precisa de uma subscrição que inclua dias de destaque.
+                            <a href="{% url 'planos' %}" class="text-primary underline">Ver planos</a>
                         </p>
                     {% endif %}
                 </div>
@@ -502,7 +477,7 @@
                 cidade: formData.get('cidade'),
                 bairro: formData.get('bairro') || '',
                 atributos,
-                plano_destaque: formData.get('plano_destaque') || null,
+                destacar: formData.get('destacar') === 'on', 
             };
 
             try {
@@ -528,7 +503,7 @@
                     btn.innerHTML = '<span class="material-symbols-outlined">publish</span> Publicar Anúncio';
                     return;
                 }
-                
+
 
                 if (!resp.ok) { /* tratamento de erro */
                     return;
