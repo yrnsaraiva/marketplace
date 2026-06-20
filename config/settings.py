@@ -301,7 +301,7 @@ ACCOUNT_SIGNUP_FIELDS = [
     'password2*'
 ]       # login por email
 
-ACCOUNT_EMAIL_VERIFICATION = 'none'        # 'mandatory' em produção
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'        # 'mandatory' em produção
 ACCOUNT_ADAPTER = 'apps.users.adapters.AccountAdapter'
 ACCOUNT_SIGNUP_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/'
