@@ -1,83 +1,156 @@
-<!--confirmacao.html-->
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirme a sua conta Zonal</title>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:40px 0;">
     <tr>
         <td align="center">
-            <table width="560" cellpadding="0" cellspacing="0"
-                   style="background:#ffffff;border-radius:16px;overflow:hidden;
-                      box-shadow:0 2px 8px rgba(0,0,0,.08);">
+
+            <table width="600" cellpadding="0" cellspacing="0"
+                   style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08);">
 
                 <!-- Header -->
                 <tr>
-                    <td style="background:#1a56db;padding:32px 40px;text-align:center;">
-                        <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">
+                    <td align="center"
+                        style="background:linear-gradient(135deg,#006b53,#00a884);padding:40px;">
+
+                        <img
+                            src="https://zonal.co.mz/static/img/logo-white.png"
+                            alt="Zonal"
+                            width="90"
+                            style="display:block;margin:0 auto 15px;">
+
+                        <h1 style="margin:0;color:#ffffff;font-size:30px;font-weight:800;">
                             Zonal
                         </h1>
-                        <p style="margin:4px 0 0;color:#bfdbfe;font-size:13px;">
-                            O mercado de Moçambique
+
+                        <p style="margin:8px 0 0;color:#d9fff4;font-size:14px;">
+                            O Marketplace de Moçambique
                         </p>
+
                     </td>
                 </tr>
 
-                <!-- Body -->
+                <!-- Conteúdo -->
                 <tr>
-                    <td style="padding:40px 40px 32px;">
-                        <p style="margin:0 0 8px;color:#111827;font-size:16px;font-weight:600;">
-                            Olá, {{ user.username }}!
-                        </p>
-                        <p style="margin:0 0 24px;color:#6b7280;font-size:14px;line-height:1.6;">
-                            Obrigado por criar a sua conta no Zonal. Para activar a sua conta
-                            e começar a publicar anúncios, confirme o seu endereço de email:
+                    <td style="padding:45px;">
+
+                        <p style="margin:0 0 10px;font-size:18px;color:#1a1c1c;font-weight:700;">
+                            Olá, {{ user.username }} 👋
                         </p>
 
-                        <!-- Botão -->
-                        <table width="100%" cellpadding="0" cellspacing="0">
+                        <p style="margin:0 0 30px;color:#64748b;font-size:15px;line-height:1.8;">
+                            Obrigado por se registar na Zonal.
+                            Para ativar a sua conta e começar a comprar e vender em todo Moçambique,
+                            confirme o seu endereço de email.
+                        </p>
+
+                        <!-- Card -->
+                        <table width="100%" cellpadding="0" cellspacing="0"
+                               style="background:#f4fffc;border:1px solid #d8f3eb;border-radius:14px;margin-bottom:30px;">
                             <tr>
-                                <td align="center" style="padding:8px 0 32px;">
-                                    <a href="{{ link }}"
-                                       style="display:inline-block;background:#1a56db;color:#ffffff;
-                              text-decoration:none;font-size:15px;font-weight:600;
-                              padding:14px 32px;border-radius:10px;">
-                                        Confirmar email
-                                    </a>
+                                <td style="padding:24px;">
+
+                                    <h2 style="margin:0 0 12px;color:#006b53;font-size:18px;">
+                                        🚀 Falta apenas um passo
+                                    </h2>
+
+                                    <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;">
+                                        Confirme o seu email para publicar anúncios,
+                                        contactar vendedores e gerir a sua conta com segurança.
+                                    </p>
+
                                 </td>
                             </tr>
                         </table>
 
-                        <p style="margin:0 0 8px;color:#9ca3af;font-size:12px;">
-                            Ou copie e cole este link no seu browser:
-                        </p>
-                        <p style="margin:0 0 24px;word-break:break-all;">
-                            <a href="{{ link }}" style="color:#1a56db;font-size:12px;">{{ link }}</a>
+                        <!-- Botão -->
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td align="center">
+
+                                    <a href="{{ link }}"
+                                       style="
+                                       display:inline-block;
+                                       background:#006b53;
+                                       color:#ffffff;
+                                       text-decoration:none;
+                                       font-size:16px;
+                                       font-weight:700;
+                                       padding:16px 36px;
+                                       border-radius:12px;">
+                                        Confirmar Email
+                                    </a>
+
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin:35px 0 10px;color:#64748b;font-size:13px;">
+                            Ou copie este link:
                         </p>
 
-                        <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.6;">
-                            Este link é válido por <strong>{{ validade_horas }} horas</strong>.
-                            Se não criou esta conta, pode ignorar este email.
+                        <p style="word-break:break-all;">
+                            <a href="{{ link }}"
+                               style="color:#006b53;font-size:12px;">
+                                {{ link }}
+                            </a>
                         </p>
+
+                        <table width="100%"
+                               cellpadding="0"
+                               cellspacing="0"
+                               style="
+                               background:#fff8e1;
+                               border-left:4px solid #FFBF00;
+                               border-radius:10px;
+                               margin-top:25px;">
+                            <tr>
+                                <td style="padding:16px;">
+
+                                    <strong style="color:#8a5b00;">
+                                        ⏰ Atenção:
+                                    </strong>
+
+                                    <span style="font-size:13px;color:#5f6368;">
+                                        Este link expira em {{ validade_horas }} horas.
+                                    </span>
+
+                                </td>
+                            </tr>
+                        </table>
+
                     </td>
                 </tr>
 
                 <!-- Footer -->
                 <tr>
-                    <td style="background:#f9fafb;padding:20px 40px;border-top:1px solid #f3f4f6;
-                       text-align:center;">
-                        <p style="margin:0;color:#9ca3af;font-size:11px;">
-                            © 2025 Zonal · zonal.co.mz
+                    <td style="background:#f8fafc;padding:30px;text-align:center;">
+
+                        <p style="margin:0 0 8px;color:#006b53;font-size:14px;font-weight:700;">
+                            Zonal Marketplace
                         </p>
+
+                        <p style="margin:0 0 12px;color:#64748b;font-size:12px;">
+                            Compre. Venda. Cresça.
+                        </p>
+
+                        <p style="margin:0;color:#94a3b8;font-size:11px;">
+                            © 2026 Zonal • Todos os direitos reservados
+                        </p>
+
                     </td>
                 </tr>
 
             </table>
+
         </td>
     </tr>
 </table>
+
 </body>
 </html>

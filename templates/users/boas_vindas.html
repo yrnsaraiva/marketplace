@@ -2,94 +2,153 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bem-vindo ao Zonal</title>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:40px 0;">
     <tr>
         <td align="center">
-            <table width="560" cellpadding="0" cellspacing="0"
-                   style="background:#ffffff;border-radius:16px;overflow:hidden;
-                          box-shadow:0 2px 8px rgba(0,0,0,.08);">
+
+            <table width="600" cellpadding="0" cellspacing="0"
+                   style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08);">
 
                 <!-- Header -->
                 <tr>
-                    <td style="background:#1a56db;padding:32px 40px;text-align:center;">
-                        <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">
+                    <td align="center"
+                        style="background:linear-gradient(135deg,#006b53,#00a884);padding:40px;">
+
+                        <img
+                            src="https://zonal.co.mz/static/img/logo-white.png"
+                            alt="Zonal"
+                            width="90"
+                            style="display:block;margin:0 auto 15px;">
+
+                        <h1 style="margin:0;color:#ffffff;font-size:30px;font-weight:800;">
                             Zonal
                         </h1>
-                        <p style="margin:4px 0 0;color:#bfdbfe;font-size:13px;">
-                            O mercado de Moçambique
+
+                        <p style="margin:8px 0 0;color:#d9fff4;font-size:14px;">
+                            O Marketplace de Moçambique
                         </p>
+
                     </td>
                 </tr>
 
-                <!-- Body -->
+                <!-- Conteúdo -->
                 <tr>
-                    <td style="padding:40px 40px 32px;">
-                        <p style="margin:0 0 8px;color:#111827;font-size:16px;font-weight:600;">
-                            Olá, {{ user.first_name|default:user.username }}!
-                        </p>
-                        <p style="margin:0 0 24px;color:#6b7280;font-size:14px;line-height:1.6;">
-                            Bem-vindo ao Zonal. A sua conta foi criada com sucesso através do Google
-                            e já está pronta a usar.
+                    <td style="padding:45px;">
+
+                        <p style="margin:0 0 10px;font-size:18px;color:#1a1c1c;font-weight:700;">
+                            Olá, {{ user.first_name|default:user.username }} 👋
                         </p>
 
-                        <!-- Destaques -->
+                        <p style="margin:0 0 25px;color:#64748b;font-size:15px;line-height:1.8;">
+                            A sua conta foi criada com sucesso.
+                            Agora já pode comprar, vender e promover produtos
+                            para milhares de utilizadores em Moçambique.
+                        </p>
+
                         <table width="100%" cellpadding="0" cellspacing="0"
-                               style="background:#f0f7ff;border-radius:12px;padding:4px 0;margin:0 0 28px;">
+                               style="background:#f4fffc;border:1px solid #d8f3eb;border-radius:14px;margin-bottom:30px;">
                             <tr>
-                                <td style="padding:16px 20px;">
-                                    <p style="margin:0 0 10px;color:#1e40af;font-size:13px;font-weight:600;">
-                                        O que pode fazer agora:
+                                <td style="padding:24px;">
+
+                                    <h2 style="margin:0 0 15px;color:#006b53;font-size:18px;">
+                                        O que pode fazer agora
+                                    </h2>
+
+                                    <p style="margin:0 0 10px;font-size:14px;color:#374151;">
+                                        🛍️ Publicar anúncios gratuitamente
                                     </p>
-                                    <p style="margin:0 0 6px;color:#374151;font-size:13px;">
-                                        ✅ &nbsp;Publicar anúncios gratuitamente
+
+                                    <p style="margin:0 0 10px;font-size:14px;color:#374151;">
+                                        💬 Contactar compradores e vendedores
                                     </p>
-                                    <p style="margin:0 0 6px;color:#374151;font-size:13px;">
-                                        ✅ &nbsp;Contactar vendedores diretamente
+
+                                    <p style="margin:0 0 10px;font-size:14px;color:#374151;">
+                                        📈 Destacar anúncios para vender mais rápido
                                     </p>
-                                    <p style="margin:0;color:#374151;font-size:13px;">
-                                        ✅ &nbsp;Destacar os seus anúncios para maior visibilidade
+
+                                    <p style="margin:0;font-size:14px;color:#374151;">
+                                        🔒 Gerir a sua conta com segurança
                                     </p>
+
                                 </td>
                             </tr>
                         </table>
 
-                        <!-- Botão -->
                         <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                                <td align="center" style="padding:8px 0 32px;">
-                                    <a href="{{ FRONTEND_URL|default:'https://zonal.co.mz' }}"
-                                       style="display:inline-block;background:#1a56db;color:#ffffff;
-                                              text-decoration:none;font-size:15px;font-weight:600;
-                                              padding:14px 32px;border-radius:10px;">
+                                <td align="center">
+
+                                    <a href="https://zonal.co.mz"
+                                       style="
+                                       display:inline-block;
+                                       background:#006b53;
+                                       color:#ffffff;
+                                       text-decoration:none;
+                                       font-size:16px;
+                                       font-weight:700;
+                                       padding:16px 36px;
+                                       border-radius:12px;">
                                         Explorar o Zonal
                                     </a>
+
                                 </td>
                             </tr>
                         </table>
 
-                        <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.6;">
-                            Se não criou esta conta, pode ignorar este email.
-                        </p>
+                        <table width="100%"
+                               cellpadding="0"
+                               cellspacing="0"
+                               style="
+                               background:#fff8e1;
+                               border-left:4px solid #FFBF00;
+                               border-radius:10px;
+                               margin-top:30px;">
+                            <tr>
+                                <td style="padding:16px;">
+
+                                    <strong style="color:#8a5b00;">
+                                        💡 Dica:
+                                    </strong>
+
+                                    <span style="font-size:13px;color:#5f6368;">
+                                        Complete o seu perfil para aumentar a confiança dos compradores.
+                                    </span>
+
+                                </td>
+                            </tr>
+                        </table>
+
                     </td>
                 </tr>
 
                 <!-- Footer -->
                 <tr>
-                    <td style="background:#f9fafb;padding:20px 40px;border-top:1px solid #f3f4f6;
-                               text-align:center;">
-                        <p style="margin:0;color:#9ca3af;font-size:11px;">
-                            © 2025 Zonal · zonal.co.mz
+                    <td style="background:#f8fafc;padding:30px;text-align:center;">
+
+                        <p style="margin:0 0 8px;color:#006b53;font-size:14px;font-weight:700;">
+                            Zonal Marketplace
                         </p>
+
+                        <p style="margin:0 0 12px;color:#64748b;font-size:12px;">
+                            Compre. Venda. Cresça.
+                        </p>
+
+                        <p style="margin:0;color:#94a3b8;font-size:11px;">
+                            © 2026 Zonal • Todos os direitos reservados
+                        </p>
+
                     </td>
                 </tr>
 
             </table>
+
         </td>
     </tr>
 </table>
+
 </body>
 </html>
