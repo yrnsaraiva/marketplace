@@ -40,8 +40,7 @@ def on_user_logged_in(sender, request, user, **kwargs):
 @receiver(social_account_added)
 def on_social_account_added(sender, request, sociallogin, **kwargs):
     """
-    Disparado quando um utilizador se regista pela primeira vez via Google
-    (ou outro provider social).
+    Disparado quando um utilizador se regista pela primeira vez via Google.
     — Marca email_verificado=True (o Google já verificou o email)
     — Envia email de boas-vindas
     """
@@ -68,18 +67,24 @@ class RegistoView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        enviar_email_confirmacao(user, request=request)
+        email_enviado, email_erro = enviar_email_confirmacao(user, request=request)
 
         refresh = RefreshToken.for_user(user)
-        return Response({
+        resposta = {
             'mensagem': 'Conta criada com sucesso. Verifique o seu email para activar a conta.',
-            'email_confirmacao_enviado': True,
+            'email_confirmacao_enviado': email_enviado,
             'user': PerfilSerializer(user).data,
             'tokens': {
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
             }
-        }, status=status.HTTP_201_CREATED)
+        }
+
+        from django.conf import settings as django_settings
+        if not email_enviado and django_settings.DEBUG and email_erro:
+            resposta['email_erro_debug'] = email_erro
+
+        return Response(resposta, status=status.HTTP_201_CREATED)
 
 
 # ---------------------------------------------------------------------------
@@ -88,9 +93,7 @@ class RegistoView(generics.CreateAPIView):
 class VerificarEmailView(APIView):
     """
     GET /api/v1/auth/verificar-email/<token>/
-
     Valida o token e marca email_verificado=True.
-    Usado quando o frontend consome a API directamente.
     """
     permission_classes = [AllowAny]
 
@@ -116,9 +119,7 @@ class VerificarEmailView(APIView):
 class ReenviarConfirmacaoView(APIView):
     """
     POST /api/v1/auth/reenviar-confirmacao/
-
     Reenvia o email de confirmação para o utilizador autenticado.
-    Útil se o link expirou.
     """
     permission_classes = [IsAuthenticated]
 
@@ -131,11 +132,11 @@ class ReenviarConfirmacaoView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        enviado = enviar_email_confirmacao(user, request=request)
+        enviado, erro = enviar_email_confirmacao(user, request=request)
         if enviado:
             return Response({'mensagem': 'Email de confirmação reenviado.'})
         return Response(
-            {'erro': 'Erro ao enviar email. Tente novamente mais tarde.'},
+            {'erro': f'Erro ao enviar email: {erro}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -248,11 +249,12 @@ def signup_template_view(request):
 
         if form.is_valid():
             data = {
-                'username':  form.cleaned_data['username'],
-                'email':     form.cleaned_data['email'],
-                'password':  form.cleaned_data['password'],
-                'password2': form.cleaned_data['password2'],
-                'telefone':  form.cleaned_data.get('telefone', ''),
+                'username':        form.cleaned_data['username'],
+                'email':           form.cleaned_data['email'],
+                'password':        form.cleaned_data['password'],
+                'password2':       form.cleaned_data['password2'],
+                'telefone':        form.cleaned_data.get('telefone', ''),
+                'data_nascimento': form.cleaned_data.get('data_nascimento'),
             }
             serializer = RegistoSerializer(data=data)
 
@@ -280,17 +282,19 @@ def verificar_email_view(request, token):
     """
     Vista de template para verificação de email.
     O utilizador chega aqui pelo link no email.
+    Usa 'users/email_verificado.html' (página de resultado),
+    distinto de 'users/confirmacao.html' (corpo do email enviado).
     """
     user, estado = verificar_token_email(token)
 
     if estado == 'ja_verificado':
-        return render(request, 'users/confirmacao.html', {
+        return render(request, 'users/email_verificado.html', {
             'sucesso': True,
             'mensagem': 'O seu email já estava verificado.',
         })
 
     if estado != 'ok' or not user:
-        return render(request, 'users/confirmacao.html', {
+        return render(request, 'users/email_verificado.html', {
             'sucesso': False,
             'mensagem': 'Link inválido ou expirado. Solicite um novo email de confirmação.',
         })
@@ -299,7 +303,7 @@ def verificar_email_view(request, token):
     user.save(update_fields=['email_verificado'])
     logger.info("Email verificado (template) para utilizador #%s", user.pk)
 
-    return render(request, 'users/confirmacao.html', {
+    return render(request, 'users/email_verificado.html', {
         'sucesso': True,
         'mensagem': 'Email confirmado com sucesso! Já pode usar a sua conta.',
     })
