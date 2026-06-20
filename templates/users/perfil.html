@@ -169,20 +169,34 @@
     <!-- Verificação -->
     <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-surface-container-low">
         <div class="flex items-start gap-4">
-            <div class="p-3 bg-primary/10 rounded-xl flex-shrink-0">
-                <span class="material-symbols-outlined text-primary">verified</span>
+            <div class="p-3 {% if user.email_verificado %}bg-primary/10{% else %}bg-surface-container-low{% endif %} rounded-xl flex-shrink-0">
+                <span class="material-symbols-outlined {% if user.email_verificado %}text-primary{% else %}text-on-surface-variant{% endif %}">
+                    {% if user.email_verificado %}verified{% else %}mark_email_unread{% endif %}
+                </span>
             </div>
             <div class="flex-1">
-                <h3 class="font-bold text-on-surface">Verificação de identidade</h3>
-                <p class="text-sm text-on-surface-variant mt-1">
-                    Aumente a confiança dos compradores verificando a sua identidade.
-                </p>
+                <h3 class="font-bold text-on-surface">Verificação de email</h3>
+                {% if user.email_verificado %}
+                    <p class="text-sm text-on-surface-variant mt-1">
+                        O seu email está verificado. A sua conta tem maior confiança junto dos compradores.
+                    </p>
+                {% else %}
+                    <p class="text-sm text-on-surface-variant mt-1">
+                        Confirme o seu email para activar a conta completamente.
+                    </p>
+                    <div id="msg-reenvio" class="hidden mt-2 text-xs"></div>
+                    <button id="btn-reenviar" onclick="reenviarConfirmacao()"
+                            class="mt-3 text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">send</span>
+                        Reenviar email de confirmação
+                    </button>
+                {% endif %}
             </div>
             <span class="text-xs flex-shrink-0 px-3 py-1.5 rounded-full font-semibold
                      {% if user.email_verificado %}bg-primary/10 text-primary
                      {% else %}bg-surface-container-low text-on-surface-variant{% endif %}">
-            {% if user.email_verificado %}✓ Verificado{% else %}Pendente{% endif %}
-        </span>
+                {% if user.email_verificado %}✓ Verificado{% else %}Pendente{% endif %}
+            </span>
         </div>
     </div>
 
@@ -268,6 +282,33 @@
             btn.disabled = false;
             btn.innerHTML = '<span class="material-symbols-outlined text-base">lock_reset</span> Alterar password';
         });
+
+        // ─── Reenviar confirmação ─────────────────────────────────────────────────
+        async function reenviarConfirmacao() {
+            const btn = document.getElementById('btn-reenviar');
+            const msg = document.getElementById('msg-reenvio');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> A enviar...';
+
+            const resp = await fetch('/api/v1/auth/reenviar-confirmacao/', {
+                method: 'POST',
+                headers: authHeaders(),
+            });
+
+            const data = await resp.json();
+            msg.classList.remove('hidden', 'text-primary', 'text-error');
+
+            if (resp.ok) {
+                msg.classList.add('text-primary');
+                msg.textContent = '✓ ' + (data.mensagem || 'Email enviado. Verifique a sua caixa de entrada.');
+                btn.classList.add('hidden');
+            } else {
+                msg.classList.add('text-error');
+                msg.textContent = '✗ ' + (data.erro || 'Erro ao enviar. Tente novamente.');
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined text-sm">send</span> Reenviar email de confirmação';
+            }
+        }
 
         // ─── Upload foto ───────────────────────────────────────────────────────────
         async function uploadFoto(input) {
