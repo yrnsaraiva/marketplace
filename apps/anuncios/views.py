@@ -458,20 +458,34 @@ def anuncio_publicar_view(request):
 
     # Construir dicionário {categoria_id: [atributos]} para JS
     atributos_por_categoria = {}
-    for attr in AtributoCategoria.objects.filter(
-            categoria__in=categorias_filho
-    ).select_related('categoria'):
-        cat_id = attr.categoria_id
-        if cat_id not in atributos_por_categoria:
-            atributos_por_categoria[cat_id] = []
-        atributos_por_categoria[cat_id].append({
-            'id': attr.id,
-            'nome': attr.nome,
-            'chave': attr.chave,
-            'tipo': attr.tipo,
-            'opcoes': attr.opcoes,
-            'obrigatorio': attr.obrigatorio,
-        })
+
+    for sub in categorias_filho:
+        # Atributos da própria subcategoria
+        atributos = list(AtributoCategoria.objects.filter(categoria=sub))
+        # Atributos da categoria pai (se existir)
+        if sub.pai:
+            atributos.extend(AtributoCategoria.objects.filter(categoria=sub.pai))
+
+        # Remover duplicados pela chave (a chave é única por categoria)
+        vistos = set()
+        atributos_unicos = []
+        for attr in atributos:
+            if attr.chave not in vistos:
+                vistos.add(attr.chave)
+                atributos_unicos.append(attr)
+
+        if atributos_unicos:
+            atributos_por_categoria[sub.id] = [
+                {
+                    'id': attr.id,
+                    'nome': attr.nome,
+                    'chave': attr.chave,
+                    'tipo': attr.tipo,
+                    'opcoes': attr.opcoes,
+                    'obrigatorio': attr.obrigatorio,
+                }
+                for attr in atributos_unicos
+            ]
 
     subscricao = _get_subscricao_activa(request.user)
 
