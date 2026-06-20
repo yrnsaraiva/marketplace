@@ -80,4 +80,9 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
         return user
 
     def get_connect_redirect_url(self, request, socialaccount):
+        # Se o utilizador não tem data de nascimento, redirecionar para o perfil
+        # para preencher a informação em falta (validação de idade mínima)
+        user = socialaccount.user
+        if not getattr(user, 'data_nascimento', None):
+            return '/dashboard/perfil/?completar=1'
         return settings.LOGIN_REDIRECT_URL

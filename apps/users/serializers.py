@@ -63,6 +63,12 @@ class PerfilSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'email', 'papel', 'total_anuncios',
                             'avaliacao_media', 'date_joined']
 
+    def validate_data_nascimento(self, value):
+        # Valida idade mínima também quando o perfil é actualizado (contas Google)
+        if value is not None:
+            validar_idade_minima(value)
+        return value
+
 
 class AlterarPasswordSerializer(serializers.Serializer):
     password_actual = serializers.CharField(required=True)
