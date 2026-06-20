@@ -5,8 +5,8 @@ from datetime import timedelta
 from apps.users.models import User
 
 # FIX: imports explícitos em vez de wildcard (from ... import *)
-from apps.categorias.models import Categoria, AtributoCategoria
-from apps.pagamentos.models import SubscricaoUtilizador
+from apps.categorias.models import *
+from apps.pagamentos.models import *
 
 
 class Anuncio(models.Model):

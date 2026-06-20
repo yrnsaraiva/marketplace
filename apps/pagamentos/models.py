@@ -5,7 +5,7 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from apps.users.models import User
-from apps.anuncios.models import Anuncio
+from apps.anuncios.models import *
 
 
 # ---------------------------------------------------------------------------
