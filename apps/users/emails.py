@@ -76,7 +76,7 @@ def enviar_email_confirmacao(user, request=None) -> bool:
     try:
         # Tenta usar template HTML; se não existir, usa texto simples
         try:
-            html_body = render_to_string('users/emails/confirmacao.html', contexto)
+            html_body = render_to_string('users/confirmacao.html', contexto)
             text_body = strip_tags(html_body)
         except Exception:
             text_body = (
@@ -103,6 +103,50 @@ def enviar_email_confirmacao(user, request=None) -> bool:
     except Exception as e:
         logger.error("Erro ao enviar email de confirmação para %s: %s", user.email, e)
         return False
+
+
+def enviar_email_boas_vindas(user) -> tuple[bool, str | None]:
+    """
+    Envia email de boas-vindas a utilizadores que se registaram via Google.
+    Não contém link de confirmação — o email já é verificado pelo Google.
+    Devolve (True, None) se enviado, (False, motivo) em caso de erro.
+    """
+    contexto = {
+            'user': user,
+            'FRONTEND_URL': getattr(settings, 'FRONTEND_URL', 'https://www.zonal.co.mz'),
+        }
+
+    try:
+        try:
+            html_body = render_to_string('users/boas_vindas.html', contexto)
+            text_body = strip_tags(html_body)
+        except Exception as tmpl_err:
+            logger.warning("Template 'users/boas_vindas.html' não encontrado (%s). A usar texto simples.", tmpl_err)
+            text_body = (
+                f"Olá {user.first_name or user.username}!\n\n"
+                f"Bem-vindo ao Zonal — o mercado de Moçambique.\n\n"
+                f"A sua conta foi criada com sucesso através do Google. "
+                f"Já pode começar a publicar e a responder a anúncios.\n\n"
+                f"Aceda em: {getattr(settings, 'FRONTEND_URL', 'https://www.zonal.co.mz')}\n\n"
+                f"- Equipa Zonal"
+            )
+            html_body = None
+
+        send_mail(
+            subject='Bem-vindo ao Zonal!',
+            message=text_body,
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@zonal.co.mz'),
+            recipient_list=[user.email],
+            html_message=html_body,
+            fail_silently=False,
+        )
+        logger.info("Email de boas-vindas enviado para %s", user.email)
+        return True, None
+
+    except Exception as e:
+        motivo = str(e)
+        logger.error("Erro ao enviar email de boas-vindas para %s: %s", user.email, motivo)
+        return False, motivo
 
 
 def verificar_token_email(token: str):

@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from allauth.socialaccount.signals import social_account_added, pre_social_login
 from allauth.account.signals import user_logged_in
 
-from .emails import enviar_email_confirmacao, verificar_token_email
+from .emails import enviar_email_confirmacao, enviar_email_boas_vindas, verificar_token_email
 from .forms import RegistoCaptchaForm
 from .models import User
 from .serializers import AlterarPasswordSerializer, PerfilSerializer, RegistoSerializer
@@ -37,6 +37,24 @@ def on_user_logged_in(sender, request, user, **kwargs):
         logger.warning('Não foi possível gerar JWT após login: %s', e)
 
 
+@receiver(social_account_added)
+def on_social_account_added(sender, request, sociallogin, **kwargs):
+    """
+    Disparado quando um utilizador se regista pela primeira vez via Google
+    (ou outro provider social).
+    — Marca email_verificado=True (o Google já verificou o email)
+    — Envia email de boas-vindas
+    """
+    user = sociallogin.user
+
+    if not user.email_verificado:
+        user.email_verificado = True
+        user.save(update_fields=['email_verificado'])
+        logger.info("email_verificado=True definido para utilizador social #%s (%s)", user.pk, user.email)
+
+    enviar_email_boas_vindas(user)
+
+
 # ---------------------------------------------------------------------------
 # API — Registo
 # ---------------------------------------------------------------------------
@@ -50,7 +68,6 @@ class RegistoView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        # Enviar email de confirmação (falha silenciosa — não bloqueia o registo)
         enviar_email_confirmacao(user, request=request)
 
         refresh = RefreshToken.for_user(user)
@@ -267,13 +284,13 @@ def verificar_email_view(request, token):
     user, estado = verificar_token_email(token)
 
     if estado == 'ja_verificado':
-        return render(request, 'users/email_verificado.html', {
+        return render(request, 'users/confirmacao.html', {
             'sucesso': True,
             'mensagem': 'O seu email já estava verificado.',
         })
 
     if estado != 'ok' or not user:
-        return render(request, 'users/email_verificado.html', {
+        return render(request, 'users/confirmacao.html', {
             'sucesso': False,
             'mensagem': 'Link inválido ou expirado. Solicite um novo email de confirmação.',
         })
@@ -282,7 +299,7 @@ def verificar_email_view(request, token):
     user.save(update_fields=['email_verificado'])
     logger.info("Email verificado (template) para utilizador #%s", user.pk)
 
-    return render(request, 'users/email_verificado.html', {
+    return render(request, 'users/confirmacao.html', {
         'sucesso': True,
         'mensagem': 'Email confirmado com sucesso! Já pode usar a sua conta.',
     })

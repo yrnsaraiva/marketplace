@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if sucesso %}Email confirmado{% else %}Link inválido{% endif %} · Zonal</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+    <tr>
+        <td align="center">
+            <table width="480" cellpadding="0" cellspacing="0"
+                   style="background:#ffffff;border-radius:16px;overflow:hidden;
+                          box-shadow:0 2px 8px rgba(0,0,0,.08);">
+
+                <!-- Header -->
+                <tr>
+                    <td style="background:#1a56db;padding:32px 40px;text-align:center;">
+                        <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">
+                            Zonal
+                        </h1>
+                        <p style="margin:4px 0 0;color:#bfdbfe;font-size:13px;">
+                            O mercado de Moçambique
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td style="padding:48px 40px 40px;text-align:center;">
+
+                        {% if sucesso %}
+                            <!-- Ícone de sucesso -->
+                            <div style="width:64px;height:64px;background:#dcfce7;border-radius:50%;
+                                        margin:0 auto 24px;display:flex;align-items:center;justify-content:center;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                                     xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="12" fill="#16a34a"/>
+                                    <path d="M7 12.5l3.5 3.5 6.5-7" stroke="#ffffff"
+                                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+
+                            <h2 style="margin:0 0 12px;color:#111827;font-size:20px;font-weight:700;">
+                                Tudo certo!
+                            </h2>
+                            <p style="margin:0 0 32px;color:#6b7280;font-size:14px;line-height:1.6;">
+                                {{ mensagem }}
+                            </p>
+
+                            <a href="/login/"
+                               style="display:inline-block;background:#1a56db;color:#ffffff;
+                                      text-decoration:none;font-size:15px;font-weight:600;
+                                      padding:14px 32px;border-radius:10px;">
+                                Iniciar sessão
+                            </a>
+
+                        {% else %}
+                            <!-- Ícone de erro -->
+                            <div style="width:64px;height:64px;background:#fee2e2;border-radius:50%;
+                                        margin:0 auto 24px;display:flex;align-items:center;justify-content:center;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                                     xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="12" fill="#dc2626"/>
+                                    <path d="M8 8l8 8M16 8l-8 8" stroke="#ffffff"
+                                          stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+
+                            <h2 style="margin:0 0 12px;color:#111827;font-size:20px;font-weight:700;">
+                                Link inválido
+                            </h2>
+                            <p style="margin:0 0 32px;color:#6b7280;font-size:14px;line-height:1.6;">
+                                {{ mensagem }}
+                            </p>
+
+                            <a href="/registo/"
+                               style="display:inline-block;background:#1a56db;color:#ffffff;
+                                      text-decoration:none;font-size:15px;font-weight:600;
+                                      padding:14px 32px;border-radius:10px;">
+                                Criar conta
+                            </a>
+                        {% endif %}
+
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="background:#f9fafb;padding:20px 40px;border-top:1px solid #f3f4f6;
+                               text-align:center;">
+                        <p style="margin:0;color:#9ca3af;font-size:11px;">
+                            © 2025 Zonal · zonal.co.mz
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
