@@ -11,4 +11,5 @@ urlpatterns = [
     path('<int:pk>/editar/', views.AnuncioEditarView.as_view(), name='anuncio-editar'),
     path('<int:pk>/favorito/', views.FavoritoToggleView.as_view(), name='favorito-toggle'),
     path('<int:pk>/registar-contacto/', views.RegistarContactoView.as_view(), name='registar-contacto'),
+    path('<int:pk>/eliminar/', views.EliminarAnuncioView.as_view(), name='anuncio-eliminar'),
 ]

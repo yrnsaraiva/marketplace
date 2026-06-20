@@ -4,9 +4,7 @@ from .models import PlanoPublicacao, SubscricaoUtilizador, Pagamento
 
 class PlanoPublicacaoSerializer(serializers.ModelSerializer):
     ilimitado = serializers.BooleanField(read_only=True)
-    preco_por_anuncio = serializers.DecimalField(
-        max_digits=12, decimal_places=2, read_only=True
-    )
+    preco_por_anuncio = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
 
     class Meta:
         model = PlanoPublicacao
@@ -21,7 +19,8 @@ class PlanoPublicacaoSerializer(serializers.ModelSerializer):
 
 class SubscricaoSerializer(serializers.ModelSerializer):
     plano_nome = serializers.CharField(source='plano.nome', read_only=True)
-    creditos_disponiveis = serializers.IntegerField(read_only=True)
+    # FIX: allow_null=True para planos ilimitados (creditos_disponiveis retorna None)
+    creditos_disponiveis = serializers.IntegerField(read_only=True, allow_null=True)
     valida = serializers.BooleanField(read_only=True)
 
     class Meta:
@@ -36,12 +35,8 @@ class SubscricaoSerializer(serializers.ModelSerializer):
 
 
 class PagamentoSerializer(serializers.ModelSerializer):
-    plano_nome = serializers.CharField(
-        source='subscricao.plano.nome', read_only=True
-    )
-    subscricao_id = serializers.IntegerField(
-        source='subscricao.id', read_only=True
-    )
+    plano_nome = serializers.CharField(source='subscricao.plano.nome', read_only=True)
+    subscricao_id = serializers.IntegerField(source='subscricao.id', read_only=True)
 
     class Meta:
         model = Pagamento
@@ -55,8 +50,4 @@ class PagamentoSerializer(serializers.ModelSerializer):
 
 
 class IniciarCompraSerializer(serializers.Serializer):
-    """
-    O método de pagamento é tratado pelo checkout da PaySuite —
-    só precisamos do plano_id.
-    """
     plano_id = serializers.IntegerField()

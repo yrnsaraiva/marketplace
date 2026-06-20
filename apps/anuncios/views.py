@@ -160,15 +160,11 @@ class AnuncioDetalheView(generics.RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.registar_visualizacao()
+        instance.registar_visualizacao(utilizador=request.user)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    def delete(self, request, pk):
-        anuncio = get_object_or_404(Anuncio, pk=pk, utilizador=request.user)
-        anuncio.estado = 'eliminado'
-        anuncio.save(update_fields=['estado'])
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class AnuncioCriarView(generics.CreateAPIView):
@@ -190,6 +186,23 @@ class AnuncioEditarView(generics.RetrieveUpdateAPIView):
         return Anuncio.objects.filter(
             utilizador=self.request.user
         ).exclude(estado='eliminado')
+
+
+class EliminarAnuncioView(APIView):
+    """
+    FIX: delete num endpoint separado com IsAuthenticated.
+    Antes estava no AnuncioDetalheView com permission_classes=[AllowAny].
+    DELETE /api/v1/anuncios/<pk>/eliminar/
+    """
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        anuncio = get_object_or_404(Anuncio, pk=pk, utilizador=request.user)
+        if anuncio.estado == 'eliminado':
+            return Response({'erro': 'Anúncio já eliminado.'}, status=status.HTTP_400_BAD_REQUEST)
+        anuncio.estado = 'eliminado'
+        anuncio.save(update_fields=['estado', 'actualizado_em'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UploadImagensView(APIView):
@@ -279,19 +292,22 @@ class FavoritoToggleView(APIView):
 
     def post(self, request, pk):
         anuncio = get_object_or_404(Anuncio, pk=pk)
-        favorito, criado = Favorito.objects.get_or_create(
-            utilizador=request.user, anuncio=anuncio
-        )
-        if not criado:
+
+        # FIX: verificar se já é favorito ANTES de tentar criar
+        try:
+            favorito = Favorito.objects.get(utilizador=request.user, anuncio=anuncio)
             favorito.delete()
             return Response({'mensagem': 'Removido dos favoritos.', 'favorito': False})
+        except Favorito.DoesNotExist:
+            pass
 
+        # FIX: verificar estado ANTES de criar o favorito
         if anuncio.estado != 'activo':
-            favorito.delete()
             return Response(
                 {'erro': 'Este anúncio já não está disponível.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        Favorito.objects.create(utilizador=request.user, anuncio=anuncio)
         return Response({'mensagem': 'Adicionado aos favoritos.', 'favorito': True})
 
 
@@ -325,7 +341,8 @@ def home_view(request):
     categorias = Categoria.objects.filter(activa=True, pai__isnull=True).order_by('ordem')
 
     destacados_ids = DestaqueAnuncio.objects.filter(
-        activo=True
+        activo=True,
+        fim_em__gt=timezone.now(),  # FIX: excluir destaques expirados mas ainda marcados activo
     ).values_list('anuncio_id', flat=True)[:8]
 
     anuncios_destacados = [
@@ -416,7 +433,7 @@ def anuncio_detalhe_view(request, pk):
                        .prefetch_related('imagens', 'atributos__atributo'),
         pk=pk, estado='activo'
     )
-    anuncio.registar_visualizacao()
+    anuncio.registar_visualizacao(utilizador=request.user)
 
     relacionados = [
         _anuncio_para_dict(a, request)

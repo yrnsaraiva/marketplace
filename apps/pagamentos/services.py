@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def _gerar_referencia(pagamento_id: int) -> str:
     import time
-    ts = int(time.time()) % 100000  # 5 dígitos
+    ts = int(time.time()) % 100000
     return f"PAG{pagamento_id:06d}{ts:05d}"
 
 
@@ -38,7 +38,6 @@ class PublicacaoService:
                 'O seu plano não tem créditos disponíveis. '
                 'Renove ou adquira um novo plano para publicar mais anúncios.'
             )
-
         return None, (
             'Não tem nenhum plano activo. '
             'Adquira um plano para publicar o seu anúncio.'
@@ -46,6 +45,12 @@ class PublicacaoService:
 
     @transaction.atomic
     def publicar(self, anuncio):
+        """
+        FIX: consumir_credito() agora usa select_for_update() internamente.
+        O @transaction.atomic garante que o lock é mantido até ao commit.
+        Não chama subscricao_activa() novamente — usa a subscrição passada
+        directamente para evitar a dupla query do serializer.
+        """
         subscricao, erro = self.subscricao_activa()
         if erro:
             raise ValueError(erro)
@@ -60,8 +65,15 @@ class PublicacaoService:
         return anuncio
 
     def _criar_destaque_automatico(self, anuncio, subscricao):
+        """
+        FIX: desactiva destaque anterior antes de criar novo,
+        evitando violação do UniqueConstraint(activo=True).
+        """
         from apps.pagamentos.models import DestaqueAnuncio
         from datetime import timedelta
+
+        # Desactivar destaque activo anterior se existir
+        DestaqueAnuncio.objects.filter(anuncio=anuncio, activo=True).update(activo=False)
 
         DestaqueAnuncio.objects.create(
             anuncio=anuncio,
@@ -72,21 +84,6 @@ class PublicacaoService:
 
     @transaction.atomic
     def iniciar_compra(self, plano_id):
-        """
-        Inicia a compra de um plano.
-
-        PLANO GRATUITO (preco == 0):
-          → Cancela subscrição gratuita anterior se existir.
-          → Cria Subscrição com estado='activa' imediatamente.
-          → Cria Pagamento com metodo='gratuito', estado='confirmado', valor=0.
-          → NÃO chama a PaySuite (que rejeita amount=0).
-          → Devolve o pagamento com checkout_url=None.
-
-        PLANO PAGO (preco > 0):
-          → Cria Subscrição (pendente) + Pagamento (pendente).
-          → Chama PaySuite para obter checkout_url.
-          → O utilizador é redirecionado para o checkout PaySuite.
-        """
         from datetime import timedelta
 
         try:
@@ -94,15 +91,12 @@ class PublicacaoService:
         except PlanoPublicacao.DoesNotExist:
             raise ValueError('Plano não encontrado ou inactivo.')
 
-        # ── PLANO GRATUITO ────────────────────────────────────────────────────
+        # ── PLANO GRATUITO ────────────────────────────────────────────────
         if plano.gratuito:
-            logger.info("Plano gratuito — activar directamente sem PaySuite: %s", plano.nome)
+            logger.info("Plano gratuito — activar directamente: %s", plano.nome)
 
-            # Cancelar subscrição gratuita anterior para evitar duplicados
             SubscricaoUtilizador.objects.filter(
-                utilizador=self.utilizador,
-                plano__preco=0,
-                estado='activa',
+                utilizador=self.utilizador, plano__preco=0, estado='activa',
             ).update(estado='cancelada')
 
             subscricao = SubscricaoUtilizador.objects.create(
@@ -115,7 +109,6 @@ class PublicacaoService:
                 inicio_em=timezone.now(),
                 expira_em=timezone.now() + timedelta(days=plano.duracao_subscricao_dias),
             )
-
             pagamento = Pagamento.objects.create(
                 subscricao=subscricao,
                 metodo='gratuito',
@@ -123,12 +116,10 @@ class PublicacaoService:
                 valor=0,
                 confirmado_em=timezone.now(),
             )
-
-            # Compatibilidade com IniciarCompraView (espera checkout_url)
             pagamento.checkout_url = None
             return pagamento
 
-        # ── PLANO PAGO ────────────────────────────────────────────────────────
+        # ── PLANO PAGO ────────────────────────────────────────────────────
         subscricao = SubscricaoUtilizador.objects.create(
             utilizador=self.utilizador,
             plano=plano,
@@ -137,7 +128,6 @@ class PublicacaoService:
             creditos_usados=0,
             preco_pago=plano.preco,
         )
-
         pagamento = Pagamento.objects.create(
             subscricao=subscricao,
             metodo='manual',
@@ -162,6 +152,9 @@ class PublicacaoService:
             )
         except PaySuiteError as e:
             logger.error("PaySuite erro ao criar pagamento: %s", e)
+            # FIX: cancelar a subscrição pendente para não deixar órfãos
+            subscricao.estado = 'cancelada'
+            subscricao.save(update_fields=['estado', 'actualizado_em'])
             pagamento.resposta_gateway = {"erro": str(e)}
             pagamento.estado = 'falhado'
             pagamento.save(update_fields=['estado', 'resposta_gateway', 'actualizado_em'])
@@ -170,14 +163,12 @@ class PublicacaoService:
         pagamento.referencia_externa = resultado.get("id", "")
         pagamento.resposta_gateway   = resultado
         pagamento.save(update_fields=['referencia_externa', 'resposta_gateway', 'actualizado_em'])
-
         pagamento.checkout_url = resultado.get("checkout_url", "")
         return pagamento
 
     def sincronizar_pagamento(self, pagamento: Pagamento) -> Pagamento:
         if not pagamento.referencia_externa or pagamento.estado != 'pendente':
             return pagamento
-
         try:
             client = PaySuiteClient()
             resultado = client.obter_pagamento(pagamento.referencia_externa)

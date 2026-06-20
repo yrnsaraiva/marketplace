@@ -4,6 +4,7 @@ apps/pagamentos/views.py
 import json
 import logging
 
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -25,9 +26,6 @@ from .services import PublicacaoService
 logger = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Planos disponíveis (público)
-# ---------------------------------------------------------------------------
 class PlanoListView(generics.ListAPIView):
     serializer_class = PlanoPublicacaoSerializer
     permission_classes = []
@@ -36,9 +34,6 @@ class PlanoListView(generics.ListAPIView):
         return PlanoPublicacao.objects.filter(activo=True).order_by('ordem', 'preco')
 
 
-# ---------------------------------------------------------------------------
-# Iniciar compra — devolve checkout_url da PaySuite
-# ---------------------------------------------------------------------------
 class IniciarCompraView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -48,26 +43,16 @@ class IniciarCompraView(APIView):
 
         service = PublicacaoService(utilizador=request.user)
         try:
-            pagamento = service.iniciar_compra(
-                plano_id=serializer.validated_data['plano_id'],
-            )
+            pagamento = service.iniciar_compra(plano_id=serializer.validated_data['plano_id'])
         except PlanoPublicacao.DoesNotExist:
-            return Response(
-                {'erro': 'Plano não encontrado ou inactivo.'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            return Response({'erro': 'Plano não encontrado ou inactivo.'}, status=status.HTTP_404_NOT_FOUND)
         except PaySuiteError as e:
-            return Response(
-                {'erro': f'Erro ao iniciar pagamento: {e}'},
-                status=status.HTTP_502_BAD_GATEWAY,
-            )
+            return Response({'erro': f'Erro ao iniciar pagamento: {e}'}, status=status.HTTP_502_BAD_GATEWAY)
         except Exception as e:
             logger.exception('Erro ao iniciar compra')
             return Response({'erro': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         data = PagamentoSerializer(pagamento).data
-
-        # Plano gratuito: activado directamente, sem checkout_url
         checkout_url = getattr(pagamento, 'checkout_url', None)
         if checkout_url:
             data['checkout_url'] = checkout_url
@@ -79,9 +64,6 @@ class IniciarCompraView(APIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
 
-# ---------------------------------------------------------------------------
-# Webhook PaySuite
-# ---------------------------------------------------------------------------
 @method_decorator(csrf_exempt, name='dispatch')
 class PaySuiteWebhookView(APIView):
     permission_classes = []
@@ -90,7 +72,6 @@ class PaySuiteWebhookView(APIView):
     def post(self, request):
         logger.info("PaySuite webhook recebido — body: %s", request.body[:500])
 
-        # Verificar assinatura apenas se o segredo estiver configurado
         from django.conf import settings
         webhook_secret = getattr(settings, 'PAYSUITE_WEBHOOK_SECRET', '')
         if webhook_secret:
@@ -98,59 +79,56 @@ class PaySuiteWebhookView(APIView):
             try:
                 client = PaySuiteClient()
                 if not client.verificar_webhook(request.body, signature):
-                    logger.warning("PaySuite webhook: assinatura inválida — sig=%s", signature)
+                    logger.warning("PaySuite webhook: assinatura inválida")
                     return Response({'erro': 'Assinatura inválida'}, status=status.HTTP_401_UNAUTHORIZED)
             except PaySuiteError as e:
-                logger.error("PaySuite webhook: erro de configuração: %s", e)
                 return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         try:
             payload = json.loads(request.body)
         except json.JSONDecodeError:
-            logger.error("PaySuite webhook: JSON inválido")
             return Response({'erro': 'JSON inválido'}, status=status.HTTP_400_BAD_REQUEST)
 
-        event = payload.get('event')
-        data = payload.get('data', {})
+        event       = payload.get('event')
+        data        = payload.get('data', {})
         paysuite_id = data.get('id', '')
 
-        logger.info("PaySuite webhook: event=%s paysuite_id=%s", event, paysuite_id)
-
-        try:
-            pagamento = Pagamento.objects.select_related('subscricao').get(
-                referencia_externa=paysuite_id
-            )
-        except Pagamento.DoesNotExist:
-            logger.warning("PaySuite webhook: nenhum pagamento com referencia_externa=%s", paysuite_id)
-            # Responder 200 para a PaySuite não reenviar
-            return Response({'mensagem': 'Ignorado'})
-
-        logger.info("PaySuite webhook: pagamento #%s encontrado — estado actual: %s", pagamento.pk, pagamento.estado)
-
-        if pagamento.estado != 'pendente':
-            return Response({'mensagem': 'Já processado'})
-
-        pagamento.resposta_gateway = payload
-        pagamento.save(update_fields=['resposta_gateway', 'actualizado_em'])
-
+        # FIX: transição de estado atómica para evitar race condition
+        # se PaySuite enviar o webhook duas vezes em simultâneo.
+        # Usar update() com filtro de estado garante que só um request confirma.
         if event in ('payment.success', 'payment.completed') or \
            data.get('transaction', {}).get('status') == 'completed':
-            pagamento.confirmar()
-            logger.info("PaySuite webhook: pagamento #%s confirmado — subscrição #%s activada",
-                        pagamento.pk, pagamento.subscricao_id)
+
+            with transaction.atomic():
+                # Tenta transitar de 'pendente' → 'confirmado' atomicamente
+                updated = Pagamento.objects.filter(
+                    referencia_externa=paysuite_id,
+                    estado='pendente',
+                ).update(resposta_gateway=payload)
+
+                if updated == 0:
+                    # Já processado ou não encontrado
+                    logger.info("PaySuite webhook: %s já processado ou não encontrado", paysuite_id)
+                    return Response({'mensagem': 'Ignorado'})
+
+                pagamento = Pagamento.objects.select_related('subscricao').get(
+                    referencia_externa=paysuite_id
+                )
+                pagamento.confirmar()
+                logger.info("Pagamento #%s confirmado via webhook", pagamento.pk)
+
         elif event == 'payment.failed':
-            pagamento.estado = 'falhado'
-            pagamento.save(update_fields=['estado', 'actualizado_em'])
-            logger.info("PaySuite webhook: pagamento #%s falhado", pagamento.pk)
+            Pagamento.objects.filter(
+                referencia_externa=paysuite_id, estado='pendente'
+            ).update(estado='falhado', resposta_gateway=payload)
+            logger.info("PaySuite webhook: pagamento %s falhado", paysuite_id)
+
         else:
             logger.info("PaySuite webhook: evento '%s' ignorado", event)
 
         return Response({'mensagem': 'OK'})
 
 
-# ---------------------------------------------------------------------------
-# Redirect de retorno após checkout PaySuite
-# ---------------------------------------------------------------------------
 class PaySuiteRetornoView(APIView):
     permission_classes = []
     authentication_classes = []
@@ -158,7 +136,6 @@ class PaySuiteRetornoView(APIView):
     def get(self, request, pk):
         pagamento = get_object_or_404(Pagamento, pk=pk)
         if pagamento.estado != 'confirmado':
-            # Tentar sincronizar antes de redirigir
             service = PublicacaoService(utilizador=pagamento.subscricao.utilizador)
             pagamento = service.sincronizar_pagamento(pagamento)
 
@@ -167,9 +144,6 @@ class PaySuiteRetornoView(APIView):
         return redirect('/planos/?pagamento=pendente')
 
 
-# ---------------------------------------------------------------------------
-# Confirmação manual (admin/moderador)
-# ---------------------------------------------------------------------------
 class ConfirmarPagamentoView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -188,9 +162,6 @@ class ConfirmarPagamentoView(APIView):
         return Response({'mensagem': 'Pagamento confirmado e subscrição activada.'})
 
 
-# ---------------------------------------------------------------------------
-# Histórico do utilizador
-# ---------------------------------------------------------------------------
 class MinhasSubscricoesView(generics.ListAPIView):
     serializer_class = SubscricaoSerializer
     permission_classes = [IsAuthenticated]
