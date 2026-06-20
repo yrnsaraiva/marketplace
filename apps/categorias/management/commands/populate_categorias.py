@@ -23,7 +23,7 @@ from django.core.management.base import BaseCommand
 
 # AJUSTA este import para a tua app real, ex:
 # from anuncios.models import Categoria, AtributoCategoria
-from apps.categorias.models import (Categoria, AtributoCategoria)
+from apps.categorias.models import Categoria, AtributoCategoria
 
 
 # ---------------------------------------------------------------------
@@ -35,13 +35,13 @@ from apps.categorias.models import (Categoria, AtributoCategoria)
 CATEGORIAS = [
     {
         "nome": "Viaturas",
-        "icone_url": "icons/viaturas.svg",
+        "icone_url": "directions_car",
         "subcategorias": [
-            {"nome": "Carros"},
-            {"nome": "Motos"},
-            {"nome": "Camiões e Reboques"},
-            {"nome": "Barcos"},
-            {"nome": "Peças e Acessórios"},
+            {"nome": "Carros", "icone_url": "directions_car"},
+            {"nome": "Motos", "icone_url": "two_wheeler"},
+            {"nome": "Camiões e Reboques", "icone_url": "local_shipping"},
+            {"nome": "Barcos", "icone_url": "directions_boat"},
+            {"nome": "Peças e Acessórios", "icone_url": "settings_input_component"},
         ],
         "atributos": [
             {"nome": "Marca", "chave": "marca", "tipo": "texto", "obrigatorio": True},
@@ -64,14 +64,14 @@ CATEGORIAS = [
     },
     {
         "nome": "Imóveis",
-        "icone_url": "icons/imoveis.svg",
+        "icone_url": "home_work",
         "subcategorias": [
-            {"nome": "Casas para Venda"},
-            {"nome": "Casas para Arrendar"},
-            {"nome": "Apartamentos para Venda"},
-            {"nome": "Apartamentos para Arrendar"},
-            {"nome": "Terrenos"},
-            {"nome": "Escritórios e Espaços Comerciais"},
+            {"nome": "Casas para Venda", "icone_url": "house"},
+            {"nome": "Casas para Arrendar", "icone_url": "key"},
+            {"nome": "Apartamentos para Venda", "icone_url": "apartment"},
+            {"nome": "Apartamentos para Arrendar", "icone_url": "domain"},
+            {"nome": "Terrenos", "icone_url": "landscape"},
+            {"nome": "Escritórios e Espaços Comerciais", "icone_url": "storefront"},
         ],
         "atributos": [
             {"nome": "Tipologia", "chave": "tipologia", "tipo": "lista",
@@ -83,14 +83,14 @@ CATEGORIAS = [
     },
     {
         "nome": "Eletrónica",
-        "icone_url": "icons/eletronica.svg",
+        "icone_url": "devices",
         "subcategorias": [
-            {"nome": "Telemóveis"},
-            {"nome": "Computadores e Portáteis"},
-            {"nome": "Tablets"},
-            {"nome": "TVs e Áudio"},
-            {"nome": "Câmaras Fotográficas"},
-            {"nome": "Acessórios"},
+            {"nome": "Telemóveis", "icone_url": "smartphone"},
+            {"nome": "Computadores e Portáteis", "icone_url": "laptop_mac"},
+            {"nome": "Tablets", "icone_url": "tablet_mac"},
+            {"nome": "TVs e Áudio", "icone_url": "tv"},
+            {"nome": "Câmaras Fotográficas", "icone_url": "photo_camera"},
+            {"nome": "Acessórios", "icone_url": "cable"},
         ],
         "atributos": [
             {"nome": "Marca", "chave": "marca", "tipo": "texto", "obrigatorio": True},
@@ -106,24 +106,24 @@ CATEGORIAS = [
     },
     {
         "nome": "Casa e Jardim",
-        "icone_url": "icons/casa-jardim.svg",
+        "icone_url": "yard",
         "subcategorias": [
-            {"nome": "Móveis"},
-            {"nome": "Eletrodomésticos"},
-            {"nome": "Decoração"},
-            {"nome": "Jardim e Exterior"},
-            {"nome": "Bricolage e Ferramentas"},
+            {"nome": "Móveis", "icone_url": "chair"},
+            {"nome": "Eletrodomésticos", "icone_url": "kitchen"},
+            {"nome": "Decoração", "icone_url": "interests"},
+            {"nome": "Jardim e Exterior", "icone_url": "deck"},
+            {"nome": "Bricolage e Ferramentas", "icone_url": "construction"},
         ],
     },
     {
         "nome": "Moda e Beleza",
-        "icone_url": "icons/moda.svg",
+        "icone_url": "checkroom",
         "subcategorias": [
-            {"nome": "Roupa Feminina"},
-            {"nome": "Roupa Masculina"},
-            {"nome": "Calçado"},
-            {"nome": "Relógios e Joias"},
-            {"nome": "Produtos de Beleza"},
+            {"nome": "Roupa Feminina", "icone_url": "checkroom"},
+            {"nome": "Roupa Masculina", "icone_url": "apparel"},
+            {"nome": "Calçado", "icone_url": "footprint"},
+            {"nome": "Relógios e Joias", "icone_url": "watch"},
+            {"nome": "Produtos de Beleza", "icone_url": "spa"},
         ],
         "atributos": [
             {
@@ -142,12 +142,12 @@ CATEGORIAS = [
     },
     {
         "nome": "Emprego",
-        "icone_url": "icons/emprego.svg",
+        "icone_url": "work",
         "subcategorias": [
-            {"nome": "Ofertas de Emprego"},
-            {"nome": "Procuram-se Candidatos"},
-            {"nome": "Trabalho Freelance"},
-            {"nome": "Estágios"},
+            {"nome": "Ofertas de Emprego", "icone_url": "work"},
+            {"nome": "Procuram-se Candidatos", "icone_url": "person_search"},
+            {"nome": "Trabalho Freelance", "icone_url": "laptop_chromebook"},
+            {"nome": "Estágios", "icone_url": "school"},
         ],
         "atributos": [
             {
@@ -162,24 +162,24 @@ CATEGORIAS = [
     },
     {
         "nome": "Serviços",
-        "icone_url": "icons/servicos.svg",
+        "icone_url": "handyman",
         "subcategorias": [
-            {"nome": "Aulas e Explicações"},
-            {"nome": "Construção e Reparações"},
-            {"nome": "Beleza e Bem-estar"},
-            {"nome": "Eventos"},
-            {"nome": "Transportes e Mudanças"},
-            {"nome": "Informática e Tecnologia"},
+            {"nome": "Aulas e Explicações", "icone_url": "menu_book"},
+            {"nome": "Construção e Reparações", "icone_url": "build"},
+            {"nome": "Beleza e Bem-estar", "icone_url": "self_care"},
+            {"nome": "Eventos", "icone_url": "celebration"},
+            {"nome": "Transportes e Mudanças", "icone_url": "local_shipping"},
+            {"nome": "Informática e Tecnologia", "icone_url": "computer"},
         ],
     },
     {
         "nome": "Animais",
-        "icone_url": "icons/animais.svg",
+        "icone_url": "pets",
         "subcategorias": [
-            {"nome": "Cães"},
-            {"nome": "Gatos"},
-            {"nome": "Aves"},
-            {"nome": "Acessórios para Animais"},
+            {"nome": "Cães", "icone_url": "pets"},
+            {"nome": "Gatos", "icone_url": "cruelty_free"},
+            {"nome": "Aves", "icone_url": "flutter_dash"},
+            {"nome": "Acessórios para Animais", "icone_url": "shopping_basket"},
         ],
         "atributos": [
             {"nome": "Raça", "chave": "raca", "tipo": "texto"},
@@ -189,23 +189,23 @@ CATEGORIAS = [
     },
     {
         "nome": "Lazer, Desporto e Hobbies",
-        "icone_url": "icons/lazer.svg",
+        "icone_url": "sports_soccer",
         "subcategorias": [
-            {"nome": "Material Desportivo"},
-            {"nome": "Bicicletas"},
-            {"nome": "Instrumentos Musicais"},
-            {"nome": "Livros e Revistas"},
-            {"nome": "Brinquedos e Jogos"},
+            {"nome": "Material Desportivo", "icone_url": "sports_soccer"},
+            {"nome": "Bicicletas", "icone_url": "directions_bike"},
+            {"nome": "Instrumentos Musicais", "icone_url": "music_note"},
+            {"nome": "Livros e Revistas", "icone_url": "menu_book"},
+            {"nome": "Brinquedos e Jogos", "icone_url": "toys"},
         ],
     },
     {
         "nome": "Negócios e Equipamentos",
-        "icone_url": "icons/negocios.svg",
+        "icone_url": "business_center",
         "subcategorias": [
-            {"nome": "Equipamento Industrial"},
-            {"nome": "Equipamento de Escritório"},
-            {"nome": "Negócios à Venda"},
-            {"nome": "Matérias-primas"},
+            {"nome": "Equipamento Industrial", "icone_url": "precision_manufacturing"},
+            {"nome": "Equipamento de Escritório", "icone_url": "print"},
+            {"nome": "Negócios à Venda", "icone_url": "storefront"},
+            {"nome": "Matérias-primas", "icone_url": "inventory_2"},
         ],
     },
 ]
@@ -253,7 +253,7 @@ class Command(BaseCommand):
                     slug=slug_sub,
                     defaults={
                         "nome": sub["nome"],
-                        "icone_url": sub.get("icone_url", ""),
+                        "icone_url": sub.get("icone_url", dados.get("icone_url", "")),
                         "ordem": ordem_sub,
                         "pai": categoria_pai,
                     },
