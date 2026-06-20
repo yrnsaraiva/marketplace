@@ -65,7 +65,7 @@ def enviar_email_confirmacao(user, request=None) -> bool:
     if not base_url and request:
         base_url = request.build_absolute_uri('/').rstrip('/')
 
-    link = f"{base_url}/auth/verificar-email/{token}/"
+    link = f"{base_url}/conta/verificar-email/{token}/"
 
     contexto = {
         'user': user,
