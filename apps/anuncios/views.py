@@ -454,7 +454,7 @@ def anuncio_publicar_view(request):
     from apps.categorias.models import Categoria, AtributoCategoria
 
     categorias_pai = Categoria.objects.filter(activa=True, nivel=0).order_by('ordem')
-    categorias_filho = Categoria.objects.filter(activa=True, nivel=1).order_by('ordem')
+    categorias_filho = Categoria.objects.filter(activa=True, pai__isnull=False).order_by('ordem')
 
     # Construir dicionário {categoria_id: [atributos]} para JS
     atributos_por_categoria = {}
