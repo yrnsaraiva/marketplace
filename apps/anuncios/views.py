@@ -274,6 +274,33 @@ class UploadImagensView(APIView):
         return Response({'urls': urls, 'total': anuncio.imagens.count()})
 
 
+class EliminarImagemView(APIView):
+    """
+    DELETE /api/v1/anuncios/imagens/<pk>/
+    Remove uma imagem de um anúncio. Só o dono pode remover.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        imagem = get_object_or_404(
+            ImagemAnuncio,
+            pk=pk,
+            anuncio__utilizador=request.user,
+        )
+        # Se era a principal, promover a próxima imagem
+        era_principal = imagem.principal
+        anuncio = imagem.anuncio
+        imagem.delete()
+
+        if era_principal:
+            proxima = anuncio.imagens.order_by('ordem').first()
+            if proxima:
+                proxima.principal = True
+                proxima.save(update_fields=['principal'])
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class MeusAnunciosView(generics.ListAPIView):
     serializer_class = AnuncioListSerializer
     permission_classes = [IsAuthenticated]
@@ -508,24 +535,40 @@ def anuncio_editar_view(request, pk):
     import json
 
     anuncio = get_object_or_404(Anuncio, pk=pk, utilizador=request.user)
-    categorias_pai = Categoria.objects.filter(activa=True, nivel=0).order_by('ordem')
-    categorias_filho = Categoria.objects.filter(activa=True, nivel=1).order_by('ordem')
 
+    categorias_pai = Categoria.objects.filter(activa=True, nivel=0).order_by('ordem')
+    # Usar pai__isnull=False em vez de nivel=1 para incluir todas as subcategorias
+    categorias_filho = Categoria.objects.filter(activa=True, pai__isnull=False).order_by('ordem')
+
+    # Construir atributos_por_categoria com herança (igual à view de criação)
     atributos_por_categoria = {}
-    for attr in AtributoCategoria.objects.filter(
-        categoria__in=categorias_filho
-    ).select_related('categoria'):
-        cat_id = attr.categoria_id
-        if cat_id not in atributos_por_categoria:
-            atributos_por_categoria[cat_id] = []
-        atributos_por_categoria[cat_id].append({
-            'id': attr.id,
-            'nome': attr.nome,
-            'chave': attr.chave,
-            'tipo': attr.tipo,
-            'opcoes': attr.opcoes,
-            'obrigatorio': attr.obrigatorio,
-        })
+    for sub in categorias_filho:
+        atributos = list(AtributoCategoria.objects.filter(categoria=sub))
+        if sub.pai:
+            atributos.extend(AtributoCategoria.objects.filter(categoria=sub.pai))
+
+        # Remover duplicados pela chave
+        vistos = set()
+        atributos_unicos = []
+        for attr in atributos:
+            if attr.chave not in vistos:
+                vistos.add(attr.chave)
+                atributos_unicos.append(attr)
+
+        if atributos_unicos:
+            atributos_por_categoria[sub.id] = [
+                {
+                    'id': attr.id,
+                    'nome': attr.nome,
+                    'chave': attr.chave,
+                    'tipo': attr.tipo,
+                    'opcoes': attr.opcoes,
+                    'obrigatorio': attr.obrigatorio,
+                }
+                for attr in atributos_unicos
+            ]
+
+    subscricao = _get_subscricao_activa(request.user)
 
     return render(request, 'anuncios/publicar.html', {
         'anuncio': anuncio,
@@ -536,8 +579,9 @@ def anuncio_editar_view(request, pk):
             {'id': c.id, 'nome': c.nome, 'pai_id': c.pai_id}
             for c in categorias_filho
         ]),
-        'planos_destaque': [],
-        'subscricao': _get_subscricao_activa(request.user),
+        'planos_destaque': [],  # se não houver planos de destaque avulso
+        'subscricao': subscricao,
+        'PROVINCIAS': PROVINCIAS,   # ← adicionar esta linha
     })
 
 

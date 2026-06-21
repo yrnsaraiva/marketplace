@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from django.core.validators import MinLengthValidator
 
-from .models import Anuncio, ImagemAnuncio, AtributoAnuncio, Favorito, DestaqueAnuncio
+from .models import Anuncio, ImagemAnuncio, AtributoAnuncio, Favorito
 from apps.categorias.models import AtributoCategoria
 from apps.categorias.serializers import CategoriaSimpleSerializer
 from apps.users.serializers import PerfilSerializer
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models import Q
 
 
 class ImagemAnuncioSerializer(serializers.ModelSerializer):
@@ -137,6 +138,9 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         from apps.pagamentos.services import PublicacaoService
         from django.db import transaction
+        from apps.pagamentos.models import DestaqueAnuncio
+        from django.utils import timezone
+        from datetime import timedelta
 
         atributos_data = validated_data.pop('atributos', [])
         destacar = validated_data.pop('destacar', False)
@@ -145,26 +149,25 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
         user = request.user
 
         with transaction.atomic():
-            # Verificar subscrição activa
             service = PublicacaoService(utilizador=user)
             subscricao, erro = service.subscricao_activa()
             if erro:
                 raise serializers.ValidationError({'non_field_errors': erro})
 
-            # Criar anúncio
             anuncio = Anuncio.objects.create(
                 utilizador=user,
                 subscricao=subscricao,
                 **validated_data,
             )
 
-            # Guardar atributos
             atribs_validos = {
                 a.id: a for a in AtributoCategoria.objects.filter(
                     id__in=[a['atributo_id'] for a in atributos_data],
-                    categoria=anuncio.categoria,
+                ).filter(
+                    Q(categoria=anuncio.categoria) | Q(categoria=anuncio.categoria.pai)
                 )
             }
+
             for item in atributos_data:
                 atrib = atribs_validos.get(item['atributo_id'])
                 if atrib:
@@ -183,11 +186,7 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
                         fim_em=timezone.now() + timedelta(days=dias_destaque),
                         activo=True
                     )
-                else:
-                    # Se o plano não tiver dias de destaque, ignorar ou lançar erro
-                    pass
 
-            # Publicar (consome crédito e activa anúncio)
             service.publicar(anuncio)
 
             user.total_anuncios = Anuncio.objects.filter(
@@ -240,13 +239,18 @@ class AnuncioEditarSerializer(serializers.ModelSerializer):
 
         if atributos is not None:
             instance.atributos.all().delete()
+
+            # --- CORREÇÃO AQUI ---
             atribs = {
                 a.id: a
                 for a in AtributoCategoria.objects.filter(
                     id__in=[x['atributo_id'] for x in atributos],
-                    categoria=instance.categoria,
+                ).filter(
+                    Q(categoria=instance.categoria) | Q(categoria=instance.categoria.pai)
                 )
             }
+            # --- FIM DA CORREÇÃO ---
+
             for item in atributos:
                 atrib = atribs.get(item['atributo_id'])
                 if atrib:

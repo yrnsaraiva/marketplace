@@ -113,14 +113,20 @@
                        onchange="previewImagens(this, {{ subscricao.plano.max_imagens|default:3 }})"/>
 
                 <div class="flex gap-3 mt-4 overflow-x-auto hide-scrollbar pb-2" id="preview-container">
-                    {# Preencher com imagens actuais ao editar #}
+                    {# Imagens actuais ao editar — com botão de remover #}
                     {% if anuncio %}
                         {% for img in anuncio.imagens.all %}
-                            <div class="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden relative flex-shrink-0">
+                            <div class="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden relative group" id="img-existente-{{ img.id }}">
                                 <img src="{{ img.imagem.url }}" class="w-full h-full object-cover"/>
                                 {% if img.principal %}
                                     <span class="absolute bottom-0 left-0 right-0 bg-primary text-white text-[9px] text-center py-0.5">Principal</span>
                                 {% endif %}
+                                {# Botão remover — só aparece ao hover #}
+                                <button type="button"
+                                        onclick="removerImagemExistente({{ img.id }}, this)"
+                                        class="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5
+                                               flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                        title="Remover imagem">✕</button>
                             </div>
                         {% endfor %}
                     {% endif %}
@@ -306,6 +312,14 @@
     <script>
         // Dados injectados pelo Django
         const ATRIBUTOS = {{ atributos_json|safe }};
+        // Valores actuais dos atributos (preenchidos ao editar, vazio ao criar)
+        const ATRIBUTOS_ACTUAIS = {
+            {% if anuncio %}
+                {% for a in anuncio.atributos.all %}
+                    "{{ a.atributo.chave }}": "{{ a.valor|escapejs }}",
+                {% endfor %}
+            {% endif %}
+        };
         const SUBCATS = {{ subcategorias_json|safe }};
         const MAX_IMAGENS = {{ subscricao.plano.max_imagens|default:3 }};
 
@@ -350,30 +364,38 @@
             atribs.forEach(attr => {
                 const obrig = attr.obrigatorio;
                 const label = `${attr.nome}${obrig ? ' <span class="text-error">*</span>' : ''}`;
+                // FIX: pré-preencher com valor actual ao editar
+                const valorActual = ATRIBUTOS_ACTUAIS[attr.chave] || '';
                 let inputHtml;
 
                 if (attr.opcoes && attr.opcoes.length) {
-                    const opts = attr.opcoes.map(o => `<option value="${o}">${o}</option>`).join('');
+                    const opts = attr.opcoes.map(o =>
+                        `<option value="${o}" ${o === valorActual ? 'selected' : ''}>${o}</option>`
+                    ).join('');
                     inputHtml = `<select name="atributo_${attr.chave}" ${obrig ? 'required' : ''}
                 class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all">
                 <option value="">Seleccione...</option>${opts}</select>`;
                 } else if (attr.tipo === 'numero') {
                     inputHtml = `<input type="number" name="atributo_${attr.chave}" ${obrig ? 'required' : ''}
+                value="${valorActual}"
                 class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 placeholder="${attr.nome}"/>`;
                 } else if (attr.tipo === 'booleano') {
                     inputHtml = `<div class="flex gap-4 mt-2">
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="atributo_${attr.chave}" value="Sim" ${obrig ? 'required' : ''}/>
+                    <input type="radio" name="atributo_${attr.chave}" value="Sim"
+                        ${obrig ? 'required' : ''} ${valorActual === 'Sim' ? 'checked' : ''}/>
                     <span class="text-sm">Sim</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="atributo_${attr.chave}" value="Não"/>
+                    <input type="radio" name="atributo_${attr.chave}" value="Não"
+                        ${valorActual === 'Não' ? 'checked' : ''}/>
                     <span class="text-sm">Não</span>
                 </label>
             </div>`;
                 } else {
                     inputHtml = `<input type="text" name="atributo_${attr.chave}" ${obrig ? 'required' : ''}
+                value="${valorActual}"
                 class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 placeholder="${attr.nome}"/>`;
                 }
@@ -437,6 +459,29 @@
             return h;
         }
 
+        // ─── Remover imagem existente (modo edição) ───────────────────────────────
+        async function removerImagemExistente(imagemId, btn) {
+            btn.disabled = true;
+            btn.textContent = '…';
+            try {
+                const resp = await fetch(`/api/v1/anuncios/imagens/${imagemId}/`, {
+                    method: 'DELETE',
+                    headers: apiHeaders(),
+                });
+                if (resp.ok || resp.status === 204) {
+                    document.getElementById(`img-existente-${imagemId}`).remove();
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = '✕';
+                    showToast('Não foi possível remover a imagem.', 'error');
+                }
+            } catch {
+                btn.disabled = false;
+                btn.textContent = '✕';
+                showToast('Erro ao remover imagem.', 'error');
+            }
+        }
+
         // ─── Submit ────────────────────────────────────────────────────────────────
         document.getElementById('form-publicar').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -445,6 +490,10 @@
             const errDiv = document.getElementById('erro-form');
             const errText = document.getElementById('erro-form-texto');
             errDiv.classList.add('hidden');
+
+            // FIX: isEdit declarado FORA do try para estar disponível no catch
+            const isEdit = !!{{ anuncio.id|default:'null' }};
+            const TEXTO_BOTAO = isEdit ? 'Guardar alterações' : 'Publicar Anúncio';
 
             const formData = new FormData(form);
             const catId = parseInt(formData.get('categoria'));
@@ -457,7 +506,7 @@
             }
 
             btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> A publicar...';
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin">progress_activity</span> ${isEdit ? 'A guardar...' : 'A publicar...'}`;
 
             // Recolher atributos dinâmicos
             const atributos = [];
@@ -466,6 +515,7 @@
                 if (valor) atributos.push({atributo_id: attr.id, valor});
             });
 
+            // FIX: payload base sem campos específicos de criação
             const payload = {
                 titulo: formData.get('titulo'),
                 descricao: formData.get('descricao'),
@@ -477,11 +527,14 @@
                 cidade: formData.get('cidade'),
                 bairro: formData.get('bairro') || '',
                 atributos,
-                destacar: formData.get('destacar') === 'on', 
             };
 
+            // FIX: 'destacar' só vai no payload de criação (não existe no serializer de edição)
+            if (!isEdit) {
+                payload.destacar = formData.get('destacar') === 'on';
+            }
+
             try {
-                const isEdit = !!{{ anuncio.id|default:'null' }};
                 const url = isEdit ? `/api/v1/anuncios/{{ anuncio.id|default:'' }}/editar/` : '/api/v1/anuncios/criar/';
                 const method = isEdit ? 'PATCH' : 'POST';
 
@@ -500,12 +553,7 @@
                     errDiv.classList.remove('hidden');
                     errDiv.scrollIntoView({behavior: 'smooth', block: 'center'});
                     btn.disabled = false;
-                    btn.innerHTML = '<span class="material-symbols-outlined">publish</span> Publicar Anúncio';
-                    return;
-                }
-
-
-                if (!resp.ok) { /* tratamento de erro */
+                    btn.innerHTML = `<span class="material-symbols-outlined">publish</span> ${TEXTO_BOTAO}`;
                     return;
                 }
 
@@ -535,9 +583,8 @@
 
                 window.location.href = `/anuncios/${anuncioId}/`;
 
-            } catch {
-                const TEXTO_BOTAO = isEdit ? 'Guardar alterações' : 'Publicar Anúncio';
-
+            } catch (err) {
+                console.error('Erro no submit:', err);
                 errText.textContent = 'Erro inesperado. Verifique a ligação e tente novamente.';
                 errDiv.classList.remove('hidden');
                 btn.disabled = false;

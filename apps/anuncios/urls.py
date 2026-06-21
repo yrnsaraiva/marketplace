@@ -12,4 +12,5 @@ urlpatterns = [
     path('<int:pk>/favorito/', views.FavoritoToggleView.as_view(), name='favorito-toggle'),
     path('<int:pk>/registar-contacto/', views.RegistarContactoView.as_view(), name='registar-contacto'),
     path('<int:pk>/eliminar/', views.EliminarAnuncioView.as_view(), name='anuncio-eliminar'),
+    path('imagens/<int:pk>/', views.EliminarImagemView.as_view(), name='imagem-eliminar'),
 ]

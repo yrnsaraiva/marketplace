@@ -382,26 +382,46 @@
         }
 
         (function initCategoriasState() {
-            const selected = document.getElementById('categoria-input').value;
-            if (!selected) return;
+    const selected = document.getElementById('categoria-input').value;
 
-            document.querySelectorAll('[id^="sub-"]').forEach(function (list) {
-                const slugPai = list.id.replace('sub-', '');
-                if (selected === slugPai) {
-                    list.classList.remove('hidden');
-                    const chevron = document.getElementById('chevron-' + slugPai);
-                    if (chevron) chevron.classList.add('rotate-180');
-                    return;
-                }
-                const subBtns = list.querySelectorAll('button[data-slug]');
-                const match = Array.from(subBtns).some(b => b.dataset.slug === selected);
-                if (match) {
-                    list.classList.remove('hidden');
-                    const chevron = document.getElementById('chevron-' + slugPai);
-                    if (chevron) chevron.classList.add('rotate-180');
-                }
-            });
-        })();
+    // Fecha TODAS as listas e remove rotação dos chevrons
+    document.querySelectorAll('[id^="sub-"]').forEach(function (list) {
+        list.classList.add('hidden');
+        const slugPai = list.id.replace('sub-', '');
+        const chevron = document.getElementById('chevron-' + slugPai);
+        if (chevron) chevron.classList.remove('rotate-180');
+    });
+
+    // Se não houver categoria selecionada, termina
+    if (!selected) return;
+
+    // Abre a lista correspondente à categoria selecionada (pai ou subcategoria)
+    let paiSlug = selected;
+
+    // Se o selected for uma subcategoria, descobre o pai
+    const subBtn = document.querySelector(`button[data-slug="${selected}"]`);
+    if (subBtn && subBtn.dataset.paiSlug) {
+        paiSlug = subBtn.dataset.paiSlug;
+    } else {
+        // Caso não tenha data-pai-slug, percorre as listas para encontrar o pai
+        for (const list of document.querySelectorAll('[id^="sub-"]')) {
+            const subBtns = list.querySelectorAll('button[data-slug]');
+            const match = Array.from(subBtns).some(b => b.dataset.slug === selected);
+            if (match) {
+                paiSlug = list.id.replace('sub-', '');
+                break;
+            }
+        }
+    }
+
+    // Abre a lista do pai (se existir)
+    const subContainer = document.getElementById(`sub-${paiSlug}`);
+    if (subContainer) {
+        subContainer.classList.remove('hidden');
+        const chevron = document.getElementById(`chevron-${paiSlug}`);
+        if (chevron) chevron.classList.add('rotate-180');
+    }
+})();
 
         // ── Mobile: toggle sidebar ───────────────────────────────────────────────────
 
