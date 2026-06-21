@@ -34,18 +34,19 @@
                         <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Categoria</p>
                         <div class="space-y-0.5" id="categorias-list">
                             {% for cat in categorias %}
-                                <div>
+                                <!-- Envolver cada categoria pai num div com data-category-slug -->
+                                <div data-category-slug="{{ cat.slug }}">
                                     <div class="flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all
-                {% if categoria_slug == cat.slug %}bg-primary/10 text-primary font-medium{% else %}text-on-surface hover:bg-surface-container-low{% endif %}">
+                                        {% if categoria_slug == cat.slug %}bg-primary/10 text-primary font-medium{% else %}text-on-surface hover:bg-surface-container-low{% endif %}">
                                         <button type="button"
                                                 onclick="selecionarCategoria('{{ cat.slug }}')"
                                                 class="flex-1 text-left flex items-center gap-1.5">
                                             <span>{{ cat.nome }}</span>
                                             {% if cat.total_anuncios %}
                                                 <span class="text-[11px] px-1.5 py-0.5 rounded-full
-                         {% if categoria_slug == cat.slug %}bg-primary/15 text-primary{% else %}bg-surface-container-low text-on-surface-variant{% endif %}">
-                {{ cat.total_anuncios }}
-            </span>
+                                                    {% if categoria_slug == cat.slug %}bg-primary/15 text-primary{% else %}bg-surface-container-low text-on-surface-variant{% endif %}">
+                                                    {{ cat.total_anuncios }}
+                                                </span>
                                             {% endif %}
                                         </button>
                                         {% if cat.subcategorias.all %}
@@ -53,8 +54,8 @@
                                                     onclick="toggleSubcategorias('{{ cat.slug }}', this)"
                                                     class="ml-1 p-1 rounded hover:bg-surface-container-low transition-all"
                                                     aria-label="Expandir subcategorias">
-            <span class="material-symbols-outlined text-[16px] text-outline transition-transform duration-200"
-                  id="chevron-{{ cat.slug }}">expand_more</span>
+                                                <span class="material-symbols-outlined text-[16px] text-outline transition-transform duration-200"
+                                                      id="chevron-{{ cat.slug }}">expand_more</span>
                                             </button>
                                         {% endif %}
                                     </div>
@@ -65,9 +66,10 @@
                                             {% for sub in cat.subcategorias.all %}
                                                 <button type="button"
                                                         data-slug="{{ sub.slug }}"
+                                                        data-pai-slug="{{ cat.slug }}"
                                                         onclick="selecionarCategoria('{{ sub.slug }}')"
                                                         class="w-full text-left px-3 py-1.5 rounded-md text-sm transition-all
-                       {% if categoria_slug == sub.slug %}text-primary font-medium bg-primary/8{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low{% endif %}">
+                                                            {% if categoria_slug == sub.slug %}text-primary font-medium bg-primary/8{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low{% endif %}">
                                                     {{ sub.nome }}
                                                 </button>
                                             {% endfor %}
@@ -382,46 +384,76 @@
         }
 
         (function initCategoriasState() {
-    const selected = document.getElementById('categoria-input').value;
+            const selected = document.getElementById('categoria-input').value;
 
-    // Fecha TODAS as listas e remove rotação dos chevrons
-    document.querySelectorAll('[id^="sub-"]').forEach(function (list) {
-        list.classList.add('hidden');
-        const slugPai = list.id.replace('sub-', '');
-        const chevron = document.getElementById('chevron-' + slugPai);
-        if (chevron) chevron.classList.remove('rotate-180');
-    });
+            // --- Esconder/mostrar categorias pai ---
+            const categoryDivs = document.querySelectorAll('[data-category-slug]');
+            
+            if (!selected) {
+                // Sem categoria selecionada: mostra todas
+                categoryDivs.forEach(div => div.style.display = '');
+            } else {
+                // Determina o slug da categoria pai a mostrar
+                let paiSlug = selected;
+                const subBtn = document.querySelector(`button[data-slug="${selected}"]`);
+                if (subBtn && subBtn.dataset.paiSlug) {
+                    paiSlug = subBtn.dataset.paiSlug;
+                } else {
+                    // Se não tiver data-pai-slug, percorre as listas para encontrar o pai
+                    for (const list of document.querySelectorAll('[id^="sub-"]')) {
+                        const subBtns = list.querySelectorAll('button[data-slug]');
+                        const match = Array.from(subBtns).some(b => b.dataset.slug === selected);
+                        if (match) {
+                            paiSlug = list.id.replace('sub-', '');
+                            break;
+                        }
+                    }
+                }
 
-    // Se não houver categoria selecionada, termina
-    if (!selected) return;
-
-    // Abre a lista correspondente à categoria selecionada (pai ou subcategoria)
-    let paiSlug = selected;
-
-    // Se o selected for uma subcategoria, descobre o pai
-    const subBtn = document.querySelector(`button[data-slug="${selected}"]`);
-    if (subBtn && subBtn.dataset.paiSlug) {
-        paiSlug = subBtn.dataset.paiSlug;
-    } else {
-        // Caso não tenha data-pai-slug, percorre as listas para encontrar o pai
-        for (const list of document.querySelectorAll('[id^="sub-"]')) {
-            const subBtns = list.querySelectorAll('button[data-slug]');
-            const match = Array.from(subBtns).some(b => b.dataset.slug === selected);
-            if (match) {
-                paiSlug = list.id.replace('sub-', '');
-                break;
+                // Esconde todos os divs de categoria, exceto o do paiSlug
+                categoryDivs.forEach(div => {
+                    if (div.dataset.categorySlug === paiSlug) {
+                        div.style.display = '';
+                    } else {
+                        div.style.display = 'none';
+                    }
+                });
             }
-        }
-    }
 
-    // Abre a lista do pai (se existir)
-    const subContainer = document.getElementById(`sub-${paiSlug}`);
-    if (subContainer) {
-        subContainer.classList.remove('hidden');
-        const chevron = document.getElementById(`chevron-${paiSlug}`);
-        if (chevron) chevron.classList.add('rotate-180');
-    }
-})();
+            // --- Gerir subcategorias (abrir apenas a do pai) ---
+            // Fecha todas as listas e remove rotação
+            document.querySelectorAll('[id^="sub-"]').forEach(function (list) {
+                list.classList.add('hidden');
+                const slugPai = list.id.replace('sub-', '');
+                const chevron = document.getElementById('chevron-' + slugPai);
+                if (chevron) chevron.classList.remove('rotate-180');
+            });
+
+            // Se houver categoria selecionada, abre a lista do pai
+            if (selected) {
+                let paiSlugAbrir = selected;
+                const subBtn2 = document.querySelector(`button[data-slug="${selected}"]`);
+                if (subBtn2 && subBtn2.dataset.paiSlug) {
+                    paiSlugAbrir = subBtn2.dataset.paiSlug;
+                } else {
+                    for (const list of document.querySelectorAll('[id^="sub-"]')) {
+                        const subBtns = list.querySelectorAll('button[data-slug]');
+                        const match = Array.from(subBtns).some(b => b.dataset.slug === selected);
+                        if (match) {
+                            paiSlugAbrir = list.id.replace('sub-', '');
+                            break;
+                        }
+                    }
+                }
+
+                const subContainer = document.getElementById(`sub-${paiSlugAbrir}`);
+                if (subContainer) {
+                    subContainer.classList.remove('hidden');
+                    const chevron = document.getElementById(`chevron-${paiSlugAbrir}`);
+                    if (chevron) chevron.classList.add('rotate-180');
+                }
+            }
+        })();
 
         // ── Mobile: toggle sidebar ───────────────────────────────────────────────────
 
