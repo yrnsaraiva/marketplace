@@ -47,7 +47,7 @@ class AnuncioListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Anuncio
-        fields = ['id', 'titulo', 'preco', 'preco_negociavel', 'condicao',
+        fields = ['id', 'titulo', 'preco', 'preco_negociavel',
                   'provincia', 'cidade', 'estado', 'visualizacoes',
                   'categoria_nome', 'utilizador_nome',
                   'imagem_principal', 'publicado_em', 'destacado']
@@ -75,7 +75,7 @@ class AnuncioDetalheSerializer(serializers.ModelSerializer):
     class Meta:
         model = Anuncio
         fields = ['id', 'titulo', 'descricao', 'preco', 'preco_negociavel',
-                  'condicao', 'provincia', 'cidade', 'bairro', 'estado',
+                  'provincia', 'cidade', 'bairro', 'estado',
                   'visualizacoes', 'contactos_recebidos', 'categoria',
                   'utilizador', 'imagens', 'atributos',
                   'criado_em', 'expira_em']
@@ -113,7 +113,7 @@ class AnuncioCriarSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'titulo', 'descricao', 'preco', 'preco_negociavel',
-            'condicao', 'categoria', 'provincia', 'cidade',
+            'categoria', 'provincia', 'cidade',
             'bairro', 'auto_renovar',
             'atributos', 'destacar',
         ]
@@ -204,7 +204,7 @@ class AnuncioEditarSerializer(serializers.ModelSerializer):
         model = Anuncio
         fields = [
             'titulo', 'descricao', 'preco', 'preco_negociavel',
-            'condicao', 'categoria', 'provincia', 'cidade',
+            'categoria', 'provincia', 'cidade',
             'bairro', 'auto_renovar', 'atributos',
         ]
         extra_kwargs = {

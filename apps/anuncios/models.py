@@ -10,11 +10,6 @@ from apps.pagamentos.models import *
 
 
 class Anuncio(models.Model):
-    CONDICAO_CHOICES = [
-        ('novo', 'Novo'),
-        ('usado', 'Usado'),
-        ('recondicionado', 'Recondicionado'),
-    ]
     ESTADO_CHOICES = [
         ('rascunho', 'Rascunho'),
         ('pendente_pagamento', 'Pendente de Pagamento'),
@@ -34,9 +29,8 @@ class Anuncio(models.Model):
     )
     titulo = models.CharField(max_length=100)
     descricao = models.TextField(max_length=2000)
-    preco = models.DecimalField(max_digits=12, decimal_places=2)
+    preco = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     preco_negociavel = models.BooleanField(default=False)
-    condicao = models.CharField(max_length=20, choices=CONDICAO_CHOICES, default='novo')
     provincia = models.CharField(max_length=50)
     cidade = models.CharField(max_length=50)
     bairro = models.CharField(max_length=100, blank=True)

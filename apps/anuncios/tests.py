@@ -71,7 +71,6 @@ class AnuncioCriarTests(TestCase):
             'descricao': 'Sem riscos, bateria 90%, caixa original.',
             'preco': '85000.00',
             'preco_negociavel': True,
-            'condicao': 'usado',
             'categoria': self.categoria.id,
             'provincia': 'Maputo',
             'cidade': 'Maputo',
@@ -92,7 +91,6 @@ class AnuncioCriarTests(TestCase):
             'titulo': 'Samsung Galaxy S23',
             'descricao': 'Como novo, garantia activa.',
             'preco': '55000.00',
-            'condicao': 'usado',
             'categoria': self.categoria.id,
             'provincia': 'Gaza',
             'cidade': 'Xai-Xai',
@@ -110,7 +108,6 @@ class AnuncioCriarTests(TestCase):
             'titulo': 'Xiaomi Redmi Note 12',
             'descricao': 'Estado excelente.',
             'preco': '25000.00',
-            'condicao': 'usado',
             'categoria': self.categoria.id,
             'provincia': 'Nampula',
             'cidade': 'Nampula',
@@ -137,7 +134,7 @@ class AnuncioListTests(TestCase):
             utilizador=self.user, categoria=self.categoria,
             subscricao=sub,
             titulo='Toyota Hilux 2020', descricao='Impecável.',
-            preco=2850000, condicao='usado',
+            preco=2850000,
             provincia='Maputo', cidade='Maputo',
             estado='activo',
         )
@@ -165,7 +162,7 @@ class FavoritoTests(TestCase):
         self.anuncio = Anuncio.objects.create(
             utilizador=self.outro, categoria=cat, subscricao=sub,
             titulo='Casa T4 Matola Rio', descricao='Espaçosa.',
-            preco=4200000, condicao='novo',
+            preco=4200000,
             provincia='Maputo', cidade='Matola',
             estado='activo',
         )

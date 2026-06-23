@@ -153,11 +153,6 @@
                         <span class="text-[11px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full uppercase tracking-wide">
                             {{ anuncio.categoria.nome }}
                         </span>
-                        <span class="text-[11px] font-medium px-2.5 py-1 rounded-full
-                                     {% if anuncio.condicao == 'novo' %}bg-green-100 text-green-800
-                                     {% else %}bg-surface-container-low text-on-surface-variant{% endif %}">
-                            {{ anuncio.get_condicao_display }}
-                        </span>
                         {% if anuncio.destacado %}
                         <span class="text-[11px] font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full uppercase tracking-wide flex items-center gap-1">
                             <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">star</span>

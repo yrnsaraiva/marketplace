@@ -124,26 +124,7 @@
                     </div>
 
                     <div class="h-px bg-outline-variant/20 my-4"></div>
-
-                    <!-- Condição -->
-                    <div class="mb-5">
-                        <p class="text-[11px] font-medium uppercase tracking-wider text-outline mb-3">Condição</p>
-                        <div class="flex gap-2">
-                            <button type="button" onclick="toggleCondicao('novo', this)"
-                                    class="flex-1 py-2 rounded-lg text-sm font-medium transition-all
-                                       {% if request.GET.condicao == 'novo' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low{% endif %}">
-                                Novo
-                            </button>
-                            <button type="button" onclick="toggleCondicao('usado', this)"
-                                    class="flex-1 py-2 rounded-lg text-sm font-medium transition-all
-                                       {% if request.GET.condicao == 'usado' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low{% endif %}">
-                                Usado
-                            </button>
-                            <input type="hidden" name="condicao" id="condicao-input"
-                                   value="{{ request.GET.condicao }}"/>
-                        </div>
-                    </div>
-
+                
                     <input type="hidden" name="search" value="{{ request.GET.search }}"/>
                     <input type="hidden" name="ordering" id="ordering-input" value="{{ request.GET.ordering }}"/>
 
@@ -213,7 +194,7 @@
             </header>
 
             <!-- Chips de filtros activos -->
-            {% if request.GET.search or categoria_slug or request.GET.provincia or request.GET.condicao or request.GET.preco_min or request.GET.preco_max %}
+            {% if request.GET.search or categoria_slug or request.GET.provincia or request.GET.preco_min or request.GET.preco_max %}
                 <div class="flex flex-wrap gap-2 mb-5">
                     {% if request.GET.search %}
                         <a href="?{% querystring search='' %}"
@@ -233,13 +214,6 @@
                         <a href="?{% querystring provincia='' %}"
                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
                             {{ request.GET.provincia }}
-                            <span class="material-symbols-outlined text-[14px] text-outline">close</span>
-                        </a>
-                    {% endif %}
-                    {% if request.GET.condicao %}
-                        <a href="?{% querystring condicao='' %}"
-                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest text-sm hover:bg-surface-container-low transition-all">
-                            {{ request.GET.condicao|capfirst }}
                             <span class="material-symbols-outlined text-[14px] text-outline">close</span>
                         </a>
                     {% endif %}
@@ -276,13 +250,7 @@
                                     Destaque
                                 </div>
                             {% endif %}
-
-                            {% if anuncio.condicao %}
-                                <div class="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-medium
-                                {% if anuncio.condicao == 'novo' %}bg-green-100 text-green-800{% else %}bg-surface-container-low text-on-surface-variant{% endif %}">
-                                    {{ anuncio.condicao|capfirst }}
-                                </div>
-                            {% endif %}
+                        
                         </div>
 
                         <div class="p-4">
@@ -462,26 +430,7 @@
             sidebar.classList.toggle('hidden');
             sidebar.classList.toggle('block');
         });
-
-        // ── Condição ─────────────────────────────────────────────────────────────────
-
-        function toggleCondicao(val, btn) {
-            const input = document.getElementById('condicao-input');
-            const btns = document.querySelectorAll('[onclick^="toggleCondicao"]');
-
-            const inactiveClass = 'flex-1 py-2 rounded-lg text-sm font-medium bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container-low transition-all';
-            const activeClass = 'flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-on-primary transition-all';
-
-            if (input.value === val) {
-                input.value = '';
-                btn.className = inactiveClass;
-            } else {
-                input.value = val;
-                btns.forEach(b => b.className = inactiveClass);
-                btn.className = activeClass;
-            }
-        }
-
+        
         // ── Ordenação (dispara submit automaticamente) ────────────────────────────────
 
         function aplicarOrdenacao(val) {

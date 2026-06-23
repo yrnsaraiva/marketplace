@@ -9,12 +9,11 @@ class AnuncioFilter(django_filters.FilterSet):
     categoria = django_filters.CharFilter(method='filter_categoria')
     provincia = django_filters.CharFilter(lookup_expr='iexact')
     cidade = django_filters.CharFilter(lookup_expr='iexact')
-    condicao = django_filters.CharFilter(lookup_expr='iexact')
 
     class Meta:
         model = Anuncio
         fields = ['categoria', 'provincia', 'cidade',
-                  'condicao', 'preco_min', 'preco_max']
+                   'preco_min', 'preco_max']
 
     def filter_categoria(self, queryset, name, value):
         """Aceita slug de categoria-pai ou subcategoria."""

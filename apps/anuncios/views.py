@@ -55,7 +55,6 @@ def _anuncio_para_dict(anuncio, request):
         'publicado_em': anuncio.publicado_em,
         'provincia': anuncio.provincia,
         'cidade': anuncio.cidade,
-        'condicao': anuncio.condicao,
         'imagem_principal': request.build_absolute_uri(img.imagem.url) if img else None,
 
         'destacado': anuncio.destacado,
@@ -405,7 +404,6 @@ def pesquisa_view(request):
     provincia = request.GET.get('provincia', '').strip()
     preco_min = request.GET.get('preco_min', '').strip()
     preco_max = request.GET.get('preco_max', '').strip()
-    condicao = request.GET.get('condicao', '').strip()
     ordering = request.GET.get('ordering', '-publicado_em')
 
     if search:
@@ -428,8 +426,6 @@ def pesquisa_view(request):
             queryset = queryset.filter(preco__lte=float(preco_max))
         except ValueError:
             pass
-    if condicao:
-        queryset = queryset.filter(condicao=condicao)
 
     ordering_validos = ['publicado_em', '-publicado_em', 'preco', '-preco', '-visualizacoes']
     if ordering not in ordering_validos:
@@ -449,7 +445,6 @@ def pesquisa_view(request):
         'provincia': provincia,
         'preco_min': preco_min,
         'preco_max': preco_max,
-        'condicao': condicao,
         'ordering': ordering,
     })
 

@@ -17,7 +17,7 @@ class AtributoAnuncioInline(admin.TabularInline):
 class AnuncioAdmin(admin.ModelAdmin):
     list_display = ['titulo', 'utilizador', 'categoria', 'preco',
                     'estado', 'visualizacoes', 'criado_em']
-    list_filter = ['estado', 'condicao', 'provincia', 'categoria']
+    list_filter = ['estado', 'provincia', 'categoria']
     search_fields = ['titulo', 'descricao', 'utilizador__email']
     readonly_fields = ['visualizacoes', 'contactos_recebidos',
                        'criado_em', 'actualizado_em']
