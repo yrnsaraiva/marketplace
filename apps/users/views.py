@@ -262,7 +262,7 @@ def signup_template_view(request):
                 user = serializer.save()
                 enviar_email_confirmacao(user, request=request)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                return redirect(request.GET.get('next', '/'))
+                return redirect(request.GET.get('next', 'perfil'))
             else:
                 serializer_errors = {
                     k: v[0] if isinstance(v, list) else v
